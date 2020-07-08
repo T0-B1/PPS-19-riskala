@@ -1,0 +1,23 @@
+plugins {
+    id 'scala'
+    id 'application'
+}
+
+version '0.0.0'
+mainClassName = 'org.riskala.Main'
+sourceCompatibility = 1.8
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+
+    implementation 'org.scala-lang:scala-library:2.13.2'
+
+    testImplementation 'junit:junit:null'
+    testImplementation 'org.scalatest:scalatest_2.13:3.1.2'
+    testImplementation 'org.scalatestplus:junit-4-12_2.13:3.1.2.0'
+
+    testRuntimeOnly 'org.scala-lang.modules:scala-xml_2.13:1.2.0'
+}
