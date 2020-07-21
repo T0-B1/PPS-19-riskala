@@ -69,7 +69,7 @@ export default {
     }); 
   },
   start() {
-    setTimeout(function(){ window.location.href = "/new_play";}, 1000);
+    setTimeout(function(){ window.location.href = "/game";}, 1000);
   }
  }
 }

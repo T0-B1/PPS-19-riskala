@@ -34,7 +34,7 @@
           </div>
           <hr class="divider"/>
           <div>
-            <router-link to='load_game'>
+            <router-link to='room'>
               <b-button variant="outline-primary">Crea Partita</b-button>
             </router-link>
           </div>
@@ -47,5 +47,5 @@
 </template>
 
 <style lang="sass">
-@import './newGame.sass'
+@import './CreateRoom.sass'
 </style>
