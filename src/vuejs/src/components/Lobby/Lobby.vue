@@ -6,7 +6,7 @@
   </div>
   <hr class="divider"/>
   <div class="buttons_div">
-    <router-link to='new_game'>
+    <router-link to='create_room'>
       <b-button variant="outline-primary" >Crea partita</b-button>
     </router-link>
     <router-link to='load_game'>
@@ -49,5 +49,5 @@
 </script>
 
 <style lang="sass">
-@import './Homepage.sass'
+@import './Lobby.sass'
 </style>
