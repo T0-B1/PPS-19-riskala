@@ -11,6 +11,12 @@ repositories {
     jcenter()
 }
 
+task copyFrontendToResources(type: Copy) {
+    dependsOn ':src:vuejs:npm_run_build'
+    from "$projectDir/src/vuejs/dist/"
+    into "$projectDir/src/main/resources/static"
+}
+
 dependencies {
 
     implementation 'org.scala-lang:scala-library:2.13.2'
