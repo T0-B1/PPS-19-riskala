@@ -4,6 +4,7 @@ import Lobby from '../components/Lobby/Lobby.vue'
 import Room from '../views/Game/Room/Room.vue'
 import CreateRoom from '../views/Game/CreateRoom/CreateRoom.vue'
 import Game from '../views/Game/Game/Game.vue'
+import Login from '../views/Login/Login.vue'
 
 Vue.use(VueRouter)
 
@@ -27,6 +28,11 @@ Vue.use(VueRouter)
     path: '/game',
     name: 'game',
     component: Game
+  },
+  {
+    path: '/login',
+    name: 'login',
+    component: Login
   }
 ]
 
