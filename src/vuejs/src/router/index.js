@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Home from '../components/Home/Homepage.vue'
+import newGame from '../views/Game/newGame/newGame.vue'
 
 Vue.use(VueRouter)
 
@@ -9,6 +10,11 @@ Vue.use(VueRouter)
     path: '/',
     name: 'Home',
     component: Home
+  },
+  {
+    path: '/new_game',
+    name: 'new_game',
+    component: newGame
   },
 ]
 
