@@ -9,7 +9,7 @@
     <router-link to='create_room'>
       <b-button variant="outline-primary" >Crea partita</b-button>
     </router-link>
-    <router-link to='load_game'>
+    <router-link to='room'>
       <b-button id="joinBtn" variant="outline-primary" v-bind:disabled="disabled">Join partita</b-button>
     </router-link>
     <b-button variant="outline-primary">Carica partita</b-button>
