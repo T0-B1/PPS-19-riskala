@@ -2,9 +2,9 @@
   <div>
     <div class="containerDiv">
       <div class="link">
-        <b-link class="home" href="/">{{navhome}}</b-link>
+        <router-link class="home" to="/">{{navhome}}</router-link>
       </div>
-      <b-link class="login" href="/login">Login</b-link> 
+      <router-link class="login" to="/login">Login</router-link> 
     </div>
   </div>
 </template>
