@@ -69,7 +69,7 @@ export default {
     }); 
   },
   start() {
-    setTimeout(function(){ window.location.href = "/game";}, 1000);
+    this.$router.push('/game')
   }
  }
 }
