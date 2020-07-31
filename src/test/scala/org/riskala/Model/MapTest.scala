@@ -9,11 +9,11 @@ class MapTest extends AnyWordSpec {
   val ger = StateImpl("Germany")
   val spa = StateImpl("Spain")
   val states = List(ita, fra, swi, ger, spa)
-  val bridges = List(BridgeImpl(ita,fra,false),
-    BridgeImpl(ita,swi,false),
-    BridgeImpl(swi,fra,false),
-    BridgeImpl(fra,spa,false),
-    BridgeImpl(fra,ger,false))
+  val bridges = List(Bridge(ita,fra,false),
+    Bridge(ita,swi,false),
+    Bridge(swi,fra,false),
+    Bridge(fra,spa,false),
+    Bridge(fra,ger,false))
   val map = MapImpl("Europe",List.empty,states,bridges)
 
   "Map neighbors" should {

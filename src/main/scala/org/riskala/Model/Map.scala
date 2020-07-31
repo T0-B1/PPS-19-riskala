@@ -1,5 +1,11 @@
 package org.riskala.Model
 
+import org.riskala.Model.State.State
+
+object State {
+  type State = String
+}
+
 trait Map {
   val name: String
   val regions: List[Region]

@@ -1,8 +1,9 @@
 package org.riskala.Model
 
-trait Region {
-  val states: List[State]
-  val bonus: Int
+import org.riskala.Model.State.State
 
-  def belongs(state:State): Boolean
+case class Region(states: List[State],
+                  bonus: Int) {
+
+  def hasState(state: State): Boolean = states.contains(state)
 }

@@ -1,5 +1,7 @@
 package org.riskala.Model
 
+import org.riskala.Model.State.State
+
 case class MapImpl(override val name:String,
                    override val regions: List[Region],
                    override val states: List[State],
@@ -11,10 +13,10 @@ case class MapImpl(override val name:String,
   }*/
 
   override def neighbor(state: State): List[State] = bridges collect {
-    case BridgeImpl(s1,s2,_) if s1 == state => s2
-    case BridgeImpl(s1,s2,_) if s2 == state => s1
+    case Bridge(s1,s2,_) if s1 == state => s2
+    case Bridge(s1,s2,_) if s2 == state => s1
   }
 
   override def areNeighbor(state1: State, state2: State): Boolean =
-    bridges.contains(BridgeImpl(state1,state2,false))
+    bridges.contains(Bridge(state1,state2,false))
 }
