@@ -1,11 +1,10 @@
 package org.riskala.Model
 
+import org.riskala.Model.State.State
 import org.scalatest.wordspec.AnyWordSpec
 
 class RegionTest extends AnyWordSpec {
-  var listState: List[State] = List(StateImpl("Italy"),
-    StateImpl("France"),
-    StateImpl("Germany"))
+  var listState: List[State] = List("Italy","France","Germany")
 
   "Region" should {
     "initially be empty" in {
@@ -13,11 +12,11 @@ class RegionTest extends AnyWordSpec {
     }
 
     "after adding regions, habe size different to 0" in {
-      assert(RegionImpl(listState, 2).states.nonEmpty)
+      assert(Region(listState, 2).states.nonEmpty)
     }
 
     "check if region belongs to state" in {
-      assert(RegionImpl(listState, 2).belongs(StateImpl("Italy")))
+      assert(Region(listState, 2).hasState("Italy"))
     }
   }
 }
