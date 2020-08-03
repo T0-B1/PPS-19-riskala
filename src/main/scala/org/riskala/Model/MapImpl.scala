@@ -1,6 +1,7 @@
 package org.riskala.Model
 
 import org.riskala.Model.State.State
+import argonaut.Argonaut._
 
 /** Map structure
  *
@@ -37,4 +38,8 @@ case class MapImpl(override val name:String,
    */
   override def areNeighbor(state1: State, state2: State): Boolean =
     bridges.contains(Bridge(state1,state2,false))
+}
+object MapImpl {
+  implicit def MapCodecJson =
+    casecodec4(MapImpl.apply,MapImpl.unapply)("name","regions","states","bridges")
 }
