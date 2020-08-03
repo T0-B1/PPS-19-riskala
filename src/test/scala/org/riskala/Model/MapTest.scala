@@ -1,13 +1,14 @@
 package org.riskala.Model
 
+import org.riskala.Model.State.State
 import org.scalatest.wordspec.AnyWordSpec
 
 class MapTest extends AnyWordSpec {
-  val ita = StateImpl("Italy")
-  val fra = StateImpl("France")
-  val swi = StateImpl("Switzerland")
-  val ger = StateImpl("Germany")
-  val spa = StateImpl("Spain")
+  val ita: State = "Italy"
+  val fra: State = "France"
+  val swi: State = "Switzerland"
+  val ger: State = "Germany"
+  val spa: State = "Spain"
   val states = List(ita, fra, swi, ger, spa)
   val bridges = List(Bridge(ita,fra,false),
     Bridge(ita,swi,false),
