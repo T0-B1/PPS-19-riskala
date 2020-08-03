@@ -10,7 +10,7 @@ class SerializationTest extends AnyWordSpec{
       assert(bridge.asJson.hasField("state1"))
       assert(bridge.asJson.hasField("state2"))
       assert(bridge.asJson.hasField("userCreated"))
-      assert(bridge.asJson.as[Bridge] == bridge)
+      assert(bridge.asJson.as[Bridge].toOption.get == bridge)
     }
   }
 }
