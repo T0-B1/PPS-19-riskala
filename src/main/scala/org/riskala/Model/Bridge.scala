@@ -1,7 +1,6 @@
 package org.riskala.Model
 
 import argonaut.Argonaut._
-//import argonaut.{CodecJson, DecodeJson, EncodeJson}
 import org.riskala.Model.State.State
 
 /** Bridge implementation
@@ -29,22 +28,4 @@ object Bridge {
   implicit def BridgeCodecJson =
     casecodec3(Bridge.apply,Bridge.unapply)("state1","state2","userCreated")
 }
-
-/*
-object Bridge {
-  private def enc: EncodeJson[Bridge] = (s: Bridge) => {
-    ("state1" := s.state1) ->: ("state2" := s.state2) ->: ("userCreated" := s.userCreated) ->: jEmptyObject
-  }
-
-  private def dec: DecodeJson[Bridge] =
-    DecodeJson(c => for {
-      s1 <- (c --\ "state1").as[State]
-      s2 <- (c --\ "state2").as[State]
-      uC <- (c --\ "userCreated").as[Boolean]
-    } yield Bridge(s1,s2,uC))
-
-  implicit def BridgeCodecJson: CodecJson[Bridge] = //(enc, dec)
-    CodecJson(enc(_), dec(_))
-}
-*/
 
