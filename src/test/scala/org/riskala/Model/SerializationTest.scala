@@ -29,7 +29,6 @@ class SerializationTest extends AnyWordSpec{
   }
 
   "Region" should {
-    //val region = Region(List("Italy","France","Spain"),5)
     val region = regions.head
     "be serialized to JSON" in {
       assert(region.asJson.hasField("bonus"))
