@@ -49,4 +49,22 @@ class SerializationTest extends AnyWordSpec{
       assert(map.asJson.field("regions").get.as[List[Region]].toOption.get.contains(regions.head))
     }
   }
+
+  "Player" should {
+    val player = Player("p1","red")
+    "be serialized to JSON" in {
+      assert(player.asJson.hasField("nickname"))
+      assert(player.asJson.hasField("color"))
+      assert(player.asJson.as[Player].toOption.get == player)
+    }
+  }
+
+  "PlayerState" should {
+    val pState = PlayerState(Player("p1","red"),2)
+    "be serialized to JSON" in {
+      assert(pState.asJson.hasField("owner"))
+      assert(pState.asJson.hasField("troops"))
+      assert(pState.asJson.as[PlayerState].toOption.get == pState)
+    }
+  }
 }
