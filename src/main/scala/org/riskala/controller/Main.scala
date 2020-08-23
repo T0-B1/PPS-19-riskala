@@ -7,17 +7,14 @@ import akka.http.scaladsl.model.HttpMethods.GET
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse, StatusCodes, Uri}
 import akka.http.scaladsl.model.ws.{BinaryMessage, Message, TextMessage}
 import akka.http.scaladsl.server.Directives._
-import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{Flow, Sink, Source}
-
-import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.io.StdIn
 
 object Main extends App {
 
   implicit val system = ActorSystem("my-system")
-  implicit val materializer = ActorMaterializer()
+
   // needed for the future flatMap/onComplete in the end
   implicit val executionContext = system.dispatcher
 
