@@ -9,9 +9,9 @@ import akka.http.scaladsl.model.ws.{BinaryMessage, Message, TextMessage}
 import akka.http.scaladsl.server.Directives._
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{Flow, Sink, Source}
-import akka.util.ByteString
-import scala.concurrent.duration._
 
+import scala.concurrent.Future
+import scala.concurrent.duration._
 import scala.io.StdIn
 
 object Main extends App {
@@ -31,24 +31,34 @@ object Main extends App {
     }
 
   val webSocketRequestHandler: HttpRequest => HttpResponse = {
+
     case req @ HttpRequest(GET, Uri.Path("/websocket"), _, _, _) =>
       req.attribute(webSocketUpgrade) match {
-        case Some(upgrade) => upgrade.handleMessages(webSocketHandler)
-        case None          => HttpResponse(400, entity = "Not a valid websocket request!")
+        case Some(upgrade) => req.uri.query().get("token") match {
+          case Some(token) => {
+            upgrade.handleMessages(webSocketHandler(token))
+          }
+          case None => HttpResponse(400, entity = "Missing token!")
+        }
+        case None => HttpResponse(400, entity = "Not a valid websocket request!")
       }
     case r: HttpRequest =>
       r.discardEntityBytes() // important to drain incoming HTTP Entity stream
       HttpResponse(404, entity = "Unknown resource!")
   }
 
-  val webSocketHandler =
+  def webSocketHandler(token: String)  =
     Flow[Message]
       .mapConcat {
         // we match but don't actually consume the text message here,
         // rather we simply stream it back as the tail of the response
         // this means we might start sending the response even before the
         // end of the incoming message has been received
-        case tm: TextMessage => TextMessage(Source.single("Hello ") ++ tm.textStream) :: Nil
+        case tm: TextMessage => {
+          tm.textStream.runWith(Sink.fold[String, String]("")(_ + _))
+            .onComplete(s => println(s"Received: $s from $token"))
+          TextMessage(Source.single("Hello ") ++ tm.textStream) :: Nil
+        }
         case bm: BinaryMessage =>
           // ignore binary messages but drain content to avoid the stream being clogged
           bm.dataStream.runWith(Sink.ignore)
