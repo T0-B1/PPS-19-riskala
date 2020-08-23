@@ -3,7 +3,7 @@ package org.riskala.controller
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.StatusCodes
-import akka.http.scaladsl.server.Directives.{get, getFromResource, getFromResourceDirectory, pathEndOrSingleSlash, pathPrefix, redirectToTrailingSlashIfMissing}
+import akka.http.scaladsl.server.Directives._
 import akka.stream.ActorMaterializer
 
 import scala.io.StdIn
