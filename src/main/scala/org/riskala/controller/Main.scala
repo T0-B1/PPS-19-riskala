@@ -1,12 +1,12 @@
-package org.riskala
+package org.riskala.controller
 
-import scala.io.StdIn
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.server.directives.ContentTypeResolver.Default
 import akka.http.scaladsl.model.StatusCodes
+import akka.http.scaladsl.server.Directives.{get, getFromResource, getFromResourceDirectory, pathEndOrSingleSlash, pathPrefix, redirectToTrailingSlashIfMissing}
 import akka.stream.ActorMaterializer
+
+import scala.io.StdIn
 
 object Main extends App {
 
@@ -32,4 +32,3 @@ object Main extends App {
     .flatMap(_.unbind()) // trigger unbinding from the port
     .onComplete(_ => system.terminate()) // and shutdown when done
 }
-

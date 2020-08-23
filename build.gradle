@@ -4,7 +4,7 @@ plugins {
 }
 
 version '0.0.0'
-mainClassName = 'org.riskala.Main'
+mainClassName = 'org.riskala.controller.Main'
 sourceCompatibility = 1.8
 
 repositories {
