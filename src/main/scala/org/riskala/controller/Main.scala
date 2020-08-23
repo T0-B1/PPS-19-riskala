@@ -2,9 +2,13 @@ package org.riskala.controller
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.model.StatusCodes
+import akka.http.scaladsl.model.AttributeKeys.webSocketUpgrade
+import akka.http.scaladsl.model.HttpMethods.GET
+import akka.http.scaladsl.model.{HttpRequest, HttpResponse, StatusCodes, Uri}
+import akka.http.scaladsl.model.ws.{BinaryMessage, Message, TextMessage}
 import akka.http.scaladsl.server.Directives._
 import akka.stream.ActorMaterializer
+import akka.stream.scaladsl.{Flow, Sink, Source}
 
 import scala.io.StdIn
 
@@ -23,13 +27,45 @@ object Main extends App {
         getFromResourceDirectory("static")
       }
     }
-  
-  val bindingFuture = Http().newServerAt("localhost", 8080).bindFlow(staticResources)
+
+  val webSocketRequestHandler: HttpRequest => HttpResponse = {
+    case req @ HttpRequest(GET, Uri.Path("/websocket"), _, _, _) =>
+      req.attribute(webSocketUpgrade) match {
+        case Some(upgrade) => upgrade.handleMessages(webSocketHandler)
+        case None          => HttpResponse(400, entity = "Not a valid websocket request!")
+      }
+    case r: HttpRequest =>
+      r.discardEntityBytes() // important to drain incoming HTTP Entity stream
+      HttpResponse(404, entity = "Unknown resource!")
+  }
+
+  val webSocketHandler =
+    Flow[Message]
+      .mapConcat {
+        // we match but don't actually consume the text message here,
+        // rather we simply stream it back as the tail of the response
+        // this means we might start sending the response even before the
+        // end of the incoming message has been received
+        case tm: TextMessage => TextMessage(Source.single("Hello ") ++ tm.textStream) :: Nil
+        case bm: BinaryMessage =>
+          // ignore binary messages but drain content to avoid the stream being clogged
+          bm.dataStream.runWith(Sink.ignore)
+          Nil
+      }
+
+  val staticContentBindingFuture = Http().newServerAt("localhost", 8080).bindFlow(staticResourcesHandler)
+  val websocketBindingFuture = Http().newServerAt("localhost", 8081).bindSync(webSocketRequestHandler)
+
+  //val bindingFuture = Http().newServerAt("localhost", 8080).bindFlow(staticResourcesHandler)
 
   println(s"Server online at http://localhost:8080/\nPress RETURN to stop...")
   StdIn.readLine() // let it run until user presses return
 
-  bindingFuture
+  staticContentBindingFuture
     .flatMap(_.unbind()) // trigger unbinding from the port
     .onComplete(_ => system.terminate()) // and shutdown when done
+  websocketBindingFuture
+    .flatMap(_.unbind()) // trigger unbinding from the port
+    .onComplete(_ => system.terminate()) // and shutdown when done
+  
 }
