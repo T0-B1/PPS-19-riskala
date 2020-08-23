@@ -21,9 +21,9 @@ task copyFrontendToResources(type: Copy) {
 dependencies {
 
     implementation 'org.scala-lang:scala-library:2.13.3'
-
     implementation 'com.typesafe.akka:akka-http_2.13:10.2.0'
     implementation 'com.typesafe.akka:akka-stream_2.13:2.6.8'
+    implementation 'com.typesafe.akka:akka-actor-typed_2.13:2.6.8'
 
     testImplementation 'junit:junit:null'
     testImplementation 'org.scalatest:scalatest_2.13:3.1.2'
