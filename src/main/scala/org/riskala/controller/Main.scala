@@ -15,7 +15,7 @@ object Main extends App {
   // needed for the future flatMap/onComplete in the end
   implicit val executionContext = system.dispatcher
 
-  val staticResources =
+  val staticResourcesHandler =
     (get & pathPrefix("")){
       (pathEndOrSingleSlash & redirectToTrailingSlashIfMissing(StatusCodes.TemporaryRedirect)) {
         getFromResource("static/index.html")
