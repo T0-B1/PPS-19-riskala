@@ -9,6 +9,8 @@ import akka.http.scaladsl.model.ws.{BinaryMessage, Message, TextMessage}
 import akka.http.scaladsl.server.Directives._
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{Flow, Sink, Source}
+import akka.util.ByteString
+import scala.concurrent.duration._
 
 import scala.io.StdIn
 
@@ -54,7 +56,11 @@ object Main extends App {
       }
 
   val staticContentBindingFuture = Http().newServerAt("localhost", 8080).bindFlow(staticResourcesHandler)
-  val websocketBindingFuture = Http().newServerAt("localhost", 8081).bindSync(webSocketRequestHandler)
+  val websocketBindingFuture = Http().newServerAt("localhost", 8081)
+    .adaptSettings(_.mapWebsocketSettings(
+        _.withPeriodicKeepAliveMode("pong")
+         .withPeriodicKeepAliveMaxIdle(1.second)))
+    .bindSync(webSocketRequestHandler)
 
   //val bindingFuture = Http().newServerAt("localhost", 8080).bindFlow(staticResourcesHandler)
 
@@ -67,5 +73,5 @@ object Main extends App {
   websocketBindingFuture
     .flatMap(_.unbind()) // trigger unbinding from the port
     .onComplete(_ => system.terminate()) // and shutdown when done
-  
+
 }
