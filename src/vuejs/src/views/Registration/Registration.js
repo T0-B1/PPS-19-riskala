@@ -7,22 +7,76 @@ export default {
         password: '',
         repassword: '',
         username: '',
-        
-
+      
       },
+      correctUser: true,
+      correctEmail: true,
+      correctPsw: false,
+      correctRePsw: false,
     };
   },
   methods: {
-    onSubmit() {
-      this.$router.push('/')
+    onSubmit(evt) {
+      if (this.form.email.trim().length === 0) {
+        this.correctEmail = false;
+      }
+      if (this.form.username.trim().length === 0) this.correctUser = false;
+
+      evt.preventDefault();
+      
+      if (this.correctEmail && this.correctUser && this.correctPsw && this.correctRePsw) {
+        const dataToStore = {
+          username: this.form.username,
+          email: this.form.email,
+          password: this.form.password,
+        };
+
+        console.log("hello. Thi is the data obj to store: " + dataToStore.email,dataToStore.password, dataToStore.username)
+
+        this.$router.push('/')
+      }
     },
     onBlurUser() {
+      const u = this.form.username.trim();
+        this.correctUser = true;
+        document.getElementById('input-username').className = 'form-control';
+      if (u.length < 0) {
+        this.correctUser = false;
+        // invalid user
+        document.getElementById('input-username').className = 'form-control regUserError';
+      }
     },
     onBlurEmail() {
+      const e = this.form.email.trim();
+      this.correctEmail = true;
+      document.getElementById('input-email').className = 'form-control';
+      if (e.length < 0) {
+        this.correctEmail = false;
+        document.getElementById('input-email').className = 'form-control regEmailError';
+      }
     },
     onBlurPsw() {
+      const pwd = this.form.password;
+      this.correctPsw = true;
+      document.getElementById('input-password').className = 'form-control';
+      // check psw: length 8--20, no-space
+      if (pwd.length < 8 || pwd.length > 20 || /\s/.test(pwd)) {
+        // invalid psw
+        this.correctPsw = false;
+        document.getElementById('input-password').className = 'form-control regPswError';
+      }
     },
     onBlurRePsw() {
+      // check repsw
+      const pwd = this.form.password;
+      const repwd = this.form.repassword;
+      this.correctRePsw = true;
+      document.getElementById('re-input-password').className = 'form-control';
+      if (pwd !== repwd) {
+        // repsw no match
+        this.correctRePsw = false;
+        document.getElementById('re-input-password').className = 'form-control regRePswError';
+      }
     },
     changeTypePsw() {
       const t = document.getElementById('input-password').type;
