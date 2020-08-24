@@ -1,5 +1,6 @@
 package org.riskala.Model
 
+import argonaut.Argonaut._
 import org.riskala.Model.State.State
 
 /** Bridge implementation
@@ -21,4 +22,10 @@ case class Bridge(state1: State,
     case Bridge(s1,s2,_) => (s1 == state1 && s2 == state2) || (s2 == state1 && s1 == state2)
     case _ => false
   }
+
 }
+object Bridge {
+  implicit def BridgeCodecJson =
+    casecodec3(Bridge.apply,Bridge.unapply)("state1","state2","userCreated")
+}
+

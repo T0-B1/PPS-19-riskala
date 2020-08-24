@@ -17,17 +17,8 @@ import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.io.StdIn
 
-object Main extends App {
+object RouteManager {
 
-  val route = RouteManager
-
-  println(s"Server online at http://localhost:8080/\nEnter 'exit' to stop...")
-  while(StdIn.readLine() != "exit"){
-    println("Maybe you want to 'exit'")
-  } // let it run until user type exit
-  route.exit()
-
-  /*
   implicit val system = ActorSystem("my-system")
 
   // needed for the future flatMap/onComplete in the end
@@ -40,6 +31,13 @@ object Main extends App {
       } ~ {
         getFromResourceDirectory("static")
       }
+    } ~ (post & path("/login")){
+      val future: Future[Done] = Future{println(extractRequest); Done}
+      onSuccess(future) {
+        _ => complete("tokenAA11")
+      }
+      future
+      complete("tokenAA11")
     }
 
   val webSocketRequestHandler: HttpRequest => HttpResponse = {
@@ -89,18 +87,16 @@ object Main extends App {
   val staticContentBindingFuture = Http().newServerAt("localhost", 8080).bindFlow(staticResourcesHandler)
   val websocketBindingFuture = Http().newServerAt("localhost", 8081)
     .adaptSettings(_.mapWebsocketSettings(
-        _.withPeriodicKeepAliveMode("pong")
-         .withPeriodicKeepAliveMaxIdle(1.second)))
+      _.withPeriodicKeepAliveMode("pong")
+        .withPeriodicKeepAliveMaxIdle(1.second)))
     .bindSync(webSocketRequestHandler)
 
-  println(s"Server online at http://localhost:8080/\nPress RETURN to stop...")
-  StdIn.readLine() // let it run until user presses return
-
-  staticContentBindingFuture
-    .flatMap(_.unbind()) // trigger unbinding from the port
-    .onComplete(_ => system.terminate()) // and shutdown when done
-  websocketBindingFuture
-    .flatMap(_.unbind()) // trigger unbinding from the port
-    .onComplete(_ => system.terminate()) // and shutdown when done
-  */
+  def exit():Unit = {
+    staticContentBindingFuture
+      .flatMap(_.unbind()) // trigger unbinding from the port
+      .onComplete(_ => system.terminate()) // and shutdown when done
+    websocketBindingFuture
+      .flatMap(_.unbind()) // trigger unbinding from the port
+      .onComplete(_ => system.terminate()) // and shutdown when done
+  }
 }
