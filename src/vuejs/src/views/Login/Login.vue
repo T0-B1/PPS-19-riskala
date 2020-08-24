@@ -65,7 +65,6 @@ export default {
         username: '',
         password: '',
       },
-      isLogged:false
     };
   },
   methods: {
@@ -76,8 +75,7 @@ export default {
 
       if(username.length != 0 &&
         psw.length != 0 ) {
-          this.isLogged = true
-          localStorage.setItem("isLogged" , this.isLogged)
+          this.$store.commit('login')
           this.$router.push('/')
       }
     },
