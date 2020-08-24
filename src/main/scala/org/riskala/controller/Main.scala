@@ -44,6 +44,8 @@ object Main extends App {
       HttpResponse(404, entity = "Unknown resource!")
   }
 
+  def sink(sender: String): Sink[Message, Future[Done]] = Sink.foreach(m => println(s"Received $m from $sender"))
+
   def webSocketHandler(token: String)  =
     Flow[Message]
       .mapConcat {
