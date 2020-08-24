@@ -44,6 +44,10 @@ object Main extends App {
       HttpResponse(404, entity = "Unknown resource!")
   }
 
+  val source: Source[Message, ActorRef[Message]] = ActorSource.actorRef[Message](completionMatcher = {
+    case _ => CompletionStrategy.immediately
+  }, PartialFunction.empty, bufferSize = 8, overflowStrategy = OverflowStrategy.fail)
+
   def sink(sender: String): Sink[Message, Future[Done]] = Sink.foreach(m => println(s"Received $m from $sender"))
 
   def webSocketHandler(token: String)  =
