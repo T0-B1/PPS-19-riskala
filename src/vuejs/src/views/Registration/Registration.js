@@ -17,6 +17,7 @@ export default {
   },
   methods: {
     onSubmit(evt) {
+    
       if (this.form.email.trim().length === 0) {
         this.correctEmail = false;
       }
@@ -31,9 +32,32 @@ export default {
           password: this.form.password,
         };
 
-        console.log("hello. Thi is the data obj to store: " + dataToStore.email,dataToStore.password, dataToStore.username)
+        console.log("hello. This is the data obj to store: " + dataToStore.email,dataToStore.password, dataToStore.username)
 
+        this.$store.commit('login')
         this.$router.push('/')
+
+      /*this.$store.state.http.post('api/user', dataToStore).then(() => {
+        this.$store.state.http.post('api/auth', { email: this.form.email, key: this.form.password })
+          .then((response) => {
+            const token = response.data.token.toString();
+            const user = response.data.user;
+            this.$store.commit('login', { token: token, user: user });
+            //this.$bvModal.show('modal-ach');
+          }).catch((error) => {
+            if (error.response) {
+              //this.$root.$emit('openModalError', 'internal_server_errorTitle', 'internal_server_error');
+            } else {
+              //this.$root.$emit('openModalError', 'noAnswerTitle', 'noAnswer');
+            }
+          });
+      }).catch((err) => {
+        if (err.response) {
+          this.$root.$emit('openModalError', 'internal_server_errorTitle', 'internal_server_error');
+        } else {
+          this.$root.$emit('openModalError', 'noAnswerTitle', 'noAnswer');
+        }
+      });*/
       }
     },
     onBlurUser() {
