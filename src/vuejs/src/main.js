@@ -32,7 +32,7 @@ router.beforeEach((to, from, next) => {
   const p = to.path;
   if (!realRoute.includes(p)) {
     next('/');
-  } else if (loggedRoute.includes(p) && store.state.isLogged === 'false') {
+  } else if (loggedRoute.includes(p) && !store.state.isLogged) {
     next('/login');
   } else {
     next();
