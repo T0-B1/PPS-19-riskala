@@ -45,7 +45,11 @@ export default {
       justify-content: flex-end
       padding: 0
       margin: 0
+      background: transparent
+      border: transparent
+      color: #007bff
     .login:hover
       text-decoration: none
+      color: #0067d6
   
 </style>
