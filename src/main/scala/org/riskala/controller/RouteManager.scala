@@ -36,14 +36,26 @@ object RouteManager {
       }
     }, post {
       path("login") {
-        entity(as[Login]){
+        entity(as[Login]) {
           l => {
-            val oToken = AuthManager.login(l)
-            if(oToken.nonEmpty)
-              complete(200, s"Token: ${oToken.get}")
+            val optToken = AuthManager.login(l)
+            if (optToken.nonEmpty)
+              complete(200, s"Token: ${optToken.get}")
             else
-              complete(404,"User not found")
+              complete(404, "User not found")
 
+          }
+        }
+      } ~ {
+        path("register") {
+          entity(as[Register]) {
+            r => {
+              val optToken = AuthManager.register(r)
+              if (optToken.nonEmpty)
+                complete(200, s"Token: ${optToken.get}")
+              else
+                complete(404, "User already exists")
+            }
           }
         }
       }
