@@ -77,18 +77,20 @@ export default {
       if(username.length != 0 && psw.length != 0 ) {
           this.$store.state.http.post('login', { username: username, password: psw })
           .then((response) => {
-            const t = response.data.token.toString();
-            this.$store.commit('login', { token: t });
+            console.log("Welcome user: "+ username)
+            const t = response.data;
+            this.$store.commit('login', { token: t, user: username });
             this.$router.push('/');
           }).catch((error) => {
+            console.log("error: "+error)
             if (error.response) {
-              /*if (error.response.status === 401) {
-                this.$root.$emit('openModalError', 'unauthorizedTitle', 'unauthorized');
+              if (error.response.status === 404) {
+                //this.$root.$emit('openModalError', 'unauthorizedTitle', 'unauthorized');
+                console.log("Invalid credentials");
               } else {
-                this.$root.$emit('openModalError', 'internal_server_errorTitle', 'internal_server_error');
-              }*/
-            } else {
-              //this.$root.$emit('openModalError', 'noAnswerTitle', 'noAnswer');
+                //this.$root.$emit('openModalError', 'internal_server_errorTitle', 'internal_server_error');
+                console.log("Internal server error!");
+              }
             }
           });
       }
