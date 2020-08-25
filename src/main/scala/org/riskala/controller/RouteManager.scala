@@ -40,9 +40,10 @@ object RouteManager {
           l => {
             val oToken = AuthManager.login(l)
             if(oToken.nonEmpty)
-              complete(s"Token: ${oToken.get}")
+              complete(200, s"Token: ${oToken.get}")
             else
-              complete("Nope")
+              complete(404,"User not found")
+
           }
         }
       }
