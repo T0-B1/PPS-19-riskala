@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import App from './App.vue'
 import router from './router'
+import Axios from 'axios'
 import Vuex from 'vuex';
 import './custom.sass'
 import BootstrapVue from 'bootstrap-vue'
@@ -15,16 +16,50 @@ Vue.config.productionTip = false
 const store = new Vuex.Store({
   state: {
     isLogged: false,
+    http: Axios.create({
+      timeout: 10000,
+      headers: { token: 'InvalidToken' },
+    }),
   },
   mutations: {
-    login(state) {
+    login(state, newState) {
       state.isLogged = true;
+      localStorage.riskalaToken = newState.token;
+      state.http = Axios.create({
+        timeout: 10000,
+        headers: { token: newState.token },
+      });
     },
     logout(state) {
       state.isLogged = false;
+      localStorage.riskalaToken = 'InvalidToken';
+      state.http = Axios.create({
+        timeout: 10000,
+        headers: { token: 'InvalidToken' },
+      })
     }
   }
 });
+
+if (localStorage.riskalaToken === undefined) {
+  localStorage.riskalaToken = 'InvalidToken';
+}
+
+if (localStorage.riskalaToken !== 'InvalidToken') {
+  const t = localStorage.riskalaToken;
+  store.commit('login', { token: t});
+  /*store.state.http.get('api/checkOldToken')
+    .then((res) => {
+      if (res.data !== 'Ok') {
+        store.commit('logout');
+      }
+    }).catch(() => {
+      store.commit('logout');
+    });*/
+} else {
+  //store.commit('logout');
+}
+
 
 router.beforeEach((to, from, next) => {
   const realRoute = ['/', '/create_room', '/room', '/game', '/login', '/registration'];

@@ -57,6 +57,7 @@
 </template>
 
 <script>
+
 export default {
   name: 'login',
   data() {
@@ -73,10 +74,23 @@ export default {
       const username = this.form.username;
       const psw = this.form.password;
 
-      if(username.length != 0 &&
-        psw.length != 0 ) {
-          this.$store.commit('login')
-          this.$router.push('/')
+      if(username.length != 0 && psw.length != 0 ) {
+          this.$store.state.http.post('login', { username: username, password: psw })
+          .then((response) => {
+            const t = response.data.token.toString();
+            this.$store.commit('login', { token: t });
+            this.$router.push('/');
+          }).catch((error) => {
+            if (error.response) {
+              /*if (error.response.status === 401) {
+                this.$root.$emit('openModalError', 'unauthorizedTitle', 'unauthorized');
+              } else {
+                this.$root.$emit('openModalError', 'internal_server_errorTitle', 'internal_server_error');
+              }*/
+            } else {
+              //this.$root.$emit('openModalError', 'noAnswerTitle', 'noAnswer');
+            }
+          });
       }
     },
     changeType() {
