@@ -1,9 +1,10 @@
 package org.riskala.controller
 
-import akka.{Done, NotUsed}
+import akka.Done
 import akka.actor.ActorSystem
 import akka.actor.typed.ActorRef
 import akka.http.scaladsl.Http
+import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.http.scaladsl.model.AttributeKeys.webSocketUpgrade
 import akka.http.scaladsl.model.HttpMethods.GET
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse, StatusCodes, Uri}
@@ -15,7 +16,13 @@ import akka.stream.typed.scaladsl.ActorSource
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
-import scala.io.StdIn
+import spray.json.DefaultJsonProtocol
+
+
+case class Login(username: String, password: String)
+object LoginJsonSupport extends DefaultJsonProtocol with SprayJsonSupport {
+  implicit val LoginFormats = jsonFormat2(Login)
+}
 
 object RouteManager {
 
@@ -24,21 +31,22 @@ object RouteManager {
   // needed for the future flatMap/onComplete in the end
   implicit val executionContext = system.dispatcher
 
-  val staticResourcesHandler =
+  import LoginJsonSupport._
+
+  val staticResourcesHandler = concat(
     (get & pathPrefix("")){
       (pathEndOrSingleSlash & redirectToTrailingSlashIfMissing(StatusCodes.TemporaryRedirect)) {
         getFromResource("static/index.html")
       } ~ {
         getFromResourceDirectory("static")
       }
-    } ~ (post & path("/login")){
-      val future: Future[Done] = Future{println(extractRequest); Done}
-      onSuccess(future) {
-        _ => complete("tokenAA11")
+    }, post {
+      path("login") {
+        entity(as[Login]){
+          l => complete(s"Tutto ok. User:${l.username}, psw:${l.password}")
+        }
       }
-      future
-      complete("tokenAA11")
-    }
+    })
 
   val webSocketRequestHandler: HttpRequest => HttpResponse = {
 
@@ -100,3 +108,4 @@ object RouteManager {
       .onComplete(_ => system.terminate()) // and shutdown when done
   }
 }
+
