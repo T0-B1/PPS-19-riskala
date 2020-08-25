@@ -25,6 +25,7 @@ const store = new Vuex.Store({
     login(state, newState) {
       state.isLogged = true;
       localStorage.riskalaToken = newState.token;
+      localStorage.riskalaUser = newState.user;
       state.http = Axios.create({
         timeout: 10000,
         headers: { token: newState.token },
@@ -33,6 +34,7 @@ const store = new Vuex.Store({
     logout(state) {
       state.isLogged = false;
       localStorage.riskalaToken = 'InvalidToken';
+      localStorage.riskalaUser = '';
       state.http = Axios.create({
         timeout: 10000,
         headers: { token: 'InvalidToken' },
@@ -47,7 +49,8 @@ if (localStorage.riskalaToken === undefined) {
 
 if (localStorage.riskalaToken !== 'InvalidToken') {
   const t = localStorage.riskalaToken;
-  store.commit('login', { token: t});
+  const u = localStorage.riskalaUser;
+  store.commit('login', { token: t, user: u });
   /*store.state.http.get('api/checkOldToken')
     .then((res) => {
       if (res.data !== 'Ok') {
