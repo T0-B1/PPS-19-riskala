@@ -18,12 +18,6 @@ import scala.concurrent.Future
 import scala.concurrent.duration._
 import spray.json.DefaultJsonProtocol
 
-
-case class Login(username: String, password: String)
-object LoginJsonSupport extends DefaultJsonProtocol with SprayJsonSupport {
-  implicit val LoginFormats = jsonFormat2(Login)
-}
-
 object RouteManager {
 
   implicit val system = ActorSystem("my-system")
@@ -43,7 +37,13 @@ object RouteManager {
     }, post {
       path("login") {
         entity(as[Login]){
-          l => complete(s"Tutto ok. User:${l.username}, psw:${l.password}")
+          l => {
+            val oToken = AuthManager.login(l)
+            if(oToken.nonEmpty)
+              complete(s"Token: ${oToken.get}")
+            else
+              complete("Nope")
+          }
         }
       }
     })
