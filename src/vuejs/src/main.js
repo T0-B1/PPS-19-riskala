@@ -51,6 +51,12 @@ if (localStorage.riskalaToken !== 'InvalidToken') {
   const t = localStorage.riskalaToken;
   const u = localStorage.riskalaUser;
   store.commit('login', { token: t, user: u });
+  store.state.http.post('login', { username: u, password: '' })
+  .then((response) => {
+    store.commit('login', { token: response.data , user: u });
+  }).catch(() => {
+    store.commit('logout');
+  });
 } else {
   store.commit('logout');
 }
