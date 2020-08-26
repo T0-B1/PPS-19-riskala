@@ -36,8 +36,11 @@ export default {
           const token = response.data;
           const user = dataToStore.username;
           this.$store.commit('login', { token: token, user: user });
+          //TODO: open socket
+          //se socket è aperta -> vai a lobby
           this.$router.push('/')
         }).catch((error) => {
+          this.$store.commit('logout');
           if (error.response) {
             if (error.response.status === 404) {
               console.log("User already exists");

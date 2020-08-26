@@ -77,18 +77,17 @@ export default {
       if(username.length != 0 && psw.length != 0 ) {
           this.$store.state.http.post('login', { username: username, password: psw })
           .then((response) => {
-            console.log("Welcome user: "+ username)
             const t = response.data;
             this.$store.commit('login', { token: t, user: username });
+            //TODO: open socket
+            //se socket è aperta -> vai a lobby
             this.$router.push('/');
           }).catch((error) => {
-            console.log("error: "+error)
+            this.$store.commit('logout');
             if (error.response) {
               if (error.response.status === 404) {
-                //this.$root.$emit('openModalError', 'unauthorizedTitle', 'unauthorized');
                 console.log("Invalid credentials");
               } else {
-                //this.$root.$emit('openModalError', 'internal_server_errorTitle', 'internal_server_error');
                 console.log("Internal server error!");
               }
             }
