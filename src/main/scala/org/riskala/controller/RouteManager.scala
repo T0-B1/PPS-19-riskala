@@ -6,7 +6,7 @@ import akka.actor.typed.ActorRef
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.AttributeKeys.webSocketUpgrade
 import akka.http.scaladsl.model.HttpMethods.GET
-import akka.http.scaladsl.model.{HttpRequest, HttpResponse, StatusCodes, Uri}
+import akka.http.scaladsl.model.{HttpHeader, HttpRequest, HttpResponse, StatusCodes, Uri}
 import akka.http.scaladsl.model.ws.{BinaryMessage, Message, TextMessage}
 import akka.http.scaladsl.server.Directives._
 import akka.stream.{CompletionStrategy, OverflowStrategy}
@@ -33,15 +33,19 @@ object RouteManager {
         getFromResourceDirectory("static")
       }
     }, post {
-      path("login") {
-        entity(as[Login]) {
-          l => {
-            val optToken = AuthManager.login(l)
-            if (optToken.nonEmpty)
-              complete(200, optToken.get)
-            else
-              complete(404, "User not found")
+      headerValue(extractTokenHeader) {
+        token => complete(token)
+      } ~ {
+        path("login") {
+          entity(as[Login]) {
+            l => {
+              val optToken = AuthManager.login(l)
+              if (optToken.nonEmpty)
+                complete(200, optToken.get)
+              else
+                complete(404, "User not found")
 
+            }
           }
         }
       } ~ {
@@ -117,6 +121,11 @@ object RouteManager {
     websocketBindingFuture
       .flatMap(_.unbind()) // trigger unbinding from the port
       .onComplete(_ => system.terminate()) // and shutdown when done
+  }
+
+  def extractTokenHeader: HttpHeader => Option[String] = {
+    case HttpHeader("token", value) if AuthManager.checkToken(value) => Some(value)
+    //case _ => None
   }
 }
 

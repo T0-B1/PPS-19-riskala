@@ -47,5 +47,9 @@ object AuthManager {
     println(claim)
     Jwt.encode(claim, secretKey, jwtAlgorithm)
   }
+
+  def checkToken(token: String): Boolean = {
+    Jwt.isValid(token, secretKey, Seq(jwtAlgorithm))
+  }
 }
 
