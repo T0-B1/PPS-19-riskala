@@ -33,19 +33,16 @@ object RouteManager {
         getFromResourceDirectory("static")
       }
     }, post {
-      headerValue(extractTokenHeader) {
-        token => complete(token)
-      } ~ {
-        path("login") {
-          entity(as[Login]) {
-            l => {
-              val optToken = AuthManager.login(l)
-              if (optToken.nonEmpty)
-                complete(200, optToken.get)
-              else
-                complete(404, "User not found")
-
-            }
+      path("login") {
+        headerValue(extractTokenHeader) {
+          token => complete(200,token)
+        } ~ entity(as[Login]) {
+          l => {
+            val optToken = AuthManager.login(l)
+            if (optToken.nonEmpty)
+              complete(200, optToken.get)
+            else
+              complete(404, "User not found")
           }
         }
       } ~ {
@@ -125,7 +122,7 @@ object RouteManager {
 
   def extractTokenHeader: HttpHeader => Option[String] = {
     case HttpHeader("token", value) if AuthManager.checkToken(value) => Some(value)
-    //case _ => None
+    case _ => None
   }
 }
 
