@@ -26,7 +26,6 @@ object AuthManager {
   private val accountList: List[Account] = lines.decodeOption[List[Account]].getOrElse(List.empty)
 
   private var credential: HashMap[String,Account] = HashMap()
-  //HashMap("Test"->"1234","Giordo"->"1234","NarcAle"->"1234")
   accountList.foreach(acc=> credential = credential+(acc.username->acc))
   def login(l: Login): Option[String] = {
     credential get l.username flatMap(acc => if(acc.password == l.password) Some(genToken(l)) else None)

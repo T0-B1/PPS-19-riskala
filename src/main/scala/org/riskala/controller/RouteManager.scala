@@ -4,7 +4,6 @@ import akka.Done
 import akka.actor.ActorSystem
 import akka.actor.typed.ActorRef
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.http.scaladsl.model.AttributeKeys.webSocketUpgrade
 import akka.http.scaladsl.model.HttpMethods.GET
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse, StatusCodes, Uri}
@@ -16,7 +15,6 @@ import akka.stream.typed.scaladsl.ActorSource
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
-import spray.json.DefaultJsonProtocol
 
 object RouteManager {
 
@@ -40,7 +38,7 @@ object RouteManager {
           l => {
             val optToken = AuthManager.login(l)
             if (optToken.nonEmpty)
-              complete(200, s"Token: ${optToken.get}")
+              complete(200, optToken.get)
             else
               complete(404, "User not found")
 
@@ -52,7 +50,7 @@ object RouteManager {
             r => {
               val optToken = AuthManager.register(r)
               if (optToken.nonEmpty)
-                complete(200, s"Token: ${optToken.get}")
+                complete(200, optToken.get)
               else
                 complete(404, "User already exists")
             }
