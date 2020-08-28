@@ -41,6 +41,8 @@ dependencies {
     testImplementation 'org.scalatest:scalatest_2.13:3.1.2'
     testImplementation 'org.scalatestplus:junit-4-12_2.13:3.1.2.0'
 
+    testImplementation 'com.typesafe.akka:akka-actor-testkit-typed_2.13:2.6.8'
+
     testRuntimeOnly 'org.scala-lang.modules:scala-xml_2.13:1.2.0'
 }
 
