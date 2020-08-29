@@ -13,9 +13,11 @@ import akka.stream.{CompletionStrategy, OverflowStrategy}
 import akka.stream.scaladsl.{Flow, Sink, Source}
 import akka.stream.typed.scaladsl.ActorSource
 
+import scala.Int
 import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.io.StdIn
+import scala.util.Try
 
 object Main extends App {
 
@@ -23,6 +25,15 @@ object Main extends App {
 
   // needed for the future flatMap/onComplete in the end
   implicit val executionContext = system.dispatcher
+
+  val PORT: Int = System.getProperty("server.port") match {
+    case port if Try(port.toInt).isSuccess => port.toInt
+    case _ => 8080
+  }
+  val SOCKET_PORT = System.getProperty("server.socketPort") match {
+    case port if Try(port.toInt).isSuccess => port.toInt
+    case _ => 8081
+  }
 
   val staticResourcesHandler =
     (get & pathPrefix("")){
@@ -77,14 +88,14 @@ object Main extends App {
           Nil
       }
 
-  val staticContentBindingFuture = Http().newServerAt("localhost", 8080).bindFlow(staticResourcesHandler)
-  val websocketBindingFuture = Http().newServerAt("localhost", 8081)
+  val staticContentBindingFuture = Http().newServerAt("localhost", PORT).bindFlow(staticResourcesHandler)
+  val websocketBindingFuture = Http().newServerAt("localhost", SOCKET_PORT)
     .adaptSettings(_.mapWebsocketSettings(
         _.withPeriodicKeepAliveMode("pong")
          .withPeriodicKeepAliveMaxIdle(1.second)))
     .bindSync(webSocketRequestHandler)
 
-  println(s"Server online at http://localhost:8080/\nPress RETURN to stop...")
+  println(s"Server online at http://localhost:$PORT/ websocket@$SOCKET_PORT\nPress RETURN to stop...")
   StdIn.readLine() // let it run until user presses return
 
   staticContentBindingFuture
