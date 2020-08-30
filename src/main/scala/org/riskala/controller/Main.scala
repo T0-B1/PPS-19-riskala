@@ -56,7 +56,7 @@ object Main extends App {
 
   def sink(sender: String): Sink[Message, Future[Done]] = Sink.foreach(m => println(s"Received $m from $sender"))
 
-  val staticContentBindingFuture = Http().newServerAt("localhost", PORT)
+  val staticContentBindingFuture = Http().newServerAt("0.0.0.0", PORT)
     .adaptSettings(_.mapWebsocketSettings(
       _.withPeriodicKeepAliveMode("pong")
        .withPeriodicKeepAliveMaxIdle(1.second)))
