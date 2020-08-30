@@ -26,7 +26,7 @@ case class MapImpl(override val name:String,
    * @param state the state of wich we need to know his neighbors
    * @return a list of state that are neighbor with our state
    */
-  override def neighbor(state: State): List[State] = bridges collect {
+  override def getNeighbors(state: State): List[State] = bridges collect {
     case Bridge(s1,s2,_) if s1 == state => s2
     case Bridge(s1,s2,_) if s2 == state => s1
   }

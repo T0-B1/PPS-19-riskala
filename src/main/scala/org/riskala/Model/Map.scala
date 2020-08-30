@@ -18,7 +18,7 @@ trait Map {
    * @param state the state of wich we need to know his neighbors
    * @return a list of state that are neighbor with our state
    */
-  def neighbor(state:State): List[State]
+  def getNeighbors(state:State): List[State]
 
   /**
    * check if two state are neighbors
