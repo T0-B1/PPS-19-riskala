@@ -19,9 +19,11 @@ task copyFrontendToResources(type: Copy) {
     into "$projectDir/src/main/resources/static"
 }
 
-build {
-    dependsOn 'copyFrontendToResources'
+jar {
+    dependsOn copyFrontendToResources
 }
+
+processResources.mustRunAfter(copyFrontendToResources)
 
 shadowJar {
   append 'reference.conf'
