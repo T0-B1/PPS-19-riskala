@@ -30,10 +30,6 @@ object Main extends App {
     case port if Try(port.toInt).isSuccess => port.toInt
     case _ => 8080
   }
-  val SOCKET_PORT = System.getProperty("server.socketPort") match {
-    case port if Try(port.toInt).isSuccess => port.toInt
-    case _ => 8081
-  }
 
   val requestHandler =
     (get & pathPrefix("")){
