@@ -44,25 +44,6 @@ object Main extends App {
       }
     } ~ websocketRoute
 
-  val webSocketRequestHandler: HttpRequest => HttpResponse = {
-
-    case req @ HttpRequest(GET, Uri.Path("/websocket"), _, _, _) =>
-      req.attribute(webSocketUpgrade) match {
-        case Some(upgrade) => req.uri.query().get("token") match {
-          case Some(token) => {
-            //upgrade.handleMessages(webSocketHandler(token))
-            val (sourceActor, newSource) = source.preMaterialize()
-            upgrade.handleMessagesWithSinkSource(sink(token), newSource)
-          }
-          case None => HttpResponse(400, entity = "Missing token!")
-        }
-        case None => HttpResponse(400, entity = "Not a valid websocket request!")
-      }
-    case r: HttpRequest =>
-      r.discardEntityBytes() // important to drain incoming HTTP Entity stream
-      HttpResponse(404, entity = "Unknown resource!")
-  }
-
   val websocketRoute =
     (get & path("websocket") & parameter("token")) { token =>
       val authSink = sink(token)
