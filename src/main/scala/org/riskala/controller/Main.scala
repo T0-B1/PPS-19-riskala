@@ -31,6 +31,12 @@ object Main extends App {
     case _ => 8080
   }
 
+  val websocketRoute =
+    (get & path("websocket") & parameter("token")) { token =>
+      val authSink = sink(token)
+      handleWebSocketMessages(Flow.fromSinkAndSource(authSink, source))
+    }
+
   val requestHandler =
     (get & pathPrefix("")){
       (pathEndOrSingleSlash & redirectToTrailingSlashIfMissing(StatusCodes.TemporaryRedirect)) {
@@ -39,12 +45,6 @@ object Main extends App {
         getFromResourceDirectory("static")
       }
     } ~ websocketRoute
-
-  val websocketRoute =
-    (get & path("websocket") & parameter("token")) { token =>
-      val authSink = sink(token)
-      handleWebSocketMessages(Flow.fromSinkAndSource(authSink, source))
-    }
 
   val source: Source[Message, ActorRef[Message]] = ActorSource.actorRef[Message](completionMatcher = {
     case _ => CompletionStrategy.immediately
