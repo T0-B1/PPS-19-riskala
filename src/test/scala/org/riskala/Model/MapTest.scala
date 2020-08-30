@@ -19,9 +19,9 @@ class MapTest extends AnyWordSpec {
 
   "Map neighbors" should {
     "give a list of neighbors" in {
-      assert(map.neighbor(ita).contains(fra))
-      assert(map.neighbor(ita).contains(swi))
-      assert(map.neighbor(spa).contains(fra))
+      assert(map.getNeighbors(ita).contains(fra))
+      assert(map.getNeighbors(ita).contains(swi))
+      assert(map.getNeighbors(spa).contains(fra))
     }
 
     "check if two states are neighbors" in {
