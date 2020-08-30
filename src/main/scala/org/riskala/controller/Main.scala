@@ -35,14 +35,14 @@ object Main extends App {
     case _ => 8081
   }
 
-  val staticResourcesHandler =
+  val requestHandler =
     (get & pathPrefix("")){
       (pathEndOrSingleSlash & redirectToTrailingSlashIfMissing(StatusCodes.TemporaryRedirect)) {
         getFromResource("static/index.html")
       } ~ {
         getFromResourceDirectory("static")
       }
-    }
+    } ~ websocketRoute
 
   val webSocketRequestHandler: HttpRequest => HttpResponse = {
 
@@ -75,7 +75,7 @@ object Main extends App {
 
   def sink(sender: String): Sink[Message, Future[Done]] = Sink.foreach(m => println(s"Received $m from $sender"))
 
-  val staticContentBindingFuture = Http().newServerAt("localhost", PORT).bindFlow(staticResourcesHandler)
+  val staticContentBindingFuture = Http().newServerAt("localhost", PORT).bindFlow(requestHandler)
   val websocketBindingFuture = Http().newServerAt("localhost", SOCKET_PORT)
     .adaptSettings(_.mapWebsocketSettings(
         _.withPeriodicKeepAliveMode("pong")
