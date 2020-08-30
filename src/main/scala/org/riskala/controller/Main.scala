@@ -80,19 +80,11 @@ object Main extends App {
       _.withPeriodicKeepAliveMode("pong")
        .withPeriodicKeepAliveMaxIdle(1.second)))
     .bindFlow(requestHandler)
-  val websocketBindingFuture = Http().newServerAt("localhost", SOCKET_PORT)
-    .adaptSettings(_.mapWebsocketSettings(
-        _.withPeriodicKeepAliveMode("pong")
-         .withPeriodicKeepAliveMaxIdle(1.second)))
-    .bindSync(webSocketRequestHandler)
 
   println(s"Server online at http://localhost:$PORT/ websocket@$SOCKET_PORT\nPress RETURN to stop...")
   StdIn.readLine() // let it run until user presses return
 
   staticContentBindingFuture
-    .flatMap(_.unbind()) // trigger unbinding from the port
-    .onComplete(_ => system.terminate()) // and shutdown when done
-  websocketBindingFuture
     .flatMap(_.unbind()) // trigger unbinding from the port
     .onComplete(_ => system.terminate()) // and shutdown when done
 
