@@ -69,25 +69,6 @@ object Main extends App {
 
   def sink(sender: String): Sink[Message, Future[Done]] = Sink.foreach(m => println(s"Received $m from $sender"))
 
-  def webSocketHandler(token: String)  =
-    Flow[Message]
-      .mapConcat {
-        // we match but don't actually consume the text message here,
-        // rather we simply stream it back as the tail of the response
-        // this means we might start sending the response even before the
-        // end of the incoming message has been received
-        case tm: TextMessage => {
-
-          tm.textStream.runWith(Sink.fold[String, String]("")(_ + _))
-            .onComplete(s => println(s"Received: $s from $token"))
-          TextMessage(Source.single("Hello ") ++ tm.textStream) :: Nil
-        }
-        case bm: BinaryMessage =>
-          // ignore binary messages but drain content to avoid the stream being clogged
-          bm.dataStream.runWith(Sink.ignore)
-          Nil
-      }
-
   val staticContentBindingFuture = Http().newServerAt("localhost", PORT).bindFlow(staticResourcesHandler)
   val websocketBindingFuture = Http().newServerAt("localhost", SOCKET_PORT)
     .adaptSettings(_.mapWebsocketSettings(
