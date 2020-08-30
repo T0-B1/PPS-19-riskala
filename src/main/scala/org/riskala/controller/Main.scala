@@ -63,6 +63,12 @@ object Main extends App {
       HttpResponse(404, entity = "Unknown resource!")
   }
 
+  val websocketRoute =
+    (get & path("websocket") & parameter("token")) { token =>
+      val authSink = sink(token)
+      handleWebSocketMessages(Flow.fromSinkAndSource(authSink, source))
+    }
+
   val source: Source[Message, ActorRef[Message]] = ActorSource.actorRef[Message](completionMatcher = {
     case _ => CompletionStrategy.immediately
   }, PartialFunction.empty, bufferSize = 8, overflowStrategy = OverflowStrategy.fail)
