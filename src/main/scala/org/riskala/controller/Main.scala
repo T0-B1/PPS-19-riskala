@@ -62,11 +62,6 @@ object Main extends App {
        .withPeriodicKeepAliveMaxIdle(1.second)))
     .bindFlow(requestHandler)
 
-  println(s"Server online at http://localhost:$PORT/ websocket@$SOCKET_PORT\nPress RETURN to stop...")
-  StdIn.readLine() // let it run until user presses return
-
-  staticContentBindingFuture
-    .flatMap(_.unbind()) // trigger unbinding from the port
-    .onComplete(_ => system.terminate()) // and shutdown when done
+  println(s"Server online at port $PORT \n...")
 
 }
