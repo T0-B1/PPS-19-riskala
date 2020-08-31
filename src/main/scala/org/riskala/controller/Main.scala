@@ -6,10 +6,8 @@ object Main extends App {
 
   val route = RouteManager
 
-  println(s"Server online at http://localhost:8080/\nEnter 'exit' to stop...")
-  while(StdIn.readLine() != "exit"){
-    println("Maybe you want to 'exit'")
-  } // let it run until user type exit
+  println(s"Server online at http://localhost:8080/\nPress enter to stop...")
+  StdIn.readLine()
   route.exit()
 
 }
