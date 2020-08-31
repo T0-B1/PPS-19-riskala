@@ -1,5 +1,6 @@
 package org.riskala.Model
 
+import argonaut.Argonaut._
 
 /** Account structure
  *
@@ -8,3 +9,7 @@ package org.riskala.Model
  * @param email          email
  */
 case class Account(username: String, password: String, email: String)
+object Account {
+  implicit def BridgeCodecJson =
+    casecodec3(Account.apply,Account.unapply)("username","password","email")
+}
