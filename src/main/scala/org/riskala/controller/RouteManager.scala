@@ -3,62 +3,28 @@ package org.riskala.controller
 import akka.Done
 import akka.actor.ActorSystem
 import akka.actor.typed.ActorRef
-import akka.http.scaladsl.Http
+import akka.http.scaladsl.{Http, server}
 import akka.http.scaladsl.model.AttributeKeys.webSocketUpgrade
 import akka.http.scaladsl.model.HttpMethods.GET
-import akka.http.scaladsl.model.{HttpHeader, HttpRequest, HttpResponse, StatusCodes, Uri}
+import akka.http.scaladsl.model.{HttpRequest, HttpResponse, Uri}
 import akka.http.scaladsl.model.ws.{BinaryMessage, Message, TextMessage}
 import akka.http.scaladsl.server.Directives._
 import akka.stream.{CompletionStrategy, OverflowStrategy}
 import akka.stream.scaladsl.{Flow, Sink, Source}
 import akka.stream.typed.scaladsl.ActorSource
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContextExecutor, Future}
 import scala.concurrent.duration._
 
 object RouteManager {
 
-  implicit val system = ActorSystem("my-system")
+  implicit val system: ActorSystem = ActorSystem("my-system")
 
   // needed for the future flatMap/onComplete in the end
-  implicit val executionContext = system.dispatcher
+  implicit val executionContext: ExecutionContextExecutor = system.dispatcher
 
-  import LoginJsonSupport._
-
-  val staticResourcesHandler = concat(
-    (get & pathPrefix("")){
-      (pathEndOrSingleSlash & redirectToTrailingSlashIfMissing(StatusCodes.TemporaryRedirect)) {
-        getFromResource("static/index.html")
-      } ~ {
-        getFromResourceDirectory("static")
-      }
-    }, post {
-      path("login") {
-        headerValue(extractTokenHeader) {
-          token => complete(200,token)
-        } ~ entity(as[Login]) {
-          l => {
-            val optToken = AuthManager.login(l)
-            if (optToken.nonEmpty)
-              complete(200, optToken.get)
-            else
-              complete(404, "User not found")
-          }
-        }
-      } ~ {
-        path("register") {
-          entity(as[Register]) {
-            r => {
-              val optToken = AuthManager.register(r)
-              if (optToken.nonEmpty)
-                complete(200, optToken.get)
-              else
-                complete(404, "User already exists")
-            }
-          }
-        }
-      }
-    })
+  import Path._
+  val staticResourcesHandler: server.Route = concat(staticContent,loginPath,registrationPath,redirectHome)
 
   val webSocketRequestHandler: HttpRequest => HttpResponse = {
 
@@ -120,9 +86,5 @@ object RouteManager {
       .onComplete(_ => system.terminate()) // and shutdown when done
   }
 
-  def extractTokenHeader: HttpHeader => Option[String] = {
-    case HttpHeader("token", value) if AuthManager.checkToken(value) => Some(value)
-    case _ => None
-  }
 }
 
