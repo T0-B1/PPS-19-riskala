@@ -10,10 +10,10 @@ object LobbyManager {
 
   case class Lobby(rooms: List[String], games: List[String], terminatedGames: List[String])
 
-  var subscribers: Set[ActorRef[PlayerMessage]] = Set.empty
-  var rooms: HashMap[String, (ActorRef[RoomMessage], RoomBasicInfo)] = HashMap.empty
-  var games: HashMap[String, ActorRef[GameMessage]] = HashMap.empty
-  var terminatedGames: HashMap[String, (ActorRef[GameMessage], Boolean)] = HashMap.empty
+  private var subscribers: Set[ActorRef[PlayerMessage]] = Set.empty
+  private var rooms: HashMap[String, (ActorRef[RoomMessage], RoomBasicInfo)] = HashMap.empty
+  private var games: HashMap[String, ActorRef[GameMessage]] = HashMap.empty
+  private var terminatedGames: HashMap[String, (ActorRef[GameMessage], Boolean)] = HashMap.empty
 
   def getInfo(): PlayerMessage = {
 
@@ -64,7 +64,11 @@ object LobbyManager {
         }
         Behaviors.same
 
-      case StartGame(name, actor) => ???
+      case StartGame(name, actor) =>
+        rooms = rooms - name
+        games = games + (name -> actor)
+        notifyAllSubscribers()
+        Behaviors.same
 
       case EndGame(name, game) =>
         terminatedGames = terminatedGames + (name -> (game, true))
