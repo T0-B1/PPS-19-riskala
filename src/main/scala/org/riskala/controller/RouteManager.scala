@@ -23,15 +23,13 @@ object RouteManager {
   // needed for the future flatMap/onComplete in the end
   implicit val executionContext: ExecutionContextExecutor = system.dispatcher
 
-  val staticResourcesHandler: Route = concat(staticContent,loginPath,registrationPath,redirectHome)
-
-  val webSocketRequestHandler: Route = websocketRoute
+  val allRoutes: Route = concat(staticContent,loginPath,registrationPath,redirectHome, websocketRoute)
 
   val staticContentBindingFuture: Future[Http.ServerBinding] = Http().newServerAt("0.0.0.0", PORT)
     .adaptSettings(_.mapWebsocketSettings(
       _.withPeriodicKeepAliveMode("pong")
         .withPeriodicKeepAliveMaxIdle(1.second)))
-    .bindFlow(staticResourcesHandler)
+    .bindFlow(allRoutes)
 
   println(s"Server online at port $PORT \n...")
 
