@@ -13,13 +13,15 @@ import akka.stream.typed.scaladsl.ActorSource
 import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.util.Try
+import scala.io.StdIn
 
 object Main extends App {
 
-  implicit val system = ActorSystem("my-system")
+  val route = RouteManager
 
-  // needed for the future flatMap/onComplete in the end
-  implicit val executionContext = system.dispatcher
+  println(s"Server online at http://localhost:8080/\nPress enter to stop...")
+  StdIn.readLine()
+  route.exit()
 
   val PORT: Int = System.getProperty("server.port") match {
     case port if Try(port.toInt).isSuccess => port.toInt

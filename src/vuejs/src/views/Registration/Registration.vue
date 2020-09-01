@@ -9,7 +9,6 @@
                 <div class="card-title mb-4">
                   <h3 class="titleReg">Registrazione</h3>
                 </div>
-
                 <div class="row">
                   <div class="col-12">
                     <hr/>
@@ -30,9 +29,9 @@
                                 placeholder="Inserisci username"
                                 aria-describedby="user-help-block"
                               ></b-form-input>
-                              <!--<b-form-text id="user-help-block" v-show="!correctUser">
+                              <b-form-text id="user-help-block" v-show="!correctUser">
                                 Questo username è già in uso
-                              </b-form-text>-->
+                              </b-form-text>
                             </div>
                           </div>
                           <hr/>
@@ -50,9 +49,9 @@
                                 placeholder="Inserisci email"
                                 aria-describedby="email-help-block"
                               ></b-form-input>
-                              <!--<b-form-text id="email-help-block" v-show="!correctEmail">
+                              <b-form-text id="email-help-block" v-show="!correctEmail">
                                 Questa email è già in uso
-                              </b-form-text>-->
+                              </b-form-text>
                             </div>
                           </div>
                           <hr/>
@@ -95,7 +94,7 @@
                           
                           <hr/>
                           <div class="text-center buttonsDiv">
-                            <b-button variant="outline-primary" type="submit">
+                            <b-button role="button" variant="outline-primary" type="submit">
                               Registrami</b-button> 
                           </div>
                       </div>

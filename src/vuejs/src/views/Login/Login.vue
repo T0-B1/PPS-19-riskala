@@ -6,20 +6,19 @@
       tag="article"
       class="cardLogin"
     >
-      <!--<img src="../../assets/ecology.png" class="loginImg" alt="logo"/>-->
       <b-form @submit="onSubmit" class="formIns">
         <div class="grey-text">
           <b-form-group
             id="input-group-email"
-            label="Email:"
+            label="Username:"
             label-for="input-email"
           >
             <b-form-input
               id="input-email"
-              v-model="form.email"
-              type="email"
+              v-model="form.username"
+              type="text"
               required
-              placeholder="Inserisci email"
+              placeholder="Inserisci username"
               aria-describedby="email-help-block"
             ></b-form-input>
           </b-form-group>
@@ -42,13 +41,11 @@
           </b-form-group>
         </div>
         <div class="text-center buttonsDiv block">
-          <router-link to='/' aria-label="home">
-            <b-button role="button" variant="outline-primary"  type="submit">Login</b-button>
-          </router-link>
+          <b-button role="button" variant="outline-primary" type="submit">Login</b-button>
         </div>
       </b-form>
       <hr />
-      <span class="disabled">Non sei ancora registrato?   </span>
+      <span class="disabled">Non sei ancora registrato?</span>
       <router-link to='registration' aria-label="registration"
         class="text-center buttonsDiv" style="text-decoration:none; margin-bottom:30px;">
         <b-button role="button" variant="outline-primary">
@@ -60,12 +57,13 @@
 </template>
 
 <script>
+
 export default {
   name: 'login',
   data() {
     return {
       form: {
-        email: '',
+        username: '',
         password: '',
       },
     };
@@ -73,26 +71,28 @@ export default {
   methods: {
     onSubmit(evt) {
       evt.preventDefault();
-      /*const mail = this.form.email;
+      const username = this.form.username;
       const psw = this.form.password;
 
-      this.$store.state.http.post('api/auth', { email: mail, key: psw })
-        .then((response) => {
-          const t = response.data.token.toString();
-          const u = response.data.user.toString();
-          this.$store.commit('login', { token: t, user: u });
-          this.$router.push('/meals');
-        }).catch((error) => {
-          if (error.response) {
-            if (error.response.status === 401) {
-              this.$root.$emit('openModalError', 'unauthorizedTitle', 'unauthorized');
-            } else {
-              this.$root.$emit('openModalError', 'internal_server_errorTitle', 'internal_server_error');
+      if(username.length != 0 && psw.length != 0 ) {
+          this.$store.state.http.post('login', { username: username, password: psw })
+          .then((response) => {
+            const t = response.data;
+            this.$store.commit('login', { token: t, user: username });
+            //TODO: open socket
+            //se socket è aperta -> vai a lobby
+            this.$router.push('/');
+          }).catch((error) => {
+            this.$store.commit('logout');
+            if (error.response) {
+              if (error.response.status === 404) {
+                console.log("Invalid credentials");
+              } else {
+                console.log("Internal server error!");
+              }
             }
-          } else {
-            this.$root.$emit('openModalError', 'noAnswerTitle', 'noAnswer');
-          }
-        });*/
+          });
+      }
     },
     changeType() {
       const t = document.getElementById('input-password').type;
