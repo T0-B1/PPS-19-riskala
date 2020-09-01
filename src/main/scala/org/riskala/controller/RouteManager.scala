@@ -2,14 +2,13 @@ package org.riskala.controller
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.{Http, server}
-import akka.http.scaladsl.model.AttributeKeys.webSocketUpgrade
-import akka.http.scaladsl.model.HttpMethods.GET
-import akka.http.scaladsl.model.{HttpRequest, HttpResponse, Uri}
 import akka.http.scaladsl.server.Directives._
+import akka.http.scaladsl.server.Route
 import scala.concurrent.{ExecutionContextExecutor, Future}
 import scala.concurrent.duration._
 import org.riskala.controller.routes.RestRoutes._
 import org.riskala.controller.routes.WebsocketRoute._
+
 import scala.util.Try
 
 object RouteManager {
@@ -24,11 +23,11 @@ object RouteManager {
   // needed for the future flatMap/onComplete in the end
   implicit val executionContext: ExecutionContextExecutor = system.dispatcher
 
-  val staticResourcesHandler: server.Route = concat(staticContent,loginPath,registrationPath,redirectHome)
+  val staticResourcesHandler: Route = concat(staticContent,loginPath,registrationPath,redirectHome)
 
-  val webSocketRequestHandler: server.Route = websocketRoute
+  val webSocketRequestHandler: Route = websocketRoute
 
-  val staticContentBindingFuture = Http().newServerAt("0.0.0.0", PORT)
+  val staticContentBindingFuture: Future[Http.ServerBinding] = Http().newServerAt("0.0.0.0", PORT)
     .adaptSettings(_.mapWebsocketSettings(
       _.withPeriodicKeepAliveMode("pong")
         .withPeriodicKeepAliveMaxIdle(1.second)))
