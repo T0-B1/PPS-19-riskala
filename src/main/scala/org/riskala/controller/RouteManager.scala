@@ -14,18 +14,16 @@ import scala.util.Try
 object RouteManager {
 
   implicit val system = ActorSystem("riskala")
+  implicit val executionContext: ExecutionContextExecutor = system.dispatcher
 
   val PORT: Int = System.getProperty("server.port") match {
     case port if Try(port.toInt).isSuccess => port.toInt
     case _ => 8080
   }
 
-  // needed for the future flatMap/onComplete in the end
-  implicit val executionContext: ExecutionContextExecutor = system.dispatcher
-
   val allRoutes: Route = concat(staticContent,loginPath,registrationPath,redirectHome, websocketRoute)
 
-  val staticContentBindingFuture: Future[Http.ServerBinding] = Http().newServerAt("0.0.0.0", PORT)
+  val serverBindingFuture: Future[Http.ServerBinding] = Http().newServerAt("0.0.0.0", PORT)
     .adaptSettings(_.mapWebsocketSettings(
       _.withPeriodicKeepAliveMode("pong")
         .withPeriodicKeepAliveMaxIdle(1.second)))
@@ -34,7 +32,7 @@ object RouteManager {
   println(s"Server online at port $PORT \n...")
 
   def exit():Unit = {
-    staticContentBindingFuture
+    serverBindingFuture
       .flatMap(_.unbind()) // trigger unbinding from the port
       .onComplete(_ => system.terminate()) // and shutdown when done
 
