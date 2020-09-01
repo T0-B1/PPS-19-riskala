@@ -1,9 +1,8 @@
 package org.riskala.Model
 
 import akka.actor.typed.scaladsl.Behaviors
-import akka.actor.typed.Behavior
+import akka.actor.typed.{ActorRef, Behavior}
 import ModelMessages._
-import akka.actor.ActorRef
 
 import scala.collection.immutable.HashMap
 
@@ -11,10 +10,10 @@ object LobbyManager {
 
   case class Lobby(rooms: List[String], games: List[String], terminatedGames: List[String])
 
-  var subscribers: Set[ActorRef] = Set.empty
-  var rooms: HashMap[String, (ActorRef, RoomBasicInfo)] = HashMap.empty
-  var games: HashMap[String, ActorRef] = HashMap.empty
-  var terminatedGames: HashMap[String, (ActorRef, Boolean)] = HashMap.empty
+  var subscribers: Set[ActorRef[PlayerMessage]] = Set.empty
+  var rooms: HashMap[String, (ActorRef[RoomMessage], RoomBasicInfo)] = HashMap.empty
+  var games: HashMap[String, ActorRef[GameMessage]] = HashMap.empty
+  var terminatedGames: HashMap[String, (ActorRef[GameMessage], Boolean)] = HashMap.empty
 
   def apply(): Behavior[LobbyMessage] = Behaviors.receive { (context, message) =>
     message match {
@@ -34,7 +33,9 @@ object LobbyManager {
 
       case EmptyRoom(roomName) => ???
 
-      case Logout(actor) => ???
+      case Logout(actor) =>
+        subscribers = subscribers - actor
+        Behaviors.same
     }
   }
 }
