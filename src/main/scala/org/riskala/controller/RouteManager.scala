@@ -21,7 +21,7 @@ object RouteManager {
     case _ => 8080
   }
 
-  val allRoutes: Route = concat(staticContent,loginPath,registrationPath,redirectHome, websocketRoute)
+  val allRoutes: Route = concat(staticContent, loginPath, registrationPath, websocketRoute, redirectHome)
 
   val serverBindingFuture: Future[Http.ServerBinding] = Http().newServerAt("0.0.0.0", PORT)
     .adaptSettings(_.mapWebsocketSettings(
