@@ -73,9 +73,14 @@ object LobbyManager {
       case EndGame(name, game) =>
         terminatedGames = terminatedGames + (name -> (game, true))
         games = games - name
+        notifyAllSubscribers()
         Behaviors.same
 
-      case GameClosed(name, subscribers) => ???
+      case GameClosed(name, subs) =>
+        terminatedGames = terminatedGames + (name -> (terminatedGames(name)._1, false))
+        subscribers = subscribers ++ subs
+        notifyAllSubscribers()
+        Behaviors.same
 
       case UpdateRoomInfo(info) =>
         rooms = rooms + (info.name -> (rooms(info.name)._1, info))
