@@ -11,7 +11,7 @@ import akka.stream.typed.scaladsl.ActorSource
 
 import scala.concurrent.Future
 
-object WebocketRoute {
+object WebsocketRoute {
 
   val websocketRoute: Route =
     (get & path("websocket") & parameter("token")) { token =>
