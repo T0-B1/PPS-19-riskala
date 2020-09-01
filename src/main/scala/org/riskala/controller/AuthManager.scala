@@ -4,7 +4,7 @@ import java.io.InputStream
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import org.riskala.Model.Account
-import spray.json.DefaultJsonProtocol
+import spray.json.{DefaultJsonProtocol, RootJsonFormat}
 
 import scala.collection.immutable.HashMap
 import pdi.jwt.{Jwt, JwtAlgorithm}
@@ -13,8 +13,8 @@ import argonaut.Argonaut._
 case class Login(username: String, password: String)
 case class Register(username: String, password: String, email: String)
 object LoginJsonSupport extends DefaultJsonProtocol with SprayJsonSupport {
-  implicit val LoginFormats = jsonFormat2(Login)
-  implicit val RegisterFormats = jsonFormat3(Register)
+  implicit val LoginFormats: RootJsonFormat[Login] = jsonFormat2(Login)
+  implicit val RegisterFormats: RootJsonFormat[Register] = jsonFormat3(Register)
 }
 
 object AuthManager {
@@ -22,7 +22,7 @@ object AuthManager {
   private val jwtAlgorithm = JwtAlgorithm.HS256
 
   private val stream: InputStream = getClass.getResourceAsStream("/account.txt")
-  private val lines: String = scala.io.Source.fromInputStream( stream ).getLines.foldLeft("")(_+_)
+  private val lines: String = scala.io.Source.fromInputStream( stream ).getLines().foldLeft("")(_+_)
   private val accountList: List[Account] = lines.decodeOption[List[Account]].getOrElse(List.empty)
 
   private var credential: HashMap[String,Account] = HashMap()
