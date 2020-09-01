@@ -37,6 +37,7 @@ dependencies {
     implementation 'com.typesafe.akka:akka-stream_2.13:2.6.8'
     implementation 'com.typesafe.akka:akka-stream-typed_2.13:2.6.8'
     implementation 'io.argonaut:argonaut_2.13:6.3.0'
+    implementation 'org.slf4j:slf4j-simple1.7.25'
 
     testImplementation 'junit:junit:null'
     testImplementation 'org.scalatest:scalatest_2.13:3.1.2'
