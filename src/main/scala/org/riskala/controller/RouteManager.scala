@@ -77,19 +77,12 @@ object RouteManager {
       }
 
   val staticContentBindingFuture = Http().newServerAt("localhost", 8080).bindFlow(staticResourcesHandler)
-  val websocketBindingFuture = Http().newServerAt("localhost", 8081)
-    .adaptSettings(_.mapWebsocketSettings(
-      _.withPeriodicKeepAliveMode("pong")
-        .withPeriodicKeepAliveMaxIdle(1.second)))
-    .bindSync(webSocketRequestHandler)
 
   def exit():Unit = {
     staticContentBindingFuture
       .flatMap(_.unbind()) // trigger unbinding from the port
       .onComplete(_ => system.terminate()) // and shutdown when done
-    websocketBindingFuture
-      .flatMap(_.unbind()) // trigger unbinding from the port
-      .onComplete(_ => system.terminate()) // and shutdown when done
+
   }
 
 }
