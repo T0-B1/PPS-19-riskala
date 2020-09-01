@@ -8,6 +8,8 @@ import akka.http.scaladsl.model.{HttpRequest, HttpResponse, Uri}
 import akka.http.scaladsl.server.Directives._
 import scala.concurrent.{ExecutionContextExecutor, Future}
 import scala.concurrent.duration._
+import org.riskala.controller.routes.RestRoutes._
+import org.riskala.controller.routes.WebsocketRoute._
 import scala.util.Try
 
 object RouteManager {
@@ -22,7 +24,6 @@ object RouteManager {
   // needed for the future flatMap/onComplete in the end
   implicit val executionContext: ExecutionContextExecutor = system.dispatcher
 
-  import org.riskala.controller.routes.RestRoutes._
   val staticResourcesHandler: server.Route = concat(staticContent,loginPath,registrationPath,redirectHome)
 
   val webSocketRequestHandler: HttpRequest => HttpResponse = {
