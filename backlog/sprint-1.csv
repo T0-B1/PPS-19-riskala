@@ -1,0 +1,30 @@
+Product Backlog Item;Sprint Task;Volunteer;Initial estimate of Effort;Remaining Effort
+Design architetturale di massima del sistema;;;;
+;Design componenti di base;Tutti;150;0
+;Ricerca tecnologia adatta alla gestione del frontend;Alessandro;5;0
+;Ricerca e studio patterns;Alessandro;10;0
+;Design sistema eventi;Alessandro;5;0
+;Design struttura dati mappe;Andrea;5;0
+;Ricerca e studio tecnologia adatta per la serializzazione;Andrea;10;0
+;Ricerca e studio patterns;Alessia;5;0
+;Design interfaccia grafica;Alessia;5;0
+Creazione interfaccia di base;;;;
+;Implementazione GUI ;Alessia;15;0
+;Protocollo di comunicazione Model ;Alessia;5;0
+;Protocollo di comunicazione Model;Andrea;5;0
+;Layer di comunicazione;Alessandro;20;0
+Gestione accounts;;;;
+;Login lato server;Andrea;10;0
+;Registrazione lato;Andrea;5;0
+;Login lato client;Alessia;5;0
+;Registrazione lato client;Alessia;5;0
+Gestione Lobby;;;;
+;Definizione messaggi LobbyMessage;Andrea;10;0
+;Implementazione LobbyManager;Andrea;30;25
+Gestione Room;;;;
+;Definizione messaggi RoomMessage;Alessia;5;0
+;Implementazione RoomManager;Alessia;20;15
+CI/CD;;;;
+;Gestione build frontend tramite node;Alessandro;5;0
+;Gestione cross-compilation in scala.js;Alessandro;5;5
+
