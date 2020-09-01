@@ -15,10 +15,16 @@ import akka.stream.typed.scaladsl.ActorSource
 
 import scala.concurrent.{ExecutionContextExecutor, Future}
 import scala.concurrent.duration._
+import scala.util.Try
 
 object RouteManager {
 
   implicit val system: ActorSystem = ActorSystem("my-system")
+
+  val PORT: Int = System.getProperty("server.port") match {
+    case port if Try(port.toInt).isSuccess => port.toInt
+    case _ => 8080
+  }
 
   // needed for the future flatMap/onComplete in the end
   implicit val executionContext: ExecutionContextExecutor = system.dispatcher

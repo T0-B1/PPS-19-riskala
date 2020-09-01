@@ -21,11 +21,6 @@ object Main extends App {
 
   val route = RouteManager
 
-  val PORT: Int = System.getProperty("server.port") match {
-    case port if Try(port.toInt).isSuccess => port.toInt
-    case _ => 8080
-  }
-
   val websocketRoute =
     (get & path("websocket") & parameter("token")) { token =>
       val authSink = sink(token)
