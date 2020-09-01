@@ -51,31 +51,6 @@ object RouteManager {
       HttpResponse(404, entity = "Unknown resource!")
   }
 
-  val source: Source[Message, ActorRef[Message]] = ActorSource.actorRef[Message](completionMatcher = {
-    case _ => CompletionStrategy.immediately
-  }, PartialFunction.empty, bufferSize = 8, overflowStrategy = OverflowStrategy.fail)
-
-  def sink(sender: String): Sink[Message, Future[Done]] = Sink.foreach(m => println(s"Received $m from $sender"))
-
-  def webSocketHandler(token: String)  =
-    Flow[Message]
-      .mapConcat {
-        // we match but don't actually consume the text message here,
-        // rather we simply stream it back as the tail of the response
-        // this means we might start sending the response even before the
-        // end of the incoming message has been received
-        case tm: TextMessage => {
-
-          tm.textStream.runWith(Sink.fold[String, String]("")(_ + _))
-            .onComplete(s => println(s"Received: $s from $token"))
-          TextMessage(Source.single("Hello ") ++ tm.textStream) :: Nil
-        }
-        case bm: BinaryMessage =>
-          // ignore binary messages but drain content to avoid the stream being clogged
-          bm.dataStream.runWith(Sink.ignore)
-          Nil
-      }
-
   val staticContentBindingFuture = Http().newServerAt("0.0.0.0", PORT)
     .adaptSettings(_.mapWebsocketSettings(
       _.withPeriodicKeepAliveMode("pong")
