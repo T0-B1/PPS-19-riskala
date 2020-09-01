@@ -31,7 +31,9 @@ object LobbyManager {
 
       case UpdateRoomInfo(info) => ???
 
-      case EmptyRoom(roomName) => ???
+      case EmptyRoom(roomName) =>
+        rooms = rooms - roomName
+        Behaviors.same
 
       case Logout(actor) =>
         subscribers = subscribers - actor
