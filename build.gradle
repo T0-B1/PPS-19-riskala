@@ -33,16 +33,14 @@ dependencies {
 
     implementation 'org.scala-lang:scala-library:2.13.3'
     implementation 'com.typesafe.akka:akka-http_2.13:10.2.0'
+    implementation 'com.typesafe.akka:akka-actor-typed_2.13:2.6.8'
     implementation 'com.typesafe.akka:akka-stream_2.13:2.6.8'
     implementation 'com.typesafe.akka:akka-stream-typed_2.13:2.6.8'
-    implementation 'com.typesafe.akka:akka-actor-typed_2.13:2.6.8'
-
     implementation 'io.argonaut:argonaut_2.13:6.3.0'
 
     testImplementation 'junit:junit:null'
     testImplementation 'org.scalatest:scalatest_2.13:3.1.2'
     testImplementation 'org.scalatestplus:junit-4-12_2.13:3.1.2.0'
-
     testImplementation 'com.typesafe.akka:akka-actor-testkit-typed_2.13:2.6.8'
 
     testRuntimeOnly 'org.scala-lang.modules:scala-xml_2.13:1.2.0'
