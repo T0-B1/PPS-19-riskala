@@ -25,7 +25,10 @@ object LobbyManager {
 
       case StartGame(name, actor) => ???
 
-      case EndGame(name, game) => ???
+      case EndGame(name, game) =>
+        terminatedGames = terminatedGames + (name -> (game, true))
+        games = games - name
+        Behaviors.same
 
       case GameClosed(name, subscribers) => ???
 
