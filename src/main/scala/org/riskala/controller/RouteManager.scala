@@ -23,7 +23,7 @@ object RouteManager {
   // needed for the future flatMap/onComplete in the end
   implicit val executionContext: ExecutionContextExecutor = system.dispatcher
 
-  import org.riskala.controller.paths.Path._
+  import org.riskala.controller.paths.RestPaths._
   val staticResourcesHandler: server.Route = concat(staticContent,loginPath,registrationPath,redirectHome)
 
   val webSocketRequestHandler: HttpRequest => HttpResponse = {
