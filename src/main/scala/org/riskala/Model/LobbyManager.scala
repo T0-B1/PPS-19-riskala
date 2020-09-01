@@ -28,11 +28,11 @@ object LobbyManager {
     new PlayerMessage {}
   }
 
-  def notifyAllSubscribers(): Unit = {
+  def notifyAllSubscribers(): Behavior[LobbyMessage] = {
     subscribers.foreach(s => s ! getInfo())
+    Behaviors.same
   }
-
-
+  
   def apply(): Behavior[LobbyMessage] = Behaviors.receive { (context, message) =>
     message match {
       case Subscribe(subscriber) =>
@@ -52,7 +52,6 @@ object LobbyManager {
           creator ! new PlayerMessage {}
         }
         notifyAllSubscribers()
-        Behaviors.same
 
       case JoinTo(actor, name) =>
         if (rooms.contains(name)) {
@@ -68,27 +67,24 @@ object LobbyManager {
         rooms = rooms - name
         games = games + (name -> actor)
         notifyAllSubscribers()
-        Behaviors.same
 
       case EndGame(name, game) =>
         terminatedGames = terminatedGames + (name -> (game, true))
         games = games - name
         notifyAllSubscribers()
-        Behaviors.same
 
       case GameClosed(name, subs) =>
         terminatedGames = terminatedGames + (name -> (terminatedGames(name)._1, false))
         subscribers = subscribers ++ subs
         notifyAllSubscribers()
-        Behaviors.same
 
       case UpdateRoomInfo(info) =>
         rooms = rooms + (info.name -> (rooms(info.name)._1, info))
-        Behaviors.same
+        notifyAllSubscribers()
 
       case EmptyRoom(roomName) =>
         rooms = rooms - roomName
-        Behaviors.same
+        notifyAllSubscribers()
 
       case Logout(actor) =>
         subscribers = subscribers - actor
