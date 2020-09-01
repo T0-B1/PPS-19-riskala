@@ -17,11 +17,9 @@ import scala.io.StdIn
 
 object Main extends App {
 
-  val route = RouteManager
+  implicit val system = ActorSystem("riskala")
 
-  println(s"Server online at http://localhost:8080/\nPress enter to stop...")
-  StdIn.readLine()
-  route.exit()
+  val route = RouteManager
 
   val PORT: Int = System.getProperty("server.port") match {
     case port if Try(port.toInt).isSuccess => port.toInt
@@ -56,5 +54,9 @@ object Main extends App {
     .bindFlow(requestHandler)
 
   println(s"Server online at port $PORT \n...")
+
+  println(s"Server online at http://localhost:8080/\nPress enter to stop...")
+  StdIn.readLine()
+  route.exit()
 
 }
