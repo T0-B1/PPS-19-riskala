@@ -1,9 +1,9 @@
-package org.riskala.controller
+package org.riskala.controller.paths
 
 import akka.http.scaladsl.model.{HttpHeader, StatusCodes}
-import akka.http.scaladsl.server.Directives._
-import LoginJsonSupport._
 import akka.http.scaladsl.server
+import akka.http.scaladsl.server.Directives.{as, complete, entity, get, getFromResource, getFromResourceDirectory, headerValue, path, pathEndOrSingleSlash, pathPrefix, post, redirectToTrailingSlashIfMissing}
+import org.riskala.controller.{AuthManager, Login, Register}
 
 object Path {
   //TODO add comment
