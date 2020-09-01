@@ -76,7 +76,13 @@ object RouteManager {
           Nil
       }
 
-  val staticContentBindingFuture = Http().newServerAt("localhost", 8080).bindFlow(staticResourcesHandler)
+  val staticContentBindingFuture = Http().newServerAt("0.0.0.0", PORT)
+    .adaptSettings(_.mapWebsocketSettings(
+      _.withPeriodicKeepAliveMode("pong")
+        .withPeriodicKeepAliveMaxIdle(1.second)))
+    .bindFlow(staticResourcesHandler)
+
+  println(s"Server online at port $PORT \n...")
 
   def exit():Unit = {
     staticContentBindingFuture
