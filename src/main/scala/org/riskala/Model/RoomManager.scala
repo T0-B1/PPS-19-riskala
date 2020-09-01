@@ -4,11 +4,11 @@ import akka.actor.typed.{ActorRef, Behavior}
 import akka.actor.typed.scaladsl.Behaviors
 import org.riskala.Model.ModelMessages._
 
-import scala.collection.immutable.HashMap
+import scala.collection.immutable.{HashMap, HashSet}
 
 object RoomManager {
-  var subscribersRoom: Set[ActorRef[_]] = Set.empty
-  var readyPlayerList: HashMap[String,ActorRef[_]] = HashMap.empty
+  var subscribersRoom: HashSet[ActorRef[PlayerMessage]] = HashSet.empty
+  var readyPlayerList: HashMap[String,ActorRef[PlayerMessage]] = HashMap.empty
 
   def apply(): Behavior[RoomMessage] = {
     Behaviors.receive { (context, message) =>
@@ -21,8 +21,10 @@ object RoomManager {
         case UnReady(playerName, actor) => ???
 
         case Ready(playerName, actor) => ???
-          
-        case Logout(actor) => ???
+
+        case Logout(actor) =>
+          subscribersRoom = subscribersRoom - actor
+          Behaviors.same
 
       }
     }
