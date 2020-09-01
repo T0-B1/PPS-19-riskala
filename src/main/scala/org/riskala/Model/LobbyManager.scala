@@ -15,9 +15,25 @@ object LobbyManager {
   var games: HashMap[String, ActorRef[GameMessage]] = HashMap.empty
   var terminatedGames: HashMap[String, (ActorRef[GameMessage], Boolean)] = HashMap.empty
 
+  def getInfo(): PlayerMessage = {
+
+    val roomList: List[String] = rooms.map(kv => kv._1 + " "
+      + kv._2._2.actualNumberOfPlayer
+      + " / " + kv._2._2.maxNumberOfPlayer).toList
+    val gameList: List[String] = games.keys.toList
+    val terminatedGameList: List[String] = terminatedGames.keys.toList
+    Lobby(roomList, gameList, terminatedGameList)
+
+    //TODO: return playerMessage
+    new PlayerMessage {}
+  }
+
   def apply(): Behavior[LobbyMessage] = Behaviors.receive { (context, message) =>
     message match {
-      case Subscribe(subscriber) => ???
+      case Subscribe(subscriber) =>
+        subscribers = subscribers + subscriber
+        subscriber ! getInfo()
+        Behaviors.same
 
       case CreateRoom(creator, roomInfo) => ???
 
@@ -45,4 +61,5 @@ object LobbyManager {
         Behaviors.same
     }
   }
+
 }

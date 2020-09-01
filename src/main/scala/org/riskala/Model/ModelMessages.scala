@@ -75,7 +75,7 @@ object ModelMessages {
 
   sealed trait RoomMessage
 
-  sealed trait PlayerMessage
+  trait PlayerMessage
 
   sealed trait LogoutMessage extends LobbyMessage with GameMessage with RoomMessage
 
