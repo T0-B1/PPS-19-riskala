@@ -1,18 +1,11 @@
 package org.riskala.controller
 
-import akka.Done
 import akka.actor.ActorSystem
-import akka.actor.typed.ActorRef
 import akka.http.scaladsl.{Http, server}
 import akka.http.scaladsl.model.AttributeKeys.webSocketUpgrade
 import akka.http.scaladsl.model.HttpMethods.GET
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse, Uri}
-import akka.http.scaladsl.model.ws.{BinaryMessage, Message, TextMessage}
 import akka.http.scaladsl.server.Directives._
-import akka.stream.{CompletionStrategy, OverflowStrategy}
-import akka.stream.scaladsl.{Flow, Sink, Source}
-import akka.stream.typed.scaladsl.ActorSource
-
 import scala.concurrent.{ExecutionContextExecutor, Future}
 import scala.concurrent.duration._
 import scala.util.Try
