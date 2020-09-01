@@ -51,11 +51,18 @@ object LobbyManager {
           //TODO: Errore stanza già presente.
           creator ! new PlayerMessage {}
         }
-
         notifyAllSubscribers()
         Behaviors.same
 
-      case JoinTo(actor, name) => ???
+      case JoinTo(actor, name) =>
+        if (rooms.contains(name)) {
+          subscribers = subscribers - actor
+          rooms.get(name).head._1 ! new RoomMessage {}
+        } else {
+          //TODO: Errore stanza non trovata.
+          actor ! new PlayerMessage {}
+        }
+        Behaviors.same
 
       case StartGame(name, actor) => ???
 

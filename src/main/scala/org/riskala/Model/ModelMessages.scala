@@ -71,9 +71,9 @@ object ModelMessages {
    * */
   case class EmptyRoom(roomName: String) extends LobbyMessage
 
-  sealed trait GameMessage
+  trait GameMessage
 
-  sealed trait RoomMessage
+  trait RoomMessage
 
   trait PlayerMessage
 
