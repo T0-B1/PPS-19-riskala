@@ -28,6 +28,11 @@ object LobbyManager {
     new PlayerMessage {}
   }
 
+  def notifyAllSubscribers(): Unit = {
+    subscribers.foreach(s => s ! getInfo())
+  }
+
+
   def apply(): Behavior[LobbyMessage] = Behaviors.receive { (context, message) =>
     message match {
       case Subscribe(subscriber) =>
@@ -35,7 +40,20 @@ object LobbyManager {
         subscriber ! getInfo()
         Behaviors.same
 
-      case CreateRoom(creator, roomInfo) => ???
+      case CreateRoom(creator, roomInfo) =>
+        if (!rooms.contains(roomInfo.basicInfo.name)) {
+          //TODO: spawn RoomManager and send Join msg
+          //val room = context.spawn(RoomManager(roomInfo),"RoomManager")
+          //room ! Join(creator)
+          //TODO: swap null with room
+          rooms = rooms + (roomInfo.basicInfo.name -> (null, roomInfo.basicInfo))
+        } else {
+          //TODO: Errore stanza già presente.
+          creator ! new PlayerMessage {}
+        }
+
+        notifyAllSubscribers()
+        Behaviors.same
 
       case JoinTo(actor, name) => ???
 
