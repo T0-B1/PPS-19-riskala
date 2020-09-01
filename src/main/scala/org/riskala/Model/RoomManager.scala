@@ -21,6 +21,8 @@ object RoomManager {
         case UnReady(playerName, actor) => ???
 
         case Ready(playerName, actor) => ???
+          
+        case Logout(actor) => ???
 
       }
     }
