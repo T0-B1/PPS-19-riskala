@@ -26,24 +26,7 @@ object RouteManager {
 
   val staticResourcesHandler: server.Route = concat(staticContent,loginPath,registrationPath,redirectHome)
 
-  val webSocketRequestHandler: HttpRequest => HttpResponse = {
-
-    case req @ HttpRequest(GET, Uri.Path("/websocket"), _, _, _) =>
-      req.attribute(webSocketUpgrade) match {
-        case Some(upgrade) => req.uri.query().get("token") match {
-          case Some(token) => {
-            //upgrade.handleMessages(webSocketHandler(token))
-            val (sourceActor, newSource) = source.preMaterialize()
-            upgrade.handleMessagesWithSinkSource(sink(token), newSource)
-          }
-          case None => HttpResponse(400, entity = "Missing token!")
-        }
-        case None => HttpResponse(400, entity = "Not a valid websocket request!")
-      }
-    case r: HttpRequest =>
-      r.discardEntityBytes() // important to drain incoming HTTP Entity stream
-      HttpResponse(404, entity = "Unknown resource!")
-  }
+  val webSocketRequestHandler: server.Route = websocketRoute
 
   val staticContentBindingFuture = Http().newServerAt("0.0.0.0", PORT)
     .adaptSettings(_.mapWebsocketSettings(
