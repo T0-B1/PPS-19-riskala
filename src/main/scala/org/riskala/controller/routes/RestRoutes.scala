@@ -1,11 +1,11 @@
-package org.riskala.controller.paths
+package org.riskala.controller.routes
 
 import akka.http.scaladsl.model.{HttpHeader, StatusCodes}
 import akka.http.scaladsl.server
 import akka.http.scaladsl.server.Directives._
 import org.riskala.controller.{AuthManager, Login, Register}
 
-object RestPaths {
+object RestRoutes {
   //TODO add comment
 
   val staticContent: server.Route = (get & pathPrefix("")){
