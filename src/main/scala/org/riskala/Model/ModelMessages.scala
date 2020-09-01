@@ -44,7 +44,8 @@ object ModelMessages {
   case class JoinTo(actor: ActorRef[PlayerMessage], name: String) extends LobbyMessage
 
   /** Message sent when a room has reached the max number of player
-   * @param actors             The list of actors who will play a game
+   * @param name              The name of the room in which i will play a game
+   * @param actor             The actor who will play a game
    * */
   case class StartGame(name: String, actor: ActorRef[GameMessage]) extends LobbyMessage
 
