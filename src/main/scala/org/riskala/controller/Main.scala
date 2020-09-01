@@ -17,8 +17,6 @@ import scala.io.StdIn
 
 object Main extends App {
 
-  implicit val system = ActorSystem("riskala")
-
   val route = RouteManager
 
   val websocketRoute =

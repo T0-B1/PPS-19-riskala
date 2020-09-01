@@ -19,7 +19,7 @@ import scala.util.Try
 
 object RouteManager {
 
-  implicit val system: ActorSystem = ActorSystem("my-system")
+  implicit val system = ActorSystem("riskala")
 
   val PORT: Int = System.getProperty("server.port") match {
     case port if Try(port.toInt).isSuccess => port.toInt
