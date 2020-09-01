@@ -40,13 +40,7 @@ object Main extends App {
 
   def sink(sender: String): Sink[Message, Future[Done]] = Sink.foreach(m => println(s"Received $m from $sender"))
 
-  val staticContentBindingFuture = Http().newServerAt("0.0.0.0", PORT)
-    .adaptSettings(_.mapWebsocketSettings(
-      _.withPeriodicKeepAliveMode("pong")
-       .withPeriodicKeepAliveMaxIdle(1.second)))
-    .bindFlow(requestHandler)
 
-  println(s"Server online at port $PORT \n...")
 
   println(s"Server online at http://localhost:8080/\nPress enter to stop...")
   StdIn.readLine()
