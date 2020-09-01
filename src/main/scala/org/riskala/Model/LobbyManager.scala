@@ -29,7 +29,9 @@ object LobbyManager {
 
       case GameClosed(name, subscribers) => ???
 
-      case UpdateRoomInfo(info) => ???
+      case UpdateRoomInfo(info) =>
+        rooms = rooms + (info.name -> (rooms(info.name)._1, info))
+        Behaviors.same
 
       case EmptyRoom(roomName) =>
         rooms = rooms - roomName
