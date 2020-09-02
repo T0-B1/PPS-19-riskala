@@ -18,7 +18,6 @@ class AuthTest extends AnyWordSpec with Matchers with BeforeAndAfter with Scalat
   val properties: Properties = new Properties()
 
   before{
-    println("BEFORE EXECUTED")
     val path = "/test.properties"
     val url = getClass.getResource(path)
     if (url != null)
@@ -40,7 +39,7 @@ class AuthTest extends AnyWordSpec with Matchers with BeforeAndAfter with Scalat
         login(properties.get("testAccountUsername").toString, properties.get("testAccountPassword").toString)
       }
       "not be able to register again" in {
-
+        register(properties.get("testAccountUsername").toString, properties.get("testAccountPassword").toString, properties.get("testAccountPassword").toString)
       }
     }
     "logged" should {
