@@ -7,7 +7,7 @@ import org.riskala.Model.Account
 import spray.json.{DefaultJsonProtocol, RootJsonFormat}
 
 import scala.collection.immutable.HashMap
-import pdi.jwt.{Jwt, JwtAlgorithm}
+import pdi.jwt.{Jwt, JwtAlgorithm, JwtBase64}
 import argonaut.Argonaut._
 
 case class Login(username: String, password: String)
@@ -50,6 +50,14 @@ object AuthManager {
 
   def checkToken(token: String): Boolean = {
     Jwt.isValid(token, secretKey, Seq(jwtAlgorithm))
+  }
+
+  def getUser(token: String): Option[String] = {
+    // Matches anything between two dots
+    """(?<=\.)(.*?)(?=\.)""".r.findFirstIn(token) match {
+      case Some(claim) => Some(JwtBase64.decode(claim).map(_.toChar).mkString)
+      case _ => None
+    }
   }
 }
 
