@@ -5,10 +5,11 @@ import java.io.InputStream
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import org.riskala.Model.Account
 import spray.json.{DefaultJsonProtocol, RootJsonFormat}
-
 import scala.collection.immutable.HashMap
 import pdi.jwt.{Jwt, JwtAlgorithm, JwtBase64}
 import argonaut.Argonaut._
+import LoginJsonSupport._
+import spray.json._
 
 case class Login(username: String, password: String)
 case class Register(username: String, password: String, email: String)
@@ -41,10 +42,7 @@ object AuthManager {
   }
 
   private def genToken(l: Login): String = {
-    import LoginJsonSupport._
-    import spray.json._
     val claim = l.toJson.prettyPrint
-    println(claim)
     Jwt.encode(claim, secretKey, jwtAlgorithm)
   }
 
