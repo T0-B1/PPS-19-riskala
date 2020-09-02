@@ -66,7 +66,7 @@ object RoomManager {
           roomInfo.basicInfo.actualNumberOfPlayer -= 1
           val newSubscribers = subscribersRoom + actor
           notifyUpdateRoomInfo(newReady, newSubscribers, lobby)
-          Behaviors.same
+          roomManager(newSubscribers, newReady, roomInfo,lobby)
 
         case Ready(playerName, actor) => ???
 
