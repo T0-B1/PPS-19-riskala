@@ -29,7 +29,11 @@ object RoomManager {
     Behaviors.receive { (context, message) =>
       message match {
 
-        case Join(actor) => ???
+        case Join(actor) =>
+          val newSubscriber = subscribersRoom + actor
+          //TODO: change into info
+          actor ! new PlayerMessage {}
+          roomManager(newSubscriber, readyPlayerList, roomInfo)
 
         case Leave(actor) => ???
 
