@@ -21,6 +21,16 @@ object RoomManager {
     roomManager(HashSet.empty, HashMap.empty, roomInfo, lobby)
   }
 
+  def notifyUpdateRoomInfo(newReady: HashMap[String,ActorRef[PlayerMessage]],
+                           newSubscribers: HashSet[ActorRef[PlayerMessage]],
+                          lobby: ActorRef[LobbyMessage]): Unit = {
+    //TODO: change new PlayerMessage into info
+    newReady.foreach(rp => rp._2 ! new PlayerMessage {})
+    newSubscribers. foreach(s => s ! new PlayerMessage {})
+    //TODO: UpdateRoomInfo(info.basicInfo)
+    lobby ! new LobbyMessage {}
+  }
+
   def roomManager(subscribersRoom: HashSet[ActorRef[PlayerMessage]],
                   readyPlayerList: HashMap[String,ActorRef[PlayerMessage]],
                   roomInfo: RoomInfo,
@@ -50,7 +60,13 @@ object RoomManager {
           }
           roomManager(newSubscriber, readyPlayerList, roomInfo, lobby)
 
-        case UnReady(playerName, actor) => ???
+        case UnReady(playerName, actor) =>
+          val newReady = readyPlayerList - playerName
+          //Update actualNumberPlayer
+          roomInfo.basicInfo.actualNumberOfPlayer -= 1
+          val newSubscribers = subscribersRoom + actor
+          notifyUpdateRoomInfo(newReady, newSubscribers, lobby)
+          Behaviors.same
 
         case Ready(playerName, actor) => ???
 
