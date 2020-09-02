@@ -19,40 +19,51 @@ class LobbyTest extends AnyWordSpec with BeforeAndAfterAll {
   val probeJoin2: TestProbe[PlayerMessage] = testKit.createTestProbe[PlayerMessage]("probeJoin2")
   val probeJoin3: TestProbe[PlayerMessage] = testKit.createTestProbe[PlayerMessage]("probeJoin3")
 
-  lobby ! Subscribe(probeSub.ref)
-  probeSub.expectMessageType[PlayerMessage]
-  lobby ! Logout(probeSub.ref)
-  probeSub.expectNoMessage()
+  "Subscribe to Lobby" should {
+    "give Lobby info" in {
+      lobby ! Subscribe(probeSub.ref)
+      probeSub.expectMessageType[PlayerMessage]
+      lobby ! Logout(probeSub.ref)
+      probeSub.expectNoMessage()
+    }
+  }
 
-  lobby ! Subscribe(probeCreate.ref)
-  lobby ! Subscribe(probeCreate2.ref)
-  probeCreate.expectMessageType[PlayerMessage]
-  probeCreate2.expectMessageType[PlayerMessage]
-  lobby ! CreateRoom(probeCreate.ref, RoomInfo(RoomBasicInfo("Europa", 0, 4), ""))
-  probeCreate.expectNoMessage()
-  probeCreate2.expectMessageType[PlayerMessage]
-  lobby ! Logout(probeCreate2.ref)
+  "Creation of a Room in Lobby" should {
+    "create the Room and give Lobby info to subs" in {
+      lobby ! Subscribe(probeCreate.ref)
+      lobby ! Subscribe(probeCreate2.ref)
+      probeCreate.expectMessageType[PlayerMessage]
+      probeCreate2.expectMessageType[PlayerMessage]
+      lobby ! CreateRoom(probeCreate.ref, RoomInfo(RoomBasicInfo("Europa", 0, 4), ""))
+      probeCreate.expectNoMessage()
+      probeCreate2.expectMessageType[PlayerMessage]
+      lobby ! Logout(probeCreate2.ref)
+      probeCreate2.expectNoMessage()
+    }
+  }
 
-  println("FIN QUI TUTTO OK")
-
-  lobby ! Subscribe(probeJoin.ref)
-  probeJoin.expectMessageType[PlayerMessage]
-  lobby ! Subscribe(probeJoin2.ref)
-  probeJoin2.expectMessageType[PlayerMessage]
-  lobby ! Subscribe(probeJoin3.ref)
-  probeJoin3.expectMessageType[PlayerMessage]
-
-  lobby ! CreateRoom(probeJoin.ref, RoomInfo(RoomBasicInfo("Usa", 0, 6), ""))
-  probeJoin.expectNoMessage()
-  //probeJoin2.expectMessageType[PlayerMessage]
-  //probeJoin3.expectMessageType[PlayerMessage]
-
-
-  lobby ! JoinTo(probeJoin2.ref, "Usa")
-  probeJoin2.expectNoMessage()
-
-  //probeJoin3.expectNoMessage()
-  lobby ! JoinTo(probeJoin3.ref, "America")
-  //probeJoin3.expectMessageType[PlayerMessage]
-
+  "Join a Room from Lobby" should {
+    "remove from Lobby and update info" in {
+      lobby ! Subscribe(probeJoin.ref)
+      lobby ! Subscribe(probeJoin2.ref)
+      lobby ! Subscribe(probeJoin3.ref)
+      probeJoin.expectMessageType[PlayerMessage]
+      probeJoin2.expectMessageType[PlayerMessage]
+      probeJoin3.expectMessageType[PlayerMessage]
+      //probe create room
+      lobby ! CreateRoom(probeJoin.ref, RoomInfo(RoomBasicInfo("Usa", 0, 6), ""))
+      probeJoin.expectNoMessage()
+      probeJoin2.expectMessageType[PlayerMessage]
+      probeJoin3.expectMessageType[PlayerMessage]
+      //probe2 join
+      lobby ! JoinTo(probeJoin2.ref, "Usa")
+      probeJoin2.expectNoMessage()
+      probeJoin3.expectNoMessage()
+      //probe3 try join and receive error response
+      lobby ! JoinTo(probeJoin3.ref, "America")
+      probeJoin3.expectMessageType[PlayerMessage]
+      lobby ! Logout(probeJoin3.ref)
+      probeJoin3.expectNoMessage()
+    }
+  }
 }
