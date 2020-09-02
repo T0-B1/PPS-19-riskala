@@ -24,22 +24,26 @@ object LobbyManager {
                        nextTerminatedGames: HashMap[String, (ActorRef[GameMessage], Boolean)] = terminatedGames
                       ): Behavior[LobbyMessage] = lobbyManager(nextSubscribers,nextRooms,nextGames,nextTerminatedGames)
 
-      def getInfo: PlayerMessage = {
-        val roomList: List[String] = rooms.map(kv => kv._1 + " "
+      def getInfo(nextRooms: HashMap[String, (ActorRef[RoomMessage], RoomBasicInfo)] = rooms,
+                  nextGames: HashMap[String, ActorRef[GameMessage]] = games,
+                  nextTerminatedGames: HashMap[String, (ActorRef[GameMessage], Boolean)] = terminatedGames
+                 ): PlayerMessage = {
+        val roomList: List[String] = nextRooms.map(kv => kv._1 + " "
           + kv._2._2.actualNumberOfPlayer
           + " / " + kv._2._2.maxNumberOfPlayer).toList
-        val gameList: List[String] = games.keys.toList
-        val terminatedGameList: List[String] = terminatedGames.keys.toList
+        val gameList: List[String] = nextGames.keys.toList
+        val terminatedGameList: List[String] = nextTerminatedGames.keys.toList
         Lobby(roomList, gameList, terminatedGameList)
         println("GOT-INFO")
         //TODO: return playerMessage
         new PlayerMessage {}
       }
 
-      def notifyAllSubscribers(): Unit = {
-        subscribers.foreach(s => {
+      def notifyAllSubscribers(info: PlayerMessage,
+                               subs: HashSet[ActorRef[PlayerMessage]] = subscribers): Unit = {
+        subs.foreach(s => {
           println("UPDATING " + s)
-          s ! getInfo
+          s ! info
         })
         println("NOTIFIED-ALL")
       }
@@ -48,7 +52,7 @@ object LobbyManager {
         case Subscribe(subscriber) =>
           val newSubs = subscribers + subscriber
           subscriber ! getInfo
-          println("SUB-MSG Subs: " + subscribers)
+          println("SUB-MSG Subs: " + newSubs)
           //lobbyManager(subscribers = newSubs,rooms = rooms,games = games,terminatedGames = terminatedGames)
           nextBehavior(nextSubscribers = newSubs)
 
@@ -59,16 +63,17 @@ object LobbyManager {
             //TODO: spawn RoomManager and send Join msg
             val room = context.spawn(Behaviors.ignore[RoomMessage], "RoomManager")
             //room ! Join(creator)
+            room ! new RoomMessage {}
             //TODO: swap null with room
             newRooms = rooms + (roomInfo.basicInfo.name -> (room, roomInfo.basicInfo))
             newSubs = subscribers - creator
-            println("SUBS: " + subscribers)
+            println("SUBS: " + newSubs)
           } else {
             //TODO: Errore stanza già presente.
             creator ! new PlayerMessage {}
           }
-          println("CREATE DONE, NOTIFYALL")
-          notifyAllSubscribers()
+          println("CREATE DONE, TIME TO NOTIFY ALL")
+          notifyAllSubscribers(getInfo(nextRooms = newRooms),newSubs)
           //lobbyManager(subscribers = newSubs,rooms = newRooms,games = games,terminatedGames = terminatedGames)
           nextBehavior(nextSubscribers = newSubs,nextRooms = newRooms)
 
@@ -91,33 +96,33 @@ object LobbyManager {
         case StartGame(name, actor) =>
           val newRooms = rooms - name
           val newGames = games + (name -> actor)
-          notifyAllSubscribers()
+          notifyAllSubscribers(getInfo(nextRooms = newRooms,nextGames = newGames))
           //lobbyManager(subscribers = subscribers,rooms = newRooms,games = newGames,terminatedGames = terminatedGames)
           nextBehavior(nextRooms = newRooms,nextGames = newGames)
 
         case EndGame(name, game) =>
           val newTerminatedGames = terminatedGames + (name -> (game, true))
           val newGames = games - name
-          notifyAllSubscribers()
+          notifyAllSubscribers(getInfo(nextGames = newGames,nextTerminatedGames = newTerminatedGames))
           //lobbyManager(subscribers = subscribers,rooms = rooms,games = newGames,terminatedGames = newTerminatedGames)
           nextBehavior(nextGames = newGames,nextTerminatedGames = newTerminatedGames)
 
         case GameClosed(name, subs) =>
           val newTerminatedGames = terminatedGames + (name -> (terminatedGames(name)._1, false))
           val newSubs = subscribers ++ subs
-          notifyAllSubscribers()
+          notifyAllSubscribers(getInfo(nextTerminatedGames = newTerminatedGames),newSubs)
           //lobbyManager(subscribers = newSubs,rooms = rooms,games = games,terminatedGames = newTerminatedGames)
           nextBehavior(nextSubscribers = newSubs,nextTerminatedGames = newTerminatedGames)
 
         case UpdateRoomInfo(info) =>
           val newRooms = rooms + (info.name -> (rooms(info.name)._1, info))
-          notifyAllSubscribers()
+          notifyAllSubscribers(getInfo(nextRooms = newRooms))
           //lobbyManager(subscribers = subscribers,rooms = newRooms,games = games,terminatedGames = terminatedGames)
           nextBehavior(nextRooms = newRooms)
 
         case EmptyRoom(roomName) =>
           val newRooms = rooms - roomName
-          notifyAllSubscribers()
+          notifyAllSubscribers(getInfo(nextRooms = newRooms))
           //lobbyManager(subscribers = subscribers,rooms = newRooms,games = games,terminatedGames = terminatedGames)
           nextBehavior(nextRooms = newRooms)
 
