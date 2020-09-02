@@ -21,9 +21,9 @@ object RoomManager {
     roomManager(HashSet.empty, HashMap.empty, roomInfo, lobby)
   }
 
-  def notifyUpdateRoomInfo(newReady: HashMap[String,ActorRef[PlayerMessage]],
-                           newSubscribers: HashSet[ActorRef[PlayerMessage]],
-                          lobby: ActorRef[LobbyMessage]): Unit = {
+  def notifyUpdateRoomInfo(newSubscribers: HashSet[ActorRef[PlayerMessage]],
+                           newReady: HashMap[String,ActorRef[PlayerMessage]],
+                           lobby: ActorRef[LobbyMessage]): Unit = {
     //TODO: change new PlayerMessage into info
     newReady.foreach(rp => rp._2 ! new PlayerMessage {})
     newSubscribers. foreach(s => s ! new PlayerMessage {})
@@ -65,10 +65,25 @@ object RoomManager {
           //Update actualNumberPlayer
           roomInfo.basicInfo.actualNumberOfPlayer -= 1
           val newSubscribers = subscribersRoom + actor
-          notifyUpdateRoomInfo(newReady, newSubscribers, lobby)
+          notifyUpdateRoomInfo(newSubscribers, newReady, lobby)
           roomManager(newSubscribers, newReady, roomInfo,lobby)
 
-        case Ready(playerName, actor) => ???
+        case Ready(playerName, actor) =>
+          //Update actualNumberPlayer
+          roomInfo.basicInfo.actualNumberOfPlayer += 1
+          //Remove the actor from subscribersList
+          val newSubscribers = subscribersRoom - actor
+          //Add the actor into readyPlayerList
+          val newReady = readyPlayerList + (playerName -> actor)
+          notifyUpdateRoomInfo(newSubscribers, newReady, lobby)
+
+          if (roomInfo.basicInfo.actualNumberOfPlayer == roomInfo.basicInfo.maxNumberOfPlayer) {
+            //Game can start
+            //TODO: StartGame(roomInfo.basicInfo.name, context.self.asInstanceOf[ActorRef[_]])
+            lobby ! new LobbyMessage {}
+            //TODO: Change behavior from Room to Game -> GameManager()
+          }
+          roomManager(newSubscribers, newReady, roomInfo,lobby)
 
         case Logout(actor) =>
           val newSubscriber = subscribersRoom - actor
