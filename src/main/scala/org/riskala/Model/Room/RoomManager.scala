@@ -16,10 +16,8 @@ object RoomManager {
   //TODO: to remove
   case class RoomInfo(basicInfo: RoomBasicInfo, scenario: String)
 
-  def apply(roomInfo: RoomInfo, lobby: ActorRef[LobbyMessage]): Behavior[RoomMessage] = {
-
+  def apply(roomInfo: RoomInfo, lobby: ActorRef[LobbyMessage]): Behavior[RoomMessage] =
     roomManager(HashSet.empty, HashMap.empty, roomInfo, lobby)
-  }
 
   def notifyUpdateRoomInfo(newSubscribers: HashSet[ActorRef[PlayerMessage]],
                            newReady: HashMap[String,ActorRef[PlayerMessage]],
@@ -87,7 +85,7 @@ object RoomManager {
 
         case Logout(actor) =>
           val newSubscriber = subscribersRoom - actor
-          Behaviors.same
+          roomManager(newSubscriber, readyPlayerList, roomInfo,lobby)
 
       }
     }
