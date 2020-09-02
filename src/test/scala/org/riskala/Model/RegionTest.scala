@@ -1,8 +1,11 @@
 package org.riskala.Model
 
+import org.junit.runner.RunWith
 import org.riskala.Model.State.State
 import org.scalatest.wordspec.AnyWordSpec
+import org.scalatestplus.junit.JUnitRunner
 
+@RunWith(classOf[JUnitRunner])
 class RegionTest extends AnyWordSpec {
   var listState: List[State] = List("Italy","France","Germany")
 
