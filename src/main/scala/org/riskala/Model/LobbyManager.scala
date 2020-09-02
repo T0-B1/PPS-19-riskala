@@ -34,27 +34,19 @@ object LobbyManager {
         val gameList: List[String] = nextGames.keys.toList
         val terminatedGameList: List[String] = nextTerminatedGames.keys.toList
         Lobby(roomList, gameList, terminatedGameList)
-        println("GOT-INFO")
         //TODO: return playerMessage
         new PlayerMessage {}
       }
 
       def notifyAllSubscribers(info: PlayerMessage,
                                subs: HashSet[ActorRef[PlayerMessage]] = subscribers): Unit = {
-        subs.foreach(s => {
-          println("UPDATING " + s)
-          s ! info
-        })
-        println("NOTIFIED-ALL")
+        subs.foreach(s => s ! info)
       }
 
       message match {
         case Subscribe(subscriber) =>
-          val newSubs = subscribers + subscriber
           subscriber ! getInfo()
-          println("SUB-MSG Subs: " + newSubs)
-          //lobbyManager(subscribers = newSubs,rooms = rooms,games = games,terminatedGames = terminatedGames)
-          nextBehavior(nextSubscribers = newSubs)
+          nextBehavior(nextSubscribers = subscribers + subscriber)
 
         case CreateRoom(creator, roomInfo) =>
           var newRooms: HashMap[String, (ActorRef[RoomMessage], RoomBasicInfo)] = rooms
@@ -67,70 +59,53 @@ object LobbyManager {
             //TODO: swap null with room
             newRooms = rooms + (roomInfo.basicInfo.name -> (room, roomInfo.basicInfo))
             newSubs = subscribers - creator
-            println("SUBS: " + newSubs)
           } else {
             //TODO: Errore stanza già presente.
             creator ! new PlayerMessage {}
           }
-          println("CREATE DONE, TIME TO NOTIFY ALL")
           notifyAllSubscribers(getInfo(nextRooms = newRooms),newSubs)
-          //lobbyManager(subscribers = newSubs,rooms = newRooms,games = games,terminatedGames = terminatedGames)
           nextBehavior(nextSubscribers = newSubs,nextRooms = newRooms)
 
         case JoinTo(actor, name) =>
-          println("received join message")
           var newSubs = subscribers
           if (rooms.contains(name)) {
-            println("found room " + name)
             newSubs = subscribers - actor
             rooms.get(name).head._1 ! new RoomMessage {}
           } else {
             //TODO: Errore stanza non trovata.
-            println("No room found")
             actor ! new PlayerMessage {}
           }
-          println("join message done")
-          //lobbyManager(subscribers = newSubs,rooms = rooms,games = games,terminatedGames = terminatedGames)
           nextBehavior(nextSubscribers = newSubs)
 
         case StartGame(name, actor) =>
           val newRooms = rooms - name
           val newGames = games + (name -> actor)
           notifyAllSubscribers(getInfo(nextRooms = newRooms,nextGames = newGames))
-          //lobbyManager(subscribers = subscribers,rooms = newRooms,games = newGames,terminatedGames = terminatedGames)
           nextBehavior(nextRooms = newRooms,nextGames = newGames)
 
         case EndGame(name, game) =>
           val newTerminatedGames = terminatedGames + (name -> (game, true))
           val newGames = games - name
           notifyAllSubscribers(getInfo(nextGames = newGames,nextTerminatedGames = newTerminatedGames))
-          //lobbyManager(subscribers = subscribers,rooms = rooms,games = newGames,terminatedGames = newTerminatedGames)
           nextBehavior(nextGames = newGames,nextTerminatedGames = newTerminatedGames)
 
         case GameClosed(name, subs) =>
           val newTerminatedGames = terminatedGames + (name -> (terminatedGames(name)._1, false))
           val newSubs = subscribers ++ subs
           notifyAllSubscribers(getInfo(nextTerminatedGames = newTerminatedGames),newSubs)
-          //lobbyManager(subscribers = newSubs,rooms = rooms,games = games,terminatedGames = newTerminatedGames)
           nextBehavior(nextSubscribers = newSubs,nextTerminatedGames = newTerminatedGames)
 
         case UpdateRoomInfo(info) =>
           val newRooms = rooms + (info.name -> (rooms(info.name)._1, info))
           notifyAllSubscribers(getInfo(nextRooms = newRooms))
-          //lobbyManager(subscribers = subscribers,rooms = newRooms,games = games,terminatedGames = terminatedGames)
           nextBehavior(nextRooms = newRooms)
 
         case EmptyRoom(roomName) =>
           val newRooms = rooms - roomName
           notifyAllSubscribers(getInfo(nextRooms = newRooms))
-          //lobbyManager(subscribers = subscribers,rooms = newRooms,games = games,terminatedGames = terminatedGames)
           nextBehavior(nextRooms = newRooms)
 
-        case Logout(actor) =>
-          val newSubs = subscribers - actor
-          println("LOGOUT unSub:" + actor + " SubList:" + newSubs)
-          //lobbyManager(subscribers = newSubs,rooms = rooms,games = games,terminatedGames = terminatedGames)
-          nextBehavior(nextSubscribers = newSubs)
+        case Logout(actor) => nextBehavior(nextSubscribers = subscribers - actor)
       }
     }
   }
