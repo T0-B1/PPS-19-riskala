@@ -8,15 +8,28 @@ import scala.collection.immutable.{HashMap, HashSet}
 
 object RoomManager {
 
-  var subscribersRoom: HashSet[ActorRef[PlayerMessage]] = HashSet.empty
-  var readyPlayerList: HashMap[String,ActorRef[PlayerMessage]] = HashMap.empty
+  //TODO: to remove
+  case class RoomBasicInfo(name: String,
+                           actualNumberOfPlayer: Int,
+                           maxNumberOfPlayer: Int)
 
-  def apply(): Behavior[RoomMessage] = {
+  //TODO: to remove
+  case class RoomInfo(basicInfo: RoomBasicInfo, scenario: String)
+
+  def apply(roomInfo: RoomInfo): Behavior[RoomMessage] = {
+
+    roomManager(HashSet.empty, HashMap.empty, roomInfo)
+  }
+
+  def roomManager(subscribersRoom: HashSet[ActorRef[PlayerMessage]],
+                  readyPlayerList: HashMap[String,ActorRef[PlayerMessage]],
+                  roomInfo: RoomInfo
+                 ):Behavior[RoomMessage] = {
+
     Behaviors.receive { (context, message) =>
       message match {
 
         case Join(actor) => ???
-
 
         case Leave(actor) => ???
 
@@ -25,7 +38,7 @@ object RoomManager {
         case Ready(playerName, actor) => ???
 
         case Logout(actor) =>
-          subscribersRoom = subscribersRoom - actor
+          val newSubscriber = subscribersRoom - actor
           Behaviors.same
 
       }
