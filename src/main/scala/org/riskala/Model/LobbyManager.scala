@@ -51,7 +51,7 @@ object LobbyManager {
       message match {
         case Subscribe(subscriber) =>
           val newSubs = subscribers + subscriber
-          subscriber ! getInfo
+          subscriber ! getInfo()
           println("SUB-MSG Subs: " + newSubs)
           //lobbyManager(subscribers = newSubs,rooms = rooms,games = games,terminatedGames = terminatedGames)
           nextBehavior(nextSubscribers = newSubs)
@@ -61,7 +61,7 @@ object LobbyManager {
           var newSubs: HashSet[ActorRef[PlayerMessage]] = subscribers
           if (!rooms.contains(roomInfo.basicInfo.name)) {
             //TODO: spawn RoomManager and send Join msg
-            val room = context.spawn(Behaviors.ignore[RoomMessage], "RoomManager")
+            val room = context.spawn(Behaviors.ignore[RoomMessage], "RoomManager" + roomInfo.basicInfo.name)
             //room ! Join(creator)
             room ! new RoomMessage {}
             //TODO: swap null with room
@@ -128,7 +128,7 @@ object LobbyManager {
 
         case Logout(actor) =>
           val newSubs = subscribers - actor
-          println("LOGOUT unSub:" + actor + " SubList:" + subscribers)
+          println("LOGOUT unSub:" + actor + " SubList:" + newSubs)
           //lobbyManager(subscribers = newSubs,rooms = rooms,games = games,terminatedGames = terminatedGames)
           nextBehavior(nextSubscribers = newSubs)
       }
