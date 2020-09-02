@@ -8,26 +8,10 @@ import scala.collection.immutable.{HashMap, HashSet}
 
 object RoomManager {
 
-  //TODO: to remove
-  case class RoomBasicInfo(name: String,
-                           actualNumberOfPlayer: Int,
-                           maxNumberOfPlayer: Int)
-
-  //TODO: to remove
-  case class RoomInfo(basicInfo: RoomBasicInfo, scenario: String)
-
   def apply(roomInfo: RoomInfo, lobby: ActorRef[LobbyMessage]): Behavior[RoomMessage] =
     roomManager(HashSet.empty, HashMap.empty, roomInfo, lobby)
 
-  def notifyUpdateRoomInfo(newSubscribers: HashSet[ActorRef[PlayerMessage]],
-                           newReady: HashMap[String,ActorRef[PlayerMessage]],
-                           lobby: ActorRef[LobbyMessage]): Unit = {
-    //TODO: change new PlayerMessage into info
-    newReady.foreach(rp => rp._2 ! new PlayerMessage {})
-    newSubscribers. foreach(s => s ! new PlayerMessage {})
-    //TODO: UpdateRoomInfo(info.basicInfo)
-    lobby ! new LobbyMessage {}
-  }
+
 
   def roomManager(subscribersRoom: HashSet[ActorRef[PlayerMessage]],
                   readyPlayerList: HashMap[String,ActorRef[PlayerMessage]],
@@ -36,13 +20,29 @@ object RoomManager {
                  ):Behavior[RoomMessage] = {
 
     Behaviors.receive { (context, message) =>
+
+      def notifyUpdateRoomInfo(newSubscribers: HashSet[ActorRef[PlayerMessage]],
+                               newReady: HashMap[String,ActorRef[PlayerMessage]]): Unit = {
+        //TODO: change new PlayerMessage into info
+        newReady.foreach(rp => rp._2 ! new PlayerMessage {})
+        newSubscribers. foreach(s => s ! new PlayerMessage {})
+        //TODO: UpdateRoomInfo(info.basicInfo)
+        lobby ! new LobbyMessage {}
+      }
+
+      def updateBehavior(updatedSub: HashSet[ActorRef[PlayerMessage]] = subscribersRoom,
+                         updatedReady: HashMap[String,ActorRef[PlayerMessage]] = readyPlayerList,
+                         updatedRoomInfo: RoomInfo = roomInfo,
+                         updatedLobby: ActorRef[LobbyMessage] = lobby
+                        ):Behavior[RoomMessage] = roomManager(updatedSub, updatedReady, updatedRoomInfo, updatedLobby)
+
       message match {
 
         case Join(actor) =>
           val newSubscriber = subscribersRoom + actor
           //TODO: change into info
           actor ! new PlayerMessage {}
-          roomManager(newSubscriber, readyPlayerList, roomInfo, lobby)
+          updateBehavior(updatedSub = newSubscriber)
 
         case Leave(actor) =>
           //Remove the actor from subscribersList
@@ -56,24 +56,24 @@ object RoomManager {
             lobby ! new LobbyMessage {}
             Behaviors.stopped
           }
-          roomManager(newSubscriber, readyPlayerList, roomInfo, lobby)
+          updateBehavior(updatedSub = newSubscriber)
 
         case UnReady(playerName, actor) =>
           val newReady = readyPlayerList - playerName
           //Update actualNumberPlayer
           roomInfo.basicInfo.actualNumberOfPlayer -= 1
-          val newSubscribers = subscribersRoom + actor
-          notifyUpdateRoomInfo(newSubscribers, newReady, lobby)
-          roomManager(newSubscribers, newReady, roomInfo,lobby)
+          val newSubscriber = subscribersRoom + actor
+          notifyUpdateRoomInfo(newSubscriber, newReady)
+          updateBehavior(updatedSub = newSubscriber, updatedReady = newReady)
 
         case Ready(playerName, actor) =>
           //Update actualNumberPlayer
           roomInfo.basicInfo.actualNumberOfPlayer += 1
           //Remove the actor from subscribersList
-          val newSubscribers = subscribersRoom - actor
+          val newSubscriber = subscribersRoom - actor
           //Add the actor into readyPlayerList
           val newReady = readyPlayerList + (playerName -> actor)
-          notifyUpdateRoomInfo(newSubscribers, newReady, lobby)
+          notifyUpdateRoomInfo(newSubscriber, newReady)
 
           if (roomInfo.basicInfo.actualNumberOfPlayer == roomInfo.basicInfo.maxNumberOfPlayer) {
             //Game can start
@@ -81,11 +81,11 @@ object RoomManager {
             lobby ! new LobbyMessage {}
             //TODO: Change behavior from Room to Game -> GameManager()
           }
-          roomManager(newSubscribers, newReady, roomInfo,lobby)
+          updateBehavior(updatedSub = newSubscriber, updatedReady = newReady)
 
         case Logout(actor) =>
           val newSubscriber = subscribersRoom - actor
-          roomManager(newSubscriber, readyPlayerList, roomInfo,lobby)
+          updateBehavior(updatedSub = newSubscriber)
 
       }
     }

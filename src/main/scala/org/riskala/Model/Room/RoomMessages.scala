@@ -7,6 +7,21 @@ import akka.actor.typed.ActorRef
  */
 object RoomMessages {
 
+  /**
+   * @param name                    Room name
+   * @param actualNumberOfPlayer    Number of player in a room
+   * @param maxNumberOfPlayer       Maximun numbere of player of a room
+   * */
+  case class RoomBasicInfo(name: String,
+                           actualNumberOfPlayer: Int,
+                           maxNumberOfPlayer: Int)
+
+  /**
+   * @param basicInfo               Object containing the basic information of a room
+   * @param scenario                Name of the game map
+   * */
+  case class RoomInfo(basicInfo: RoomBasicInfo, scenario: String)
+
   trait PlayerMessage
 
   trait LobbyMessage
