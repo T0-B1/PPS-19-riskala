@@ -14,7 +14,7 @@ class RegionTest extends AnyWordSpec {
       assert(Region(List.empty, 2).states.isEmpty)
     }
 
-    "after adding regions, habe size different to 0" in {
+    "after adding regions, have size different to 0" in {
       assert(Region(listState, 2).states.nonEmpty)
     }
 
