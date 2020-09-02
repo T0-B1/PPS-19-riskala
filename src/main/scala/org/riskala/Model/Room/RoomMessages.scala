@@ -1,11 +1,11 @@
-package org.riskala.Model
+package org.riskala.Model.Room
 
 import akka.actor.typed.ActorRef
 
 /**
- * Model messages
+ * Room messages
  */
-object ModelMessages {
+object RoomMessages {
 
   trait PlayerMessage
 

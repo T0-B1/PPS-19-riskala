@@ -1,12 +1,13 @@
-package org.riskala.Model
+package org.riskala.Model.Room
 
-import akka.actor.typed.{ActorRef, Behavior}
 import akka.actor.typed.scaladsl.Behaviors
-import org.riskala.Model.ModelMessages._
+import akka.actor.typed.{ActorRef, Behavior}
+import RoomMessages._
 
 import scala.collection.immutable.{HashMap, HashSet}
 
 object RoomManager {
+
   var subscribersRoom: HashSet[ActorRef[PlayerMessage]] = HashSet.empty
   var readyPlayerList: HashMap[String,ActorRef[PlayerMessage]] = HashMap.empty
 
@@ -15,6 +16,7 @@ object RoomManager {
       message match {
 
         case Join(actor) => ???
+
 
         case Leave(actor) => ???
 
