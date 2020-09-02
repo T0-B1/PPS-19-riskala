@@ -3,15 +3,16 @@ package org.riskala.controller
 import java.io.FileNotFoundException
 import java.util.Properties
 
+import akka.http.scaladsl.testkit.ScalatestRouteTest
 import org.junit.runner.RunWith
-import org.scalatest.BeforeAndAfter
+import org.scalatest.{BeforeAndAfter, Matchers}
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.junit.JUnitRunner
 
 import scala.io.Source
 
 @RunWith(classOf[JUnitRunner])
-class AuthTest extends AnyWordSpec with BeforeAndAfter {
+class AuthTest extends AnyWordSpec with BeforeAndAfter with ScalatestRouteTest {
 
   val properties: Properties = new Properties()
 
