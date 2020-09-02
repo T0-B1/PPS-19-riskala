@@ -1,6 +1,6 @@
 package org.riskala.Model
 
-import akka.actor.testkit.typed.scaladsl.{ActorTestKit, BehaviorTestKit, TestProbe}
+import akka.actor.testkit.typed.scaladsl.{ActorTestKit, TestProbe}
 import akka.actor.typed.ActorRef
 import org.riskala.Model.Room.RoomManager
 import org.riskala.Model.Room.RoomMessages._
