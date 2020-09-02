@@ -1,11 +1,31 @@
 package org.riskala.controller
 
+import java.io.FileNotFoundException
+import java.util.Properties
+
 import org.junit.runner.RunWith
+import org.scalatest.BeforeAndAfter
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.junit.JUnitRunner
 
+import scala.io.Source
+
 @RunWith(classOf[JUnitRunner])
-class AuthTest extends AnyWordSpec {
+class AuthTest extends AnyWordSpec with BeforeAndAfter {
+
+  val properties: Properties = new Properties()
+
+  before{
+    val path = "/test.properties"
+    val url = getClass.getResource(path)
+    if (url != null)
+      properties.load(Source.fromURL(url).bufferedReader())
+      throw new FileNotFoundException(s"Properties file at path $path cannot be loaded");
+  }
+
+  properties.get("testAccountUsername")
+  properties.get("testAccountPassword")
+  properties.get("testAccountEmail")
 
   "A user" when {
     "registered" should {
