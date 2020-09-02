@@ -21,6 +21,7 @@ class AuthTest extends AnyWordSpec with BeforeAndAfter with ScalatestRouteTest {
     val url = getClass.getResource(path)
     if (url != null)
       properties.load(Source.fromURL(url).bufferedReader())
+    else
       throw new FileNotFoundException(s"Properties file at path $path cannot be loaded");
   }
 
