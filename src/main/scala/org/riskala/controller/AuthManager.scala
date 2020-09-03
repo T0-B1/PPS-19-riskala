@@ -3,7 +3,7 @@ package org.riskala.controller
 import java.io.InputStream
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
-import org.riskala.Model.Account
+import org.riskala.model.Account
 import spray.json.{DefaultJsonProtocol, JsString, JsonParser, RootJsonFormat}
 
 import scala.collection.immutable.HashMap

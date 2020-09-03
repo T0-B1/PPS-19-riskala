@@ -1,7 +1,7 @@
-package org.riskala.Model
+package org.riskala.model
 
 import org.junit.runner.RunWith
-import org.riskala.Model.State.State
+import org.riskala.model.State.State
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.junit.JUnitRunner
 
