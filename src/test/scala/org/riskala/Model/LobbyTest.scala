@@ -4,6 +4,8 @@ import org.scalatest.wordspec.AnyWordSpec
 import akka.actor.testkit.typed.scaladsl.{ActorTestKit, TestProbe}
 import akka.actor.typed.ActorRef
 import akka.actor.typed.scaladsl.Behaviors
+import org.riskala.Model.Lobby.LobbyManager
+import org.riskala.Model.Lobby.LobbyMessages._
 import org.riskala.Model.ModelMessages._
 import org.scalatest.BeforeAndAfterAll
 
