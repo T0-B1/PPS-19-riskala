@@ -17,27 +17,32 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.junit.JUnitRunner
 import org.scalatest.time.SpanSugar._
+import akka.stream.scaladsl.{Flow, Sink, Source}
+import sun.security.pkcs11.wrapper.Functions
 
 
 @RunWith(classOf[JUnitRunner])
 class WsTest extends AnyWordSpec with Matchers with ScalatestRouteTest {
 
   val properties: Properties = utils.loadPropertiesFromResources()
+  def socketUri(token: String) = s"/websocket?token=$token"
+
+  "Nobody" should{
+    "be able to open a socket without a valid token" in {
+      WS(socketUri(""), Flow.fromFunction(identity)) ~> WebsocketRoute.websocketRoute ~>
+        check { response.status shouldEqual StatusCodes.Forbidden }
+    }
+  }
 
   "A user" when {
     "logged" should{
 
       "be able to open a socket using this token" in {
         val token = AuthTest.login(properties.get("testAccountUsername").toString, properties.get("testAccountPassword").toString)
-        val wsClient = WSProbe()
-
-        // WS creates a WebSocket request for testing
-        WS(s"/websocket?token=foo", wsClient.flow) ~> WebsocketRoute.websocketRoute ~>
-          check {
-            response.status shouldEqual StatusCodes.SwitchingProtocols
-          }
+        WS(socketUri(token), Flow.fromFunction(identity)) ~> WebsocketRoute.websocketRoute ~>
+          check { response.status shouldEqual StatusCodes.SwitchingProtocols }
       }
-
+/*
       "trigger the spawn of a playerActor upon opening the socket" in {
 
       }
@@ -50,6 +55,8 @@ class WsTest extends AnyWordSpec with Matchers with ScalatestRouteTest {
 
       "cause the death of the playerActor upon disconnecting" in {
       }
+
+ */
     }
   }
 
