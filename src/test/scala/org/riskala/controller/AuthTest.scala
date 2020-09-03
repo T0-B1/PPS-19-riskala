@@ -2,10 +2,11 @@ package org.riskala.controller
 
 import java.io.FileNotFoundException
 import java.util.Properties
+
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity, StatusCodes}
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import org.junit.runner.RunWith
-import org.scalatest.BeforeAndAfter
+import org.scalatest.{Assertion, BeforeAndAfter}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.junit.JUnitRunner
@@ -27,7 +28,8 @@ class AuthTest extends AnyWordSpec with Matchers with BeforeAndAfter with Scalat
   }
 
   def login(username: String, password: String): String = {
-    Post("/login", HttpEntity(ContentTypes.`application/json`, s"""{"username":"$username","password":"$password"}""")) ~> RouteManager.allRoutes ~> check {
+    val json: String = LoginJsonSupport.LoginFormats.write(Login(username, password)).toString()
+    Post("/login", HttpEntity(ContentTypes.`application/json`, json)) ~> RouteManager.allRoutes ~> check {
       response.status shouldEqual StatusCodes.OK
       responseAs[String]
     }
