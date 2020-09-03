@@ -35,6 +35,13 @@ class AuthTest extends AnyWordSpec with Matchers with BeforeAndAfter with Scalat
     }
   }
 
+  def register(username: String, password: String, email: String): Assertion = {
+    val json: String = LoginJsonSupport.RegisterFormats.write(Register(username, password, email)).toString()
+    Post("/register", HttpEntity(ContentTypes.`application/json`, json)) ~> RouteManager.allRoutes ~> check {
+      response.status shouldEqual StatusCodes.BadRequest
+    }
+  }
+
   "A user" when {
     "registered" should {
       "be able to login" in {
