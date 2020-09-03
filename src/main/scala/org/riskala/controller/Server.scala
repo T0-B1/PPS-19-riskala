@@ -15,7 +15,7 @@ class Server {
 
   implicit val system = ActorSystem("riskala")
   implicit val executionContext: ExecutionContextExecutor = system.dispatcher
-  private val allRoutes: Route = concat(staticContent, loginPath, registrationPath, websocketRoute, redirectHome)
+  val routing: Route = concat(staticContent, loginPath, registrationPath, websocketRoute, redirectHome)
   private var serverBindingFuture: Option[Future[Http.ServerBinding]] = None
   private val PORT: Int = System.getProperty("server.port") match {
     case port if Try(port.toInt).isSuccess => port.toInt
@@ -27,7 +27,7 @@ class Server {
       .adaptSettings(_.mapWebsocketSettings(
         _.withPeriodicKeepAliveMode("pong")
           .withPeriodicKeepAliveMaxIdle(1.second)))
-      .bindFlow(allRoutes))
+      .bindFlow(routing))
     println(s"Server online at port $PORT \n...")
   }
   

@@ -17,6 +17,7 @@ import scala.io.Source
 class AuthTest extends AnyWordSpec with Matchers with BeforeAndAfter with ScalatestRouteTest {
 
   val properties: Properties = new Properties()
+  val server = Server()
 
   before{
     val path = "/test.properties"
@@ -29,7 +30,7 @@ class AuthTest extends AnyWordSpec with Matchers with BeforeAndAfter with Scalat
 
   def login(username: String, password: String): String = {
     val json: String = LoginJsonSupport.LoginFormats.write(Login(username, password)).toString()
-    Post("/login", HttpEntity(ContentTypes.`application/json`, json)) ~> Server.allRoutes ~> check {
+    Post("/login", HttpEntity(ContentTypes.`application/json`, json)) ~> server.routing ~> check {
       response.status shouldEqual StatusCodes.OK
       responseAs[String]
     }
@@ -37,7 +38,7 @@ class AuthTest extends AnyWordSpec with Matchers with BeforeAndAfter with Scalat
 
   def register(username: String, password: String, email: String): Assertion = {
     val json: String = LoginJsonSupport.RegisterFormats.write(Register(username, password, email)).toString()
-    Post("/register", HttpEntity(ContentTypes.`application/json`, json)) ~> Server.allRoutes ~> check {
+    Post("/register", HttpEntity(ContentTypes.`application/json`, json)) ~> server.routing ~> check {
       response.status shouldEqual StatusCodes.BadRequest
     }
   }
