@@ -53,10 +53,13 @@ class AuthTest extends AnyWordSpec with Matchers with BeforeAndAfter with Scalat
     }
     "logged" should {
       "be able to verify his token" in {
-
+        val token = login(properties.get("testAccountUsername").toString, properties.get("testAccountPassword").toString)
+        AuthManager.checkToken(token) shouldBe true
       }
       "be able to retrieve his username from the token" in {
-
+        val username = properties.get("testAccountUsername").toString
+        val token = login(username, properties.get("testAccountPassword").toString)
+        Some(username) shouldBe AuthManager.getUser(token)
       }
     }
   }
