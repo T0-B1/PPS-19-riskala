@@ -3,8 +3,6 @@ package org.riskala.Model.Room
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}
 import RoomMessages._
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 import scala.collection.immutable.{HashMap, HashSet}
 
