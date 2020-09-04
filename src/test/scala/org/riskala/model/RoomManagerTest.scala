@@ -1,9 +1,9 @@
-package org.riskala.Model
+package org.riskala.model
 
 import akka.actor.testkit.typed.scaladsl.{ActorTestKit, TestProbe}
 import akka.actor.typed.ActorRef
-import org.riskala.Model.Room.RoomManager
-import org.riskala.Model.Room.RoomMessages._
+import org.riskala.model.room.RoomManager
+import org.riskala.model.room.RoomMessages._
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.wordspec.AnyWordSpec
 

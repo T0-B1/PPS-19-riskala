@@ -1,4 +1,4 @@
-package org.riskala.Model.Room
+package org.riskala.model.room
 
 import akka.actor.typed.ActorRef
 
