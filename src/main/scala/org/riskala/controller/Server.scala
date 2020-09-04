@@ -1,7 +1,7 @@
 package org.riskala.controller
 
 import akka.actor.ActorSystem
-import akka.http.scaladsl.{Http, server}
+import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import scala.concurrent.{ExecutionContextExecutor, Future}
@@ -13,9 +13,8 @@ import scala.util.Try
 
 class Server {
 
-  implicit val system = ActorSystem("riskala")
+  implicit val system: ActorSystem = ActorSystem("riskala")
   implicit val executionContext: ExecutionContextExecutor = system.dispatcher
-  val routing: Route = concat(staticContent, loginPath, registrationPath, websocketRoute, redirectHome)
   private var serverBindingFuture: Option[Future[Http.ServerBinding]] = None
   private val PORT: Int = System.getProperty("server.port") match {
     case port if Try(port.toInt).isSuccess => port.toInt
@@ -27,7 +26,7 @@ class Server {
       .adaptSettings(_.mapWebsocketSettings(
         _.withPeriodicKeepAliveMode("pong")
           .withPeriodicKeepAliveMaxIdle(1.second)))
-      .bindFlow(routing))
+      .bindFlow(Server.routing))
     println(s"Server online at port $PORT \n...")
   }
   
@@ -42,6 +41,7 @@ class Server {
 }
 
 object Server {
+  val routing: Route = concat(staticContent, loginPath, registrationPath, websocketRoute, redirectHome)
   def apply(): Server = new Server()
 }
 
