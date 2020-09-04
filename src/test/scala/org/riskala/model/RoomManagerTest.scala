@@ -4,6 +4,7 @@ import akka.actor.testkit.typed.scaladsl.{ActorTestKit, TestProbe}
 import akka.actor.typed.ActorRef
 import org.riskala.model.room.RoomManager
 import org.riskala.model.room.RoomMessages._
+import org.riskala.model.ModelMessages._
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.wordspec.AnyWordSpec
 
@@ -38,8 +39,6 @@ class RoomManagerTest extends AnyWordSpec with BeforeAndAfterAll {
       playerLeave.expectMessageType[PlayerMessage]
       room ! Leave(playerLeave.ref)
       playerLeave.expectNoMessage()
-
-
     }
   }
 
