@@ -50,34 +50,34 @@ object LobbyManager {
           nextBehavior(nextSubscribers = subscribers + subscriber)
 
         case CreateRoom(creator, roomInfo) =>
-          var newRooms: HashMap[String, (ActorRef[RoomMessage], RoomBasicInfo)] = rooms
-          var newSubs: HashSet[ActorRef[PlayerMessage]] = subscribers
           if (!rooms.contains(roomInfo.basicInfo.name)) {
             //TODO: spawn RoomManager and send Join msg
             val room = context.spawn(Behaviors.ignore[RoomMessage], "RoomManager" + roomInfo.basicInfo.name)
             //room ! Join(creator)
             room ! new RoomMessage {}
             //TODO: swap null with room
-            newRooms = rooms + (roomInfo.basicInfo.name -> (room, roomInfo.basicInfo))
-            newSubs = subscribers - creator
+            val newRooms = rooms + (roomInfo.basicInfo.name -> (room, roomInfo.basicInfo))
+            val newSubs = subscribers - creator
+            notifyAllSubscribers(getInfo(nextRooms = newRooms),newSubs)
+            nextBehavior(nextSubscribers = newSubs,nextRooms = newRooms)
           } else {
             //TODO: Errore stanza già presente.
             creator ! new PlayerMessage {}
+            notifyAllSubscribers(getInfo())
+            nextBehavior()
           }
-          notifyAllSubscribers(getInfo(nextRooms = newRooms),newSubs)
-          nextBehavior(nextSubscribers = newSubs,nextRooms = newRooms)
 
         case JoinTo(actor, name) =>
-          var newSubs = subscribers
           if (rooms.contains(name)) {
-            newSubs = subscribers - actor
+            val newSubs = subscribers - actor
             rooms.get(name).head._1 ! new RoomMessage {}
+            nextBehavior(nextSubscribers = newSubs)
           } else {
             //TODO: Errore stanza non trovata.
             actor ! new PlayerMessage {}
+            nextBehavior()
           }
-          nextBehavior(nextSubscribers = newSubs)
-
+          
         case StartGame(name, actor) =>
           val newRooms = rooms - name
           val newGames = games + (name -> actor)
