@@ -29,6 +29,8 @@ class WsTest extends AnyWordSpec with Matchers with ScalatestRouteTest {
 
   "Nobody" should{
     "be able to open a socket without a valid token" in {
+  "A user" should{
+    "not be able to open a socket without a valid token" in {
       WS(socketUri(""), Flow.fromFunction(identity)) ~> WebsocketRoute.websocketRoute ~>
         check { response.status shouldEqual StatusCodes.Forbidden }
     }
