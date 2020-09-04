@@ -1,12 +1,12 @@
-package org.riskala.Model
+package org.riskala.model
 
 import org.scalatest.wordspec.AnyWordSpec
 import akka.actor.testkit.typed.scaladsl.{ActorTestKit, TestProbe}
 import akka.actor.typed.ActorRef
 import akka.actor.typed.scaladsl.Behaviors
-import org.riskala.Model.Lobby.LobbyManager
-import org.riskala.Model.Lobby.LobbyMessages._
-import org.riskala.Model.ModelMessages._
+import org.riskala.model.lobby.LobbyManager
+import org.riskala.model.lobby.LobbyMessages._
+import org.riskala.model.ModelMessages._
 import org.scalatest.BeforeAndAfterAll
 
 class LobbyTest extends AnyWordSpec with BeforeAndAfterAll {

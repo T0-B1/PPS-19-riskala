@@ -1,7 +1,7 @@
-package org.riskala.Model.Lobby
+package org.riskala.model.lobby
 
 import akka.actor.typed.ActorRef
-import org.riskala.Model.ModelMessages._
+import org.riskala.model.ModelMessages._
 
 /**
  * Lobby messages

@@ -1,4 +1,4 @@
-package org.riskala.Model
+package org.riskala.model
 
 import akka.actor.typed.ActorRef
 
