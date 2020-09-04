@@ -1,8 +1,11 @@
-package org.riskala.Model
+package org.riskala.model
 
-import org.riskala.Model.State.State
+import org.junit.runner.RunWith
+import org.riskala.model.State.State
 import org.scalatest.wordspec.AnyWordSpec
+import org.scalatestplus.junit.JUnitRunner
 
+@RunWith(classOf[JUnitRunner])
 class RegionTest extends AnyWordSpec {
   var listState: List[State] = List("Italy","France","Germany")
 
@@ -11,7 +14,7 @@ class RegionTest extends AnyWordSpec {
       assert(Region(List.empty, 2).states.isEmpty)
     }
 
-    "after adding regions, habe size different to 0" in {
+    "after adding regions, have size different to 0" in {
       assert(Region(listState, 2).states.nonEmpty)
     }
 

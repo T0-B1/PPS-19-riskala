@@ -45,7 +45,7 @@ object RestRoutes {
           if (optToken.nonEmpty)
             complete(200, optToken.get)
           else
-            complete(404, "User already exists")
+            complete(400, "User already exists")
         }
       }
     }

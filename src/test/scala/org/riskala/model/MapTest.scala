@@ -1,8 +1,11 @@
-package org.riskala.Model
+package org.riskala.model
 
-import org.riskala.Model.State.State
+import org.junit.runner.RunWith
+import org.riskala.model.State.State
 import org.scalatest.wordspec.AnyWordSpec
+import org.scalatestplus.junit.JUnitRunner
 
+@RunWith(classOf[JUnitRunner])
 class MapTest extends AnyWordSpec {
   val ita: State = "Italy"
   val fra: State = "France"

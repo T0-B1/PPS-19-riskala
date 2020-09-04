@@ -1,7 +1,7 @@
-package org.riskala.Model
+package org.riskala.model
 
 import argonaut.Argonaut._
-import org.riskala.Model.State.State
+import org.riskala.model.State.State
 
 /** Bridge implementation
  *
