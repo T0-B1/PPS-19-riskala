@@ -3,6 +3,7 @@ package org.riskala.model.room
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}
 import RoomMessages._
+import org.riskala.model.ModelMessages._
 
 import scala.collection.immutable.{HashMap, HashSet}
 
@@ -102,8 +103,7 @@ object RoomManager {
           }
           println("READY DONE")
           updateBehavior(updatedSub = newSubscriber, updatedReady = newReady, updatedRoomInfo = newRoomInfo)
-
-
+          
         case Logout(actor) =>
           println("LOGOUT")
           val newSubscriber = subscribersRoom - actor

@@ -1,6 +1,7 @@
 package org.riskala.model.room
 
 import akka.actor.typed.ActorRef
+import org.riskala.model.ModelMessages._
 
 /**
  * Room messages
@@ -21,14 +22,6 @@ object RoomMessages {
    * @param scenario                Name of the game map
    * */
   case class RoomInfo(basicInfo: RoomBasicInfo, scenario: String)
-
-  trait PlayerMessage
-
-  trait LobbyMessage
-
-  trait GameMessage
-
-  sealed trait RoomMessage
 
   /** Message sent when an actor is ready in a room
    *  @param playerName     The player who is ready in a room
@@ -54,11 +47,4 @@ object RoomMessages {
    * */
   case class Leave(actor: ActorRef[PlayerMessage]) extends GameMessage with RoomMessage
 
-
-  sealed trait LogoutMessage extends LobbyMessage with GameMessage with RoomMessage
-
-  /** Message sent to exit
-   * @param actor              The actor who wants to exit
-   * */
-  case class Logout(actor: ActorRef[PlayerMessage]) extends LogoutMessage
 }
