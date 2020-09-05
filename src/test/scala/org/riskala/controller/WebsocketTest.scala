@@ -25,7 +25,7 @@ import akka.actor.typed.receptionist.ServiceKey
 import akka.testkit
 
 @RunWith(classOf[JUnitRunner])
-class WsTest extends AnyWordSpec with Matchers with ScalatestRouteTest {
+class WebsocketTest extends AnyWordSpec with Matchers with ScalatestRouteTest {
 
   val properties: Properties = utils.loadPropertiesFromResources()
   def socketUri(token: String) = s"/websocket?token=$token"
