@@ -12,12 +12,12 @@ object PlayerActor {
   }
 
   private def playerActor(username: String): Behavior[PlayerMessage] =
-    Behaviors.setup{ ctx =>
-      println(s"PlayerActor of $username started")
-      Behaviors.receive { (context, message) =>
+    Behaviors.setup{ context =>
+      context.log.info(s"PlayerActor of $username started")
+      Behaviors.receiveMessage { message =>
         message match {
           case SocketMessage(payload) => {
-            println(s"PlayerActor of $username received socket payload: $payload")
+            context.log.info(s"PlayerActor of $username received socket payload: $payload")
             //socket ! TextMessage(s"PlayerActor of $username echoing: $payload")
           }
         }

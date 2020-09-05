@@ -26,7 +26,7 @@ object WebsocketRoute {
       if( (!AuthManager.checkToken(token)) || AuthManager.getUser(token).isEmpty) complete(StatusCodes.Forbidden)
       else{
         val username = AuthManager.getUser(token).get
-        println(s"Websocket created for player $username")
+        system.log.info(s"Websocket created for player $username")
         val (wsActor, wsSource) = source.preMaterialize()
         val playerActorRef: ActorRef[PlayerMessage] = system.systemActorOf(PlayerActor(username), username)
         val wsSink = sink(playerActorRef)
