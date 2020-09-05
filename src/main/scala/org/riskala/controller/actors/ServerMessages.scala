@@ -1,8 +1,10 @@
 package org.riskala.controller.actors
 
-object PlayerMessages {
+object ServerMessages {
 
-  trait PlayerMessage
+  trait ServerMessage
+
+  trait PlayerMessage extends ServerMessage
 
   final case class SocketMessage(payload: String) extends PlayerMessage
 
