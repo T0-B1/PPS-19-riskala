@@ -1,20 +1,23 @@
 package org.riskala.controller
 
-import akka.actor.ActorSystem
+//import akka.actor.ActorSystem
+import akka.actor.typed.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
-import scala.concurrent.{ExecutionContextExecutor, Future}
-import scala.concurrent.duration._
 import org.riskala.controller.routes.RestRoutes._
 import org.riskala.controller.routes.WebsocketRoute._
+import org.riskala.model.ModelMessages.LobbyMessage
+import org.riskala.model.lobby.LobbyManager
 
+import scala.concurrent.{ExecutionContextExecutor, Future}
+import scala.concurrent.duration._
 import scala.util.Try
 
 object Server {
 
-  implicit val system: ActorSystem = ActorSystem("riskala")
-  implicit val executionContext: ExecutionContextExecutor = system.dispatcher
+  implicit val system: ActorSystem[LobbyMessage] = ActorSystem(LobbyManager(), "riskala")
+  implicit val executionContext: ExecutionContextExecutor = system.executionContext
   private var serverBindingFuture: Option[Future[Http.ServerBinding]] = None
   val routing: Route = concat(staticContent, loginPath, registrationPath, websocketRoute, redirectHome)
   private val PORT: Int = System.getProperty("server.port") match {
