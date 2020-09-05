@@ -11,11 +11,12 @@ import org.riskala.controller.routes.WebsocketRoute._
 
 import scala.util.Try
 
-class Server {
+object Server {
 
   implicit val system: ActorSystem = ActorSystem("riskala")
   implicit val executionContext: ExecutionContextExecutor = system.dispatcher
   private var serverBindingFuture: Option[Future[Http.ServerBinding]] = None
+  val routing: Route = concat(staticContent, loginPath, registrationPath, websocketRoute, redirectHome)
   private val PORT: Int = System.getProperty("server.port") match {
     case port if Try(port.toInt).isSuccess => port.toInt
     case _ => 8080
@@ -26,7 +27,7 @@ class Server {
       .adaptSettings(_.mapWebsocketSettings(
         _.withPeriodicKeepAliveMode("pong")
           .withPeriodicKeepAliveMaxIdle(1.second)))
-      .bindFlow(Server.routing))
+      .bindFlow(routing))
     println(s"Server online at port $PORT \n...")
   }
   
@@ -38,10 +39,5 @@ class Server {
     }
   }
 
-}
-
-object Server {
-  val routing: Route = concat(staticContent, loginPath, registrationPath, websocketRoute, redirectHome)
-  def apply(): Server = new Server()
 }
 
