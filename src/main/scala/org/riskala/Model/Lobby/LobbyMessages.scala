@@ -5,6 +5,8 @@ import org.riskala.controller.actors.PlayerMessages.PlayerMessage
 import org.riskala.model.ModelMessages._
 import org.riskala.model.room.RoomMessages.{RoomBasicInfo, RoomInfo}
 
+import scala.collection.immutable.HashMap
+
 /**
  * Lobby messages
  */
@@ -33,7 +35,7 @@ object LobbyMessages {
    * @param roomSubscribers   the list of subscribers actor ref who will spectate the game
    * */
   case class StartGame(info: RoomInfo,
-                       players: Set[ActorRef[PlayerMessage]],
+                       players: HashMap[String,ActorRef[PlayerMessage]],
                        roomSubscribers: Set[ActorRef[PlayerMessage]]) extends LobbyMessage
 
   /** Message sent when a game ends

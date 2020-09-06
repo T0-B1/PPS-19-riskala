@@ -101,7 +101,7 @@ object RoomManager {
             context.log.info("Room complete. Start Game")
             //Game can start
 
-            lobby ! StartGame(roomInfo, context.self.asInstanceOf[ActorRef[GameMessage]])
+            lobby ! StartGame(roomInfo, newReady, newSubscriber)
             //TODO: Change behavior from Room to Game -> GameManager()
 
             context.spawn(GameManager(), "GameManager")
