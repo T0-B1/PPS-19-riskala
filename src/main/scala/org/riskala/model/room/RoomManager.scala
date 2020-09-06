@@ -63,8 +63,8 @@ object RoomManager {
              (1) send message to lobby (emptyRoom);
              (2)Behaviors.stopped
              */
-            //TODO: check test EmptyRoom(roomInfo.basicInfo.name)
-            lobby ! new LobbyMessage {}
+            //TODO: call Empty room
+            lobby ! EmptyRoom(roomInfo.basicInfo.name)
             Behaviors.stopped
           }
           context.log.debug("LEAVE DONE")
