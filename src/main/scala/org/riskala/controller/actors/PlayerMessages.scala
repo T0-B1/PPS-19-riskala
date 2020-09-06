@@ -5,9 +5,7 @@ import akka.http.scaladsl.model.ws.Message
 
 object PlayerMessages {
 
-  trait ServerMessage
-
-  trait PlayerMessage extends ServerMessage
+  trait PlayerMessage
 
   final case class SocketMessage(payload: String) extends PlayerMessage
 
