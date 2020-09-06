@@ -26,9 +26,9 @@ object RoomManager {
       def notifyUpdateRoomInfo(newSubscribers: HashSet[ActorRef[PlayerMessage]],
                                newReady: HashMap[String,ActorRef[PlayerMessage]],
                                newRoomInfo: RoomInfo): Unit = {
-        //TODO: change new PlayerMessage into info
-        newReady.foreach(rp => rp._2 ! new PlayerMessage {})
-        newSubscribers. foreach(s => s ! new PlayerMessage {})
+        
+        newReady.foreach(rp => rp._2 ! RoomInfoMessage(newRoomInfo))
+        newSubscribers. foreach(s => s ! RoomInfoMessage(newRoomInfo))
 
         lobby ! UpdateRoomInfo(newRoomInfo.basicInfo)
       }
@@ -51,7 +51,7 @@ object RoomManager {
           context.log.info("beforeJoin "+subscribersRoom.size)
           val newSubscriber = subscribersRoom + actor
           context.log.info("After SUB "+newSubscriber.size)
-          
+
           actor ! RoomInfoMessage(roomInfo)
           updateBehavior(updatedSub = newSubscriber)
 
