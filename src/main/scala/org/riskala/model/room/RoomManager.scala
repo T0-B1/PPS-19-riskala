@@ -6,7 +6,7 @@ import RoomMessages._
 import org.riskala.controller.actors.PlayerMessages._
 import org.riskala.model.ModelMessages._
 import org.riskala.model.game.GameManager
-import org.riskala.model.lobby.LobbyMessages.{EmptyRoom, StartGame, UpdateRoomInfo}
+import org.riskala.model.lobby.LobbyMessages.{EmptyRoom, StartGame, Subscribe, UpdateRoomInfo}
 
 import scala.collection.immutable.{HashMap, HashSet}
 
@@ -59,17 +59,25 @@ object RoomManager {
           context.log.info("LEAVE")
           var newReady = readyPlayerList
           var newSubscribers = subscribersRoom
+          var newRoomInfo = roomInfo
           if(readyPlayerList.toList.exists(kv => kv._2 == actor)){
             newReady = readyPlayerList.filter(kv => kv._2 != actor)
-            notifyUpdateRoomInfo(subscribersRoom, newReady, roomInfo)
+            newRoomInfo = roomInfo.copy(
+              roomInfo.basicInfo.copy(
+                actualNumberOfPlayer = roomInfo.basicInfo.actualNumberOfPlayer - 1))
+            notifyUpdateRoomInfo(subscribersRoom, newReady, newRoomInfo)
           } else {
             newSubscribers = subscribersRoom - actor
           }
+          lobby ! Subscribe(actor)
           if(newSubscribers.isEmpty && newReady.isEmpty){
             lobby ! EmptyRoom(roomInfo.basicInfo.name)
-            return Behaviors.stopped
+            Behaviors.stopped {
+              () => context.log.info("Behavior room stopped")
+            }
+          } else {
+            updateBehavior(updatedSub = newSubscribers, updatedReady = newReady, updatedRoomInfo = newRoomInfo)
           }
-          updateBehavior(updatedSub = newSubscribers, updatedReady = newReady)
 
         case UnReady(playerName, actor) =>
           context.log.info("UNREADY")
@@ -102,20 +110,36 @@ object RoomManager {
             lobby ! StartGame(roomInfo, newReady, newSubscriber)
             //TODO: Change behavior from Room to Game -> GameManager()
             context.spawn(GameManager(), "GameManager")
-            return Behaviors.stopped
+            Behaviors.stopped {
+              () => context.log.info("Ready room Stopped")
+            }
+          } else {
+            notifyUpdateRoomInfo(newSubscriber, newReady, newRoomInfo)
+            context.log.info("READY DONE")
+            updateBehavior(updatedSub = newSubscriber, updatedReady = newReady, updatedRoomInfo = newRoomInfo)
           }
-          notifyUpdateRoomInfo(newSubscriber, newReady, newRoomInfo)
-          context.log.info("READY DONE")
-          updateBehavior(updatedSub = newSubscriber, updatedReady = newReady, updatedRoomInfo = newRoomInfo)
 
         case Logout(actor) =>
           context.log.info("LOGOUT")
+          var newReady = readyPlayerList
+          var newSubscribers = subscribersRoom
+          var newRoomInfo = roomInfo
           if(readyPlayerList.toList.exists(kv => kv._2 == actor)){
-            val newReady: HashMap[String,ActorRef[PlayerMessage]] = readyPlayerList.filter(kv => kv._2 != actor)
-            notifyUpdateRoomInfo(subscribersRoom, newReady, roomInfo)
-            updateBehavior(updatedReady = newReady)
+            newReady = readyPlayerList.filter(kv => kv._2 != actor)
+            newRoomInfo = roomInfo.copy(
+              roomInfo.basicInfo.copy(
+                actualNumberOfPlayer = roomInfo.basicInfo.actualNumberOfPlayer - 1))
+            notifyUpdateRoomInfo(newSubscribers, newReady, newRoomInfo)
           } else {
-            updateBehavior(updatedSub = subscribersRoom - actor)
+            newSubscribers = subscribersRoom - actor
+          }
+          if(newSubscribers.isEmpty && newReady.isEmpty){
+            lobby ! EmptyRoom(roomInfo.basicInfo.name)
+            Behaviors.stopped {
+              () => context.log.info("Behavior room stopped")
+            }
+          } else {
+            updateBehavior(updatedSub = newSubscribers, updatedReady = newReady, updatedRoomInfo = newRoomInfo)
           }
       }
     }
