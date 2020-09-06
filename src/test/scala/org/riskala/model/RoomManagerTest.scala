@@ -2,10 +2,11 @@ package org.riskala.model
 
 import akka.actor.testkit.typed.scaladsl.{ActorTestKit, TestProbe}
 import akka.actor.typed.ActorRef
-import org.riskala.controller.actors.PlayerMessages.PlayerMessage
+import org.riskala.controller.actors.PlayerMessages.{PlayerMessage, RoomInfoMessage}
 import org.riskala.model.room.RoomManager
 import org.riskala.model.room.RoomMessages._
 import org.riskala.model.ModelMessages._
+import org.riskala.model.lobby.LobbyMessages.Subscribe
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.wordspec.AnyWordSpec
 
@@ -25,34 +26,25 @@ class RoomManagerTest extends AnyWordSpec with BeforeAndAfterAll {
 
       room ! Join(player.ref)
       room ! Join(player2.ref)
-      player.expectMessageType[PlayerMessage]
-      player2.expectMessageType[PlayerMessage]
+      player.expectMessage(RoomInfoMessage(roomInfo))
+      player2.expectMessage(RoomInfoMessage(roomInfo))
     }
   }
 
   "Leave room" should {
-    "remove user from roomUpdateInfo" in {
+    "remove user from roomUpdateInfo and close behavior" in {
       val leaveLobby: TestProbe[LobbyMessage] = testKit.createTestProbe[LobbyMessage]("leaveLobby")
       val room: ActorRef[RoomMessage] = testKit.spawn(RoomManager(roomInfo, leaveLobby.ref), "RoomLeave")
       val playerLeave: TestProbe[PlayerMessage] = testKit.createTestProbe[PlayerMessage]("playerLeave")
+      val player2Leave: TestProbe[PlayerMessage] = testKit.createTestProbe[PlayerMessage]("player2Leave")
 
       room ! Join(playerLeave.ref)
-      playerLeave.expectMessageType[PlayerMessage]
+      playerLeave.expectMessage(RoomInfoMessage(roomInfo))
+      room ! Join(player2Leave.ref)
+      player2Leave.expectMessage(RoomInfoMessage(roomInfo))
       room ! Leave(playerLeave.ref)
       playerLeave.expectNoMessage()
-    }
-  }
-
-  "All player leave room" should {
-    "remove user from roomUpdateInfo" in {
-      val allLeaveLobby: TestProbe[LobbyMessage] = testKit.createTestProbe[LobbyMessage]("AllLeaveLobby")
-      val room: ActorRef[RoomMessage] = testKit.spawn(RoomManager(roomInfo, allLeaveLobby.ref), "RoomAllLeave")
-      val playerLeave: TestProbe[PlayerMessage] = testKit.createTestProbe[PlayerMessage]("playerLeave")
-
-      room ! Join(playerLeave.ref)
-      playerLeave.expectMessageType[PlayerMessage]
-      room ! Leave(playerLeave.ref)
-      playerLeave.expectNoMessage()
+      leaveLobby.expectMessage(Subscribe(playerLeave.ref))
     }
   }
 
@@ -64,9 +56,9 @@ class RoomManagerTest extends AnyWordSpec with BeforeAndAfterAll {
       val player: TestProbe[PlayerMessage] = testKit.createTestProbe[PlayerMessage]("player")
 
       room ! Join(playerReady.ref)
-      playerReady.expectMessageType[PlayerMessage]
+      playerReady.expectMessage(RoomInfoMessage(roomInfo))
       room ! Join(player.ref)
-      player.expectMessageType[PlayerMessage]
+      player.expectMessage(RoomInfoMessage(roomInfo))
 
       room ! Ready("playerReady", playerReady.ref)
       playerReady.expectMessageType[PlayerMessage]
