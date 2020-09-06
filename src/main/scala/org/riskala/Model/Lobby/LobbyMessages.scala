@@ -1,4 +1,4 @@
-package org.riskala.model.Lobby
+package org.riskala.model.lobby
 
 import akka.actor.typed.ActorRef
 import org.riskala.controller.actors.PlayerMessages.PlayerMessage
@@ -8,7 +8,7 @@ import org.riskala.model.room.RoomMessages.{RoomBasicInfo, RoomInfo}
 import scala.collection.immutable.HashMap
 
 /**
- * Lobby messages
+ * lobby messages
  */
 object LobbyMessages {
 
