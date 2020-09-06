@@ -7,6 +7,7 @@ import akka.actor.typed.scaladsl.Behaviors
 import org.riskala.model.lobby.LobbyManager
 import org.riskala.model.lobby.LobbyMessages._
 import org.riskala.model.ModelMessages._
+import org.riskala.model.room.RoomMessages.{RoomBasicInfo, RoomInfo}
 import org.scalatest.BeforeAndAfterAll
 
 class LobbyTest extends AnyWordSpec with BeforeAndAfterAll {
@@ -78,7 +79,7 @@ class LobbyTest extends AnyWordSpec with BeforeAndAfterAll {
       val probeSub: TestProbe[PlayerMessage] = testKit.createTestProbe[PlayerMessage]("probeStart")
       lobby ! Subscribe(probeSub.ref)
       probeSub.expectMessageType[PlayerMessage]
-      lobby ! StartGame("Europa",game)
+      lobby ! StartGame(RoomInfo(RoomBasicInfo("Europe", 4,4), "Europe"),game)
       probeSub.expectMessageType[PlayerMessage]
       lobby ! Logout(probeSub.ref)
       probeSub.expectNoMessage()
