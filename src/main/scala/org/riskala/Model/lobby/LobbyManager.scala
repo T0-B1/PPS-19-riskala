@@ -2,7 +2,7 @@ package org.riskala.model.lobby
 
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}
-import org.riskala.controller.actors.PlayerMessages.{PlayerMessage, RoomAlreadyExistsMessage, RoomNotFoundMessage}
+import org.riskala.controller.actors.PlayerMessages.{LobbyInfoMessage, PlayerMessage, RoomAlreadyExistsMessage, RoomNotFoundMessage}
 import org.riskala.model.ModelMessages._
 import org.riskala.model.game.GameManager
 import org.riskala.model.lobby.LobbyMessages._
@@ -12,8 +12,6 @@ import org.riskala.model.room.RoomMessages.{Join, RoomBasicInfo}
 import scala.collection.immutable.{HashMap, HashSet}
 
 object LobbyManager {
-
-  case class Lobby(rooms: List[String], games: List[String], terminatedGames: List[String])
 
   def apply(): Behavior[LobbyMessage] = lobbyManager(HashSet.empty,HashMap.empty,HashMap.empty,HashMap.empty)
 
@@ -38,9 +36,7 @@ object LobbyManager {
           + " / " + kv._2._2.maxNumberOfPlayer).toList
         val gameList: List[String] = nextGames.keys.toList
         val terminatedGameList: List[String] = nextTerminatedGames.keys.toList
-        Lobby(roomList, gameList, terminatedGameList)
-        //TODO: return playerMessage
-        new PlayerMessage {}
+        LobbyInfoMessage(LobbyInfo(roomList, gameList, terminatedGameList))
       }
 
       def notifyAllSubscribers(info: PlayerMessage,
