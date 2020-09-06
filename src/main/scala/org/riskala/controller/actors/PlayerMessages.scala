@@ -11,4 +11,6 @@ object PlayerMessages {
 
   final case class RegisterSocket(socketActor: ActorRef[Message]) extends PlayerMessage
 
+  final case class RoomInfoMessage() extends PlayerMessage
+
 }
