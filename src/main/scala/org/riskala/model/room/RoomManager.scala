@@ -4,6 +4,7 @@ import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}
 import RoomMessages._
 import org.riskala.model.ModelMessages._
+import org.riskala.model.game.GameManager
 import org.riskala.model.lobby.LobbyMessages.{EmptyRoom, StartGame, UpdateRoomInfo}
 
 import scala.collection.immutable.{HashMap, HashSet}
@@ -49,7 +50,7 @@ object RoomManager {
           context.log.info("beforeJoin "+subscribersRoom.size)
           val newSubscriber = subscribersRoom + actor
           context.log.info("After SUB "+newSubscriber.size)
-          //TODO: change into info
+          //TODO: change into info - RoomInfoMessage(roomInfo)
           actor ! new PlayerMessage {}
           updateBehavior(updatedSub = newSubscriber)
 
@@ -102,7 +103,7 @@ object RoomManager {
             lobby ! StartGame(roomInfo, context.self.asInstanceOf[ActorRef[GameMessage]])
             //TODO: Change behavior from Room to Game -> GameManager()
 
-            //return Behaviors.ignore[GameMessage]
+            context.spawn(GameManager(), "GameManager")
           }
           context.log.info("READY DONE")
           updateBehavior(updatedSub = newSubscriber, updatedReady = newReady, updatedRoomInfo = newRoomInfo)
