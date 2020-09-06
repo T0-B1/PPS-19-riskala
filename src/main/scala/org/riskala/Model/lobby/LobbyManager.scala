@@ -60,7 +60,6 @@ object LobbyManager {
             nextBehavior(nextSubscribers = newSubs,nextRooms = newRooms)
           } else {
             creator ! RoomAlreadyExistsMessage()
-            notifyAllSubscribers(getInfo())
             nextBehavior()
           }
 
