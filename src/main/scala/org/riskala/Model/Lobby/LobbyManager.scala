@@ -3,7 +3,7 @@ package org.riskala.model.lobby
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}
 import LobbyMessages._
-import org.riskala.controller.actors.PlayerMessages.{PlayerMessage, RoomAlreadyExistsMessage}
+import org.riskala.controller.actors.PlayerMessages.{PlayerMessage, RoomAlreadyExistsMessage, RoomNotFoundMessage}
 import org.riskala.model.ModelMessages._
 import org.riskala.model.room.RoomManager
 import org.riskala.model.room.RoomMessages.{Join, RoomBasicInfo}
@@ -70,11 +70,10 @@ object LobbyManager {
         case JoinTo(actor, name) =>
           if (rooms.contains(name)) {
             val newSubs = subscribers - actor
-            rooms.get(name).head._1 ! new RoomMessage {}
+            rooms.get(name).head._1 ! Join(actor)
             nextBehavior(nextSubscribers = newSubs)
           } else {
-            //TODO: Errore stanza non trovata.
-            actor ! new PlayerMessage {}
+            actor ! RoomNotFoundMessage()
             nextBehavior()
           }
           
