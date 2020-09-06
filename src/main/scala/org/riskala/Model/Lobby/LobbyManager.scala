@@ -4,7 +4,7 @@ import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}
 import LobbyMessages._
 import org.riskala.model.ModelMessages._
-import org.riskala.model.room.RoomMessages.RoomBasicInfo
+import org.riskala.model.room.RoomMessages.{Join, RoomBasicInfo}
 
 import scala.collection.immutable.{HashMap, HashSet}
 
@@ -54,9 +54,7 @@ object LobbyManager {
           if (!rooms.contains(roomInfo.basicInfo.name)) {
             //TODO: spawn RoomManager and send Join msg
             val room = context.spawn(Behaviors.ignore[RoomMessage], "RoomManager" + roomInfo.basicInfo.name)
-            //room ! Join(creator)
-            room ! new RoomMessage {}
-            //TODO: swap null with room
+            room ! Join(creator)
             val newRooms = rooms + (roomInfo.basicInfo.name -> (room, roomInfo.basicInfo))
             val newSubs = subscribers - creator
             notifyAllSubscribers(getInfo(nextRooms = newRooms),newSubs)
