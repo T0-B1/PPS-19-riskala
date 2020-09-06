@@ -1,4 +1,4 @@
-package org.riskala.model.lobby
+package org.riskala.model.Lobby
 
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}
