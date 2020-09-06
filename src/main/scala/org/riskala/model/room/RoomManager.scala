@@ -6,7 +6,7 @@ import RoomMessages._
 import org.riskala.controller.actors.PlayerMessages._
 import org.riskala.model.ModelMessages._
 import org.riskala.model.game.GameManager
-import org.riskala.model.lobby.LobbyMessages.{EmptyRoom, StartGame, UpdateRoomInfo}
+import org.riskala.model.lobby.LobbyMessages.{EmptyRoom, StartGame, Subscribe, UpdateRoomInfo}
 
 import scala.collection.immutable.{HashMap, HashSet}
 
@@ -65,11 +65,15 @@ object RoomManager {
           } else {
             newSubscribers = subscribersRoom - actor
           }
+          lobby ! Subscribe(actor)
           if(newSubscribers.isEmpty && newReady.isEmpty){
             lobby ! EmptyRoom(roomInfo.basicInfo.name)
-            return Behaviors.stopped
+            Behaviors.stopped {
+              () => context.log.info("Behavior room stopped")
+            }
+          } else {
+            updateBehavior(updatedSub = newSubscribers, updatedReady = newReady)
           }
-          updateBehavior(updatedSub = newSubscribers, updatedReady = newReady)
 
         case UnReady(playerName, actor) =>
           context.log.info("UNREADY")
@@ -102,11 +106,14 @@ object RoomManager {
             lobby ! StartGame(roomInfo, newReady, newSubscriber)
             //TODO: Change behavior from Room to Game -> GameManager()
             context.spawn(GameManager(), "GameManager")
-            return Behaviors.stopped
+            Behaviors.stopped {
+              () => context.log.info("Ready room Stopped")
+            }
+          } else {
+            notifyUpdateRoomInfo(newSubscriber, newReady, newRoomInfo)
+            context.log.info("READY DONE")
+            updateBehavior(updatedSub = newSubscriber, updatedReady = newReady, updatedRoomInfo = newRoomInfo)
           }
-          notifyUpdateRoomInfo(newSubscriber, newReady, newRoomInfo)
-          context.log.info("READY DONE")
-          updateBehavior(updatedSub = newSubscriber, updatedReady = newReady, updatedRoomInfo = newRoomInfo)
 
         case Logout(actor) =>
           context.log.info("LOGOUT")
