@@ -2,10 +2,10 @@ package org.riskala.model.lobby
 
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}
-import LobbyMessages._
 import org.riskala.controller.actors.PlayerMessages.{PlayerMessage, RoomAlreadyExistsMessage, RoomNotFoundMessage}
 import org.riskala.model.ModelMessages._
 import org.riskala.model.game.GameManager
+import org.riskala.model.lobby.LobbyMessages._
 import org.riskala.model.room.RoomManager
 import org.riskala.model.room.RoomMessages.{Join, RoomBasicInfo}
 
