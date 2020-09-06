@@ -23,7 +23,7 @@ class LobbyTest extends AnyWordSpec with BeforeAndAfterAll {
       val lobby: ActorRef[LobbyMessage] = testKit.spawn(LobbyManager(), "LobbySub")
       val probeSub: TestProbe[PlayerMessage] = testKit.createTestProbe[PlayerMessage]("probeSub")
       lobby ! Subscribe(probeSub.ref)
-      probeSub.expectMessageType[PlayerMessage]
+      probeSub.expectMessage(LobbyInfoMessage())
       lobby ! Logout(probeSub.ref)
       probeSub.expectNoMessage()
     }
@@ -36,11 +36,11 @@ class LobbyTest extends AnyWordSpec with BeforeAndAfterAll {
       val probeCreate2: TestProbe[PlayerMessage] = testKit.createTestProbe[PlayerMessage]("probeCreate2")
       lobby ! Subscribe(probeCreate.ref)
       lobby ! Subscribe(probeCreate2.ref)
-      probeCreate.expectMessageType[PlayerMessage]
-      probeCreate2.expectMessageType[PlayerMessage]
+      probeCreate.expectMessage(LobbyInfoMessage())
+      probeCreate2.expectMessage(LobbyInfoMessage())
       lobby ! CreateRoom(probeCreate.ref, RoomInfo(RoomBasicInfo("Europa", 0, 4), ""))
       probeCreate.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 0, 4), "")))
-      probeCreate2.expectMessageType[PlayerMessage]
+      probeCreate2.expectMessage(LobbyInfoMessage())
       lobby ! Logout(probeCreate2.ref)
       probeCreate2.expectNoMessage()
     }
@@ -82,11 +82,11 @@ class LobbyTest extends AnyWordSpec with BeforeAndAfterAll {
       val game: ActorRef[GameMessage] = testKit.spawn(Behaviors.ignore[GameMessage], "GameStart")
       val probeSub: TestProbe[PlayerMessage] = testKit.createTestProbe[PlayerMessage]("probeStart")
       lobby ! Subscribe(probeSub.ref)
-      probeSub.expectMessageType[PlayerMessage]
+      probeSub.expectMessage(LobbyInfoMessage())
       lobby ! StartGame(RoomInfo(RoomBasicInfo("Europe", 4,4), "Europe"),
         HashMap.empty[String,ActorRef[PlayerMessage]],
         HashSet.empty[ActorRef[PlayerMessage]])
-      probeSub.expectMessageType[PlayerMessage]
+      probeSub.expectMessage(LobbyInfoMessage())
       lobby ! Logout(probeSub.ref)
       probeSub.expectNoMessage()
     }
@@ -98,9 +98,9 @@ class LobbyTest extends AnyWordSpec with BeforeAndAfterAll {
       val game: ActorRef[GameMessage] = testKit.spawn(Behaviors.ignore[GameMessage], "GameEnd")
       val probeSub: TestProbe[PlayerMessage] = testKit.createTestProbe[PlayerMessage]("probeEnd")
       lobby ! Subscribe(probeSub.ref)
-      probeSub.expectMessageType[PlayerMessage]
+      probeSub.expectMessage(LobbyInfoMessage())
       lobby ! EndGame("Europa",game)
-      probeSub.expectMessageType[PlayerMessage]
+      probeSub.expectMessage(LobbyInfoMessage())
       lobby ! Logout(probeSub.ref)
       probeSub.expectNoMessage()
     }
@@ -112,11 +112,11 @@ class LobbyTest extends AnyWordSpec with BeforeAndAfterAll {
       val game: ActorRef[GameMessage] = testKit.spawn(Behaviors.ignore[GameMessage], "GameClose")
       val probeSub: TestProbe[PlayerMessage] = testKit.createTestProbe[PlayerMessage]("probeClose")
       lobby ! Subscribe(probeSub.ref)
-      probeSub.expectMessageType[PlayerMessage]
+      probeSub.expectMessage(LobbyInfoMessage())
       lobby ! EndGame("Europa",game)
-      probeSub.expectMessageType[PlayerMessage]
+      probeSub.expectMessage(LobbyInfoMessage())
       lobby ! GameClosed("Europa", List.empty[ActorRef[PlayerMessage]])
-      probeSub.expectMessageType[PlayerMessage]
+      probeSub.expectMessage(LobbyInfoMessage())
       lobby ! Logout(probeSub.ref)
       probeSub.expectNoMessage()
     }
@@ -130,14 +130,14 @@ class LobbyTest extends AnyWordSpec with BeforeAndAfterAll {
       val info = RoomInfo(RoomBasicInfo("Europa", 0, 4), "")
       lobby ! Subscribe(probeUpdate.ref)
       lobby ! Subscribe(probeUpdate2.ref)
-      probeUpdate.expectMessageType[PlayerMessage]
-      probeUpdate2.expectMessageType[PlayerMessage]
+      probeUpdate.expectMessage(LobbyInfoMessage())
+      probeUpdate2.expectMessage(LobbyInfoMessage())
       lobby ! CreateRoom(probeUpdate.ref, info)
-      probeUpdate.expectNoMessage()
-      probeUpdate2.expectMessageType[PlayerMessage]
+      probeUpdate.expectMessage(RoomInfoMessage(info))
+      probeUpdate2.expectMessage(LobbyInfoMessage())
       lobby ! UpdateRoomInfo(info.basicInfo)
       probeUpdate.expectNoMessage()
-      probeUpdate2.expectMessageType[PlayerMessage]
+      probeUpdate2.expectMessage(LobbyInfoMessage())
       lobby ! Logout(probeUpdate2.ref)
       probeUpdate2.expectNoMessage()
     }
