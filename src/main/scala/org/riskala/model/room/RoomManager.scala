@@ -67,7 +67,7 @@ object RoomManager {
              */
 
             lobby ! EmptyRoom(roomInfo.basicInfo.name)
-            Behaviors.stopped
+            return Behaviors.stopped
           }
           context.log.info("LEAVE DONE")
           updateBehavior(updatedSub = newSubscriber)
@@ -95,7 +95,6 @@ object RoomManager {
           val newSubscriber = subscribersRoom - actor
           //Add the actor into readyPlayerList
           val newReady = readyPlayerList + (playerName -> actor)
-          notifyUpdateRoomInfo(newSubscriber, newReady, newRoomInfo)
 
           if (newReady.size == newRoomInfo.basicInfo.maxNumberOfPlayer) {
             context.log.info("Room complete. Start Game")
@@ -103,17 +102,22 @@ object RoomManager {
 
             lobby ! StartGame(roomInfo, newReady, newSubscriber)
             //TODO: Change behavior from Room to Game -> GameManager()
-
             context.spawn(GameManager(), "GameManager")
+            return Behaviors.stopped
           }
+          notifyUpdateRoomInfo(newSubscriber, newReady, newRoomInfo)
           context.log.info("READY DONE")
           updateBehavior(updatedSub = newSubscriber, updatedReady = newReady, updatedRoomInfo = newRoomInfo)
 
         case Logout(actor) =>
           context.log.info("LOGOUT")
-          val newSubscriber = subscribersRoom - actor
-          updateBehavior(updatedSub = newSubscriber)
-
+          if(readyPlayerList.toList.exists(kv => kv._2 == actor)){
+            val newReady: HashMap[String,ActorRef[PlayerMessage]] = readyPlayerList.filter(kv => kv._2 != actor)
+            notifyUpdateRoomInfo(subscribersRoom, newReady, roomInfo)
+            updateBehavior(updatedReady = newReady)
+          } else {
+            updateBehavior(updatedSub = subscribersRoom - actor)
+          }
       }
     }
   }
