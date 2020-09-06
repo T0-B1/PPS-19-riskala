@@ -79,9 +79,10 @@ object LobbyManager {
             nextBehavior()
           }
           
-        case StartGame(name, actor) =>
-          val newRooms = rooms - name
-          val newGames = games + (name -> actor)
+        case StartGame(info, actor) =>
+          val newRooms = rooms - info.basicInfo.name
+          //val game = context.spawn(GameManager(), "GameManager")
+          val newGames = games + (info.basicInfo.name -> actor)
           notifyAllSubscribers(getInfo(nextRooms = newRooms,nextGames = newGames))
           nextBehavior(nextRooms = newRooms,nextGames = newGames)
 

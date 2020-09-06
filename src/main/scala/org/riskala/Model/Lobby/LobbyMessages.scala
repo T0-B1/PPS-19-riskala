@@ -30,7 +30,7 @@ object LobbyMessages {
    * @param name              The name of the room in which i will play a game
    * @param actor             The actor who will play a game
    * */
-  case class StartGame(name: String, actor: ActorRef[GameMessage]) extends LobbyMessage
+  case class StartGame(info: RoomInfo, actor: ActorRef[GameMessage]) extends LobbyMessage
 
   /** Message sent when a game ends
    * @param name             The name of game that ended
