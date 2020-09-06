@@ -2,26 +2,12 @@ package org.riskala.model.lobby
 
 import akka.actor.typed.ActorRef
 import org.riskala.model.ModelMessages._
+import org.riskala.model.room.RoomMessages.{RoomBasicInfo, RoomInfo}
 
 /**
  * Lobby messages
  */
 object LobbyMessages {
-
-  /**
-   * @param name                    Room name
-   * @param actualNumberOfPlayer    Number of player in a room
-   * @param maxNumberOfPlayer       Maximun numbere of player of a room
-   * */
-  case class RoomBasicInfo(name: String,
-                      actualNumberOfPlayer: Int,
-                      maxNumberOfPlayer: Int)
-
-  /**
-   * @param basicInfo               Object containing the basic information of a room
-   * @param scenario                Name of the game map
-   * */
-  case class RoomInfo(basicInfo: RoomBasicInfo, scenario: String)
 
   /** Message sent to subscribe himself to the lobby
    * @param subscriber              The actor

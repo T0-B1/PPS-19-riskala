@@ -4,6 +4,7 @@ import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}
 import LobbyMessages._
 import org.riskala.model.ModelMessages._
+import org.riskala.model.room.RoomMessages.RoomBasicInfo
 
 import scala.collection.immutable.{HashMap, HashSet}
 
