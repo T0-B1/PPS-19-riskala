@@ -3,7 +3,7 @@ package org.riskala.controller.actors
 import akka.actor.typed.ActorRef
 import akka.http.scaladsl.model.ws.Message
 
-object ServerMessages {
+object PlayerMessages {
 
   trait ServerMessage
 
