@@ -5,6 +5,7 @@ import akka.actor.typed.{ActorRef, Behavior}
 import LobbyMessages._
 import org.riskala.controller.actors.PlayerMessages.{PlayerMessage, RoomAlreadyExistsMessage, RoomNotFoundMessage}
 import org.riskala.model.ModelMessages._
+import org.riskala.model.game.GameManager
 import org.riskala.model.room.RoomManager
 import org.riskala.model.room.RoomMessages.{Join, RoomBasicInfo}
 
@@ -79,7 +80,7 @@ object LobbyManager {
           
         case StartGame(info, actor) =>
           val newRooms = rooms - info.basicInfo.name
-          //val game = context.spawn(GameManager(), "GameManager")
+          val game = context.spawn(GameManager(), "GameManager-"+info.basicInfo.name)
           val newGames = games + (info.basicInfo.name -> actor)
           notifyAllSubscribers(getInfo(nextRooms = newRooms,nextGames = newGames))
           nextBehavior(nextRooms = newRooms,nextGames = newGames)

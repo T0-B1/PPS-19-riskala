@@ -1,6 +1,7 @@
 package org.riskala.model.lobby
 
 import akka.actor.typed.ActorRef
+import org.riskala.controller.actors.PlayerMessages.PlayerMessage
 import org.riskala.model.ModelMessages._
 import org.riskala.model.room.RoomMessages.{RoomBasicInfo, RoomInfo}
 
