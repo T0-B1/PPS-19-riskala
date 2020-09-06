@@ -6,7 +6,7 @@ import org.riskala.controller.actors.PlayerMessages.{PlayerMessage, RoomInfoMess
 import org.riskala.model.room.RoomManager
 import org.riskala.model.room.RoomMessages._
 import org.riskala.model.ModelMessages._
-import org.riskala.model.lobby.LobbyMessages.Subscribe
+import org.riskala.model.lobby.LobbyMessages.{Subscribe, UpdateRoomInfo}
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.wordspec.AnyWordSpec
 
@@ -61,8 +61,10 @@ class RoomManagerTest extends AnyWordSpec with BeforeAndAfterAll {
       player.expectMessage(RoomInfoMessage(roomInfo))
 
       room ! Ready("playerReady", playerReady.ref)
-      playerReady.expectMessageType[PlayerMessage]
-      player.expectMessageType[PlayerMessage]
+      playerReady.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 1, 4), "")))
+      player.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 1, 4), "")))
+
+      readyLobby.expectMessage(UpdateRoomInfo(RoomBasicInfo("Europa", 1, 4)))
     }
   }
 
