@@ -27,15 +27,13 @@ object RoomMessages {
    *  @param playerName     The player who is ready in a room
    *  @param actor          The reference of the player
    * */
-  case class Ready(playerName: String, actor: ActorRef[PlayerMessage])
-    extends RoomMessage
+  case class Ready(playerName: String, actor: ActorRef[PlayerMessage]) extends RoomMessage
 
   /** Message sent when an actor is not ready anymore
    *  @param playerName     The player name who is not ready
    *  @param actor          The reference of the player
    * */
-  case class UnReady(playerName: String, actor: ActorRef[PlayerMessage])
-    extends RoomMessage
+  case class UnReady(playerName: String, actor: ActorRef[PlayerMessage]) extends RoomMessage
 
   /** Message sent when an actor wants to participate to a game
    * @param actor           The actor who want to participate to a game
