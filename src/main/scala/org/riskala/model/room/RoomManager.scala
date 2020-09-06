@@ -4,7 +4,7 @@ import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}
 import RoomMessages._
 import org.riskala.model.ModelMessages._
-import org.riskala.model.lobby.LobbyMessages.{EmptyRoom, StartGame}
+import org.riskala.model.lobby.LobbyMessages.{EmptyRoom, StartGame, UpdateRoomInfo}
 
 import scala.collection.immutable.{HashMap, HashSet}
 
@@ -28,7 +28,7 @@ object RoomManager {
         newReady.foreach(rp => rp._2 ! new PlayerMessage {})
         newSubscribers. foreach(s => s ! new PlayerMessage {})
         //TODO: newRoomInfo
-        lobby ! new LobbyMessage {}
+        lobby ! UpdateRoomInfo(newRoomInfo.basicInfo)
       }
 
       def updateBehavior(updatedSub: HashSet[ActorRef[PlayerMessage]] = subscribersRoom,
