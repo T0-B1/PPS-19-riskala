@@ -2,6 +2,7 @@ package org.riskala.model
 
 import akka.actor.testkit.typed.scaladsl.{ActorTestKit, TestProbe}
 import akka.actor.typed.ActorRef
+import org.riskala.controller.actors.PlayerMessages.PlayerMessage
 import org.riskala.model.room.RoomManager
 import org.riskala.model.room.RoomMessages._
 import org.riskala.model.ModelMessages._
