@@ -57,20 +57,19 @@ object RoomManager {
 
         case Leave(actor) =>
           context.log.info("LEAVE")
-          //Remove the actor from subscribersList
-          val newSubscriber = subscribersRoom - actor
-          if (newSubscriber.isEmpty && readyPlayerList.isEmpty) {
-            context.log.info("room empty. Bye")
-            /*If there is any player:
-             (1) send message to lobby (emptyRoom);
-             (2)Behaviors.stopped
-             */
-
+          var newReady = readyPlayerList
+          var newSubscribers = subscribersRoom
+          if(readyPlayerList.toList.exists(kv => kv._2 == actor)){
+            newReady = readyPlayerList.filter(kv => kv._2 != actor)
+            notifyUpdateRoomInfo(subscribersRoom, newReady, roomInfo)
+          } else {
+            newSubscribers = subscribersRoom - actor
+          }
+          if(newSubscribers.isEmpty && newReady.isEmpty){
             lobby ! EmptyRoom(roomInfo.basicInfo.name)
             return Behaviors.stopped
           }
-          context.log.info("LEAVE DONE")
-          updateBehavior(updatedSub = newSubscriber)
+          updateBehavior(updatedSub = newSubscribers, updatedReady = newReady)
 
         case UnReady(playerName, actor) =>
           context.log.info("UNREADY")
