@@ -15,7 +15,6 @@ import org.riskala.utils
 class AuthTest extends AnyWordSpec with Matchers with ScalatestRouteTest {
 
   val properties: Properties = utils.loadPropertiesFromResources()
-  val server: Server = Server()
 
   "A user" when {
     "registered" should {

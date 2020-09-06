@@ -1,6 +1,7 @@
 package org.riskala.model
 
 import akka.actor.typed.ActorRef
+import org.riskala.controller.actors.PlayerMessages.PlayerMessage
 
 object ModelMessages {
 
@@ -9,9 +10,6 @@ object ModelMessages {
   trait GameMessage
 
   trait RoomMessage
-
-  //TODO: move to Controller
-  trait PlayerMessage
 
   sealed trait LogoutMessage extends LobbyMessage with GameMessage with RoomMessage
 

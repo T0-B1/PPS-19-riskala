@@ -4,10 +4,14 @@ import org.scalatest.wordspec.AnyWordSpec
 import akka.actor.testkit.typed.scaladsl.{ActorTestKit, TestProbe}
 import akka.actor.typed.ActorRef
 import akka.actor.typed.scaladsl.Behaviors
+import org.riskala.controller.actors.PlayerMessages.PlayerMessage
 import org.riskala.model.lobby.LobbyManager
 import org.riskala.model.lobby.LobbyMessages._
 import org.riskala.model.ModelMessages._
+import org.riskala.model.room.RoomMessages.{RoomBasicInfo, RoomInfo}
 import org.scalatest.BeforeAndAfterAll
+
+import scala.collection.immutable.{HashMap, HashSet}
 
 class LobbyTest extends AnyWordSpec with BeforeAndAfterAll {
   val testKit: ActorTestKit = ActorTestKit()
@@ -78,7 +82,9 @@ class LobbyTest extends AnyWordSpec with BeforeAndAfterAll {
       val probeSub: TestProbe[PlayerMessage] = testKit.createTestProbe[PlayerMessage]("probeStart")
       lobby ! Subscribe(probeSub.ref)
       probeSub.expectMessageType[PlayerMessage]
-      lobby ! StartGame("Europa",game)
+      lobby ! StartGame(RoomInfo(RoomBasicInfo("Europe", 4,4), "Europe"),
+        HashMap.empty[String,ActorRef[PlayerMessage]],
+        HashSet.empty[ActorRef[PlayerMessage]])
       probeSub.expectMessageType[PlayerMessage]
       lobby ! Logout(probeSub.ref)
       probeSub.expectNoMessage()
