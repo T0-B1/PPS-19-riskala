@@ -4,7 +4,7 @@ import org.scalatest.wordspec.AnyWordSpec
 import akka.actor.testkit.typed.scaladsl.{ActorTestKit, TestProbe}
 import akka.actor.typed.ActorRef
 import akka.actor.typed.scaladsl.Behaviors
-import org.riskala.controller.actors.PlayerMessages.PlayerMessage
+import org.riskala.controller.actors.PlayerMessages._
 import org.riskala.model.lobby.LobbyManager
 import org.riskala.model.lobby.LobbyMessages._
 import org.riskala.model.ModelMessages._
@@ -39,7 +39,7 @@ class LobbyTest extends AnyWordSpec with BeforeAndAfterAll {
       probeCreate.expectMessageType[PlayerMessage]
       probeCreate2.expectMessageType[PlayerMessage]
       lobby ! CreateRoom(probeCreate.ref, RoomInfo(RoomBasicInfo("Europa", 0, 4), ""))
-      probeCreate.expectNoMessage()
+      probeCreate.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 0, 4), "")))
       probeCreate2.expectMessageType[PlayerMessage]
       lobby ! Logout(probeCreate2.ref)
       probeCreate2.expectNoMessage()
@@ -52,24 +52,25 @@ class LobbyTest extends AnyWordSpec with BeforeAndAfterAll {
       val probeJoin: TestProbe[PlayerMessage] = testKit.createTestProbe[PlayerMessage]("probeJoin")
       val probeJoin2: TestProbe[PlayerMessage] = testKit.createTestProbe[PlayerMessage]("probeJoin2")
       val probeJoin3: TestProbe[PlayerMessage] = testKit.createTestProbe[PlayerMessage]("probeJoin3")
+      val roomInfo: RoomInfo = RoomInfo(RoomBasicInfo("Usa", 0, 6), "")
       lobby ! Subscribe(probeJoin.ref)
       lobby ! Subscribe(probeJoin2.ref)
       lobby ! Subscribe(probeJoin3.ref)
-      probeJoin.expectMessageType[PlayerMessage]
-      probeJoin2.expectMessageType[PlayerMessage]
-      probeJoin3.expectMessageType[PlayerMessage]
+      probeJoin.expectMessage(LobbyInfoMessage())
+      probeJoin2.expectMessage(LobbyInfoMessage())
+      probeJoin3.expectMessage(LobbyInfoMessage())
       //probe create room
-      lobby ! CreateRoom(probeJoin.ref, RoomInfo(RoomBasicInfo("Usa", 0, 6), ""))
-      probeJoin.expectNoMessage()
-      probeJoin2.expectMessageType[PlayerMessage]
-      probeJoin3.expectMessageType[PlayerMessage]
+      lobby ! CreateRoom(probeJoin.ref, roomInfo)
+      probeJoin.expectMessage(RoomInfoMessage(roomInfo))
+      probeJoin2.expectMessage(LobbyInfoMessage())
+      probeJoin3.expectMessage(LobbyInfoMessage())
       //probe2 join
       lobby ! JoinTo(probeJoin2.ref, "Usa")
-      probeJoin2.expectNoMessage()
+      probeJoin2.expectMessage(RoomInfoMessage(roomInfo))
       probeJoin3.expectNoMessage()
       //probe3 try join and receive error response
       lobby ! JoinTo(probeJoin3.ref, "America")
-      probeJoin3.expectMessageType[PlayerMessage]
+      probeJoin3.expectMessage(RoomNotFoundMessage())
       lobby ! Logout(probeJoin3.ref)
       probeJoin3.expectNoMessage()
     }
