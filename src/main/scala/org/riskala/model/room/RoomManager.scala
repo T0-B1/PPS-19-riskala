@@ -99,7 +99,7 @@ object RoomManager {
             context.log.debug("Room complete. Start Game")
             //Game can start
 
-            lobby ! StartGame(roomInfo.basicInfo.name, context.self.asInstanceOf[ActorRef[GameMessage]])
+            lobby ! StartGame(roomInfo, context.self.asInstanceOf[ActorRef[GameMessage]])
             //TODO: Change behavior from Room to Game -> GameManager()
 
             //return Behaviors.ignore[GameMessage]
