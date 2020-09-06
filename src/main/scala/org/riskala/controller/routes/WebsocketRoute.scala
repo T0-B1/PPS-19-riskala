@@ -12,8 +12,7 @@ import akka.stream.typed.scaladsl.ActorSource
 import org.riskala.controller.AuthManager
 import org.riskala.controller.Server
 import org.riskala.controller.actors.PlayerActor
-import org.riskala.controller.actors.ServerMessages.{PlayerMessage, ServerMessage, SocketMessage}
-import org.riskala.view.SocketActor.SocketMessage
+import org.riskala.controller.actors.ServerMessages.{PlayerMessage, RegisterSocket, SocketMessage}
 
 import scala.concurrent.Future
 
@@ -28,11 +27,11 @@ object WebsocketRoute {
         val username = AuthManager.getUser(token).get
         system.log.info(s"Websocket created for player $username")
         val (wsActor, wsSource) = source.preMaterialize()
-        val playerActorRef: ActorRef[PlayerMessage] = system.systemActorOf(PlayerActor(username), username)
-        val wsSink = sink(playerActorRef)
         // TODO use spawn protocol
         // https://doc.akka.io/docs/akka/current/typed/actor-lifecycle.html#spawnprotocol
-        handleWebSocketMessages(Flow.fromSinkAndSource(wsSink, wsSource))
+        val playerActorRef: ActorRef[PlayerMessage] = system.systemActorOf(PlayerActor(username), username)
+        playerActorRef ! RegisterSocket(wsActor)
+        handleWebSocketMessages(Flow.fromSinkAndSource(sinkFromActor(playerActorRef), wsSource))
       }
     }
 
@@ -40,7 +39,7 @@ object WebsocketRoute {
     case _ => CompletionStrategy.immediately
   }, PartialFunction.empty, bufferSize = 8, overflowStrategy = OverflowStrategy.dropHead)
 
-  private def sink(playerRef: ActorRef[PlayerMessage]): Sink[Message, Future[Done]] =
+  private def sinkFromActor(playerRef: ActorRef[PlayerMessage]): Sink[Message, Future[Done]] =
     Sink.foreach(m => playerRef ! SocketMessage(m.asTextMessage.getStrictText))
 
 }
