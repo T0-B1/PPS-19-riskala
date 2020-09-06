@@ -6,7 +6,7 @@ import org.riskala.controller.actors.PlayerMessages.{PlayerMessage, RoomInfoMess
 import org.riskala.model.room.RoomManager
 import org.riskala.model.room.RoomMessages._
 import org.riskala.model.ModelMessages._
-import org.riskala.model.lobby.LobbyMessages.{Subscribe, UpdateRoomInfo}
+import org.riskala.model.lobby.LobbyMessages.{StartGame, Subscribe, UpdateRoomInfo}
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.wordspec.AnyWordSpec
 
@@ -100,39 +100,44 @@ class RoomManagerTest extends AnyWordSpec with BeforeAndAfterAll {
       val player4: TestProbe[PlayerMessage] = testKit.createTestProbe[PlayerMessage]("player4")
 
       room ! Join(player.ref)
-      player.expectMessageType[PlayerMessage]
+      player.expectMessage(RoomInfoMessage(roomInfo))
       room ! Join(player2.ref)
-      player2.expectMessageType[PlayerMessage]
+      player2.expectMessage(RoomInfoMessage(roomInfo))
       room ! Join(player3.ref)
-      player3.expectMessageType[PlayerMessage]
+      player3.expectMessage(RoomInfoMessage(roomInfo))
       room ! Join(player4.ref)
-      player4.expectMessageType[PlayerMessage]
+      player4.expectMessage(RoomInfoMessage(roomInfo))
 
       room ! Ready("NarcAle", player.ref)
-      player.expectMessageType[PlayerMessage]
-      player2.expectMessageType[PlayerMessage]
-      player3.expectMessageType[PlayerMessage]
-      player4.expectMessageType[PlayerMessage]
+      player.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 1, 4), "")))
+      player2.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 1, 4), "")))
+      player3.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 1, 4), "")))
+      player4.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 1, 4), "")))
+      lobby.expectMessage(UpdateRoomInfo(RoomBasicInfo("Europa", 1, 4)))
 
       room ! Ready("Giordo", player2.ref)
-      player.expectMessageType[PlayerMessage]
-      player2.expectMessageType[PlayerMessage]
-      player3.expectMessageType[PlayerMessage]
-      player4.expectMessageType[PlayerMessage]
+      player.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 2, 4), "")))
+      player2.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 2, 4), "")))
+      player3.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 2, 4), "")))
+      player4.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 2, 4), "")))
+      lobby.expectMessage(UpdateRoomInfo(RoomBasicInfo("Europa", 2, 4)))
 
       room ! Ready("Marto", player3.ref)
-      player.expectMessageType[PlayerMessage]
-      player2.expectMessageType[PlayerMessage]
-      player3.expectMessageType[PlayerMessage]
-      player4.expectMessageType[PlayerMessage]
+      player.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 3, 4), "")))
+      player2.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 3, 4), "")))
+      player3.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 3, 4), "")))
+      player4.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 3, 4), "")))
+      lobby.expectMessage(UpdateRoomInfo(RoomBasicInfo("Europa", 3, 4)))
 
       room ! Ready("Luca", player4.ref)
-      player.expectMessageType[PlayerMessage]
-      player2.expectMessageType[PlayerMessage]
-      player3.expectMessageType[PlayerMessage]
-      player4.expectMessageType[PlayerMessage]
+      val receivedMsg = lobby.receiveMessage()
+      assert(receivedMsg.isInstanceOf[StartGame])
 
-      lobby.expectMessageType[LobbyMessage]
+      val receivedStart = receivedMsg.asInstanceOf[StartGame]
+      assert(receivedStart.players.contains("Luca"))
+      assert(receivedStart.players.contains("Marto"))
+      assert(receivedStart.info == RoomInfo(RoomBasicInfo("Europa", 3, 4), ""))
+      assert(receivedStart.players.size == roomInfo.basicInfo.maxNumberOfPlayer)
     }
   }
 
