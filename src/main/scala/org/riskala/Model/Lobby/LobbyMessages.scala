@@ -32,7 +32,6 @@ object LobbyMessages {
    * @param actor             The actor who is starting the game
    * */
   case class StartGame(info: RoomInfo,
-                       roomActorRef: ActorRef[GameMessage],
                        players: Set[ActorRef[PlayerMessage]],
                        roomSubscribers: Set[ActorRef[PlayerMessage]]) extends LobbyMessage
 
