@@ -4,6 +4,7 @@ import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}
 import RoomMessages._
 import org.riskala.model.ModelMessages._
+import org.riskala.model.lobby.LobbyMessages.{EmptyRoom, StartGame}
 
 import scala.collection.immutable.{HashMap, HashSet}
 
@@ -35,42 +36,42 @@ object RoomManager {
                          updatedRoomInfo: RoomInfo = roomInfo,
                          updatedLobby: ActorRef[LobbyMessage] = lobby
                         ):Behavior[RoomMessage] = {
-        println("updSub: -> "+ updatedSub.toList)
-        println("updReady: -> "+ updatedReady.toList)
-        println("updRI: -> "+ updatedRoomInfo)
-        println("updLobby: -> "+ updatedLobby)
-        println( "------- --------")
+        context.log.debug("updSub: -> "+ updatedSub.toList)
+        context.log.debug("updReady: -> "+ updatedReady.toList)
+        context.log.debug("updRI: -> "+ updatedRoomInfo)
+        context.log.debug("updLobby: -> "+ updatedLobby)
+        context.log.debug( "------- --------")
         roomManager(updatedSub, updatedReady, updatedRoomInfo, updatedLobby)
       }
 
       message match {
         case Join(actor) =>
-          println("beforeJoin "+subscribersRoom.size)
+          context.log.debug("beforeJoin "+subscribersRoom.size)
           val newSubscriber = subscribersRoom + actor
-          println("After SUB "+newSubscriber.size)
+          context.log.debug("After SUB "+newSubscriber.size)
           //TODO: change into info
           actor ! new PlayerMessage {}
           updateBehavior(updatedSub = newSubscriber)
 
         case Leave(actor) =>
-          println("LEAVE")
+          context.log.debug("LEAVE")
           //Remove the actor from subscribersList
           val newSubscriber = subscribersRoom - actor
           if (newSubscriber.isEmpty && readyPlayerList.isEmpty) {
-            println("room empty. Bye")
+            context.log.debug("room empty. Bye")
             /*If there is any player:
              (1) send message to lobby (emptyRoom);
              (2)Behaviors.stopped
              */
-            //TODO: EmptyRoom(info.basicInfo.name)
+            //TODO: check test EmptyRoom(roomInfo.basicInfo.name)
             lobby ! new LobbyMessage {}
             Behaviors.stopped
           }
-          println("LEAVE DONE")
+          context.log.debug("LEAVE DONE")
           updateBehavior(updatedSub = newSubscriber)
 
         case UnReady(playerName, actor) =>
-          println("UNREADY")
+          context.log.debug("UNREADY")
           val newReady = readyPlayerList - playerName
           //Update actualNumberPlayer
           val newRoomInfo = roomInfo.copy(
@@ -78,16 +79,16 @@ object RoomManager {
               actualNumberOfPlayer = roomInfo.basicInfo.actualNumberOfPlayer - 1))
           val newSubscriber = subscribersRoom + actor
           notifyUpdateRoomInfo(newSubscriber, newReady, newRoomInfo)
-          println("UNREADY DONE")
+          context.log.debug("UNREADY DONE")
           updateBehavior(updatedSub = newSubscriber, updatedReady = newReady, updatedRoomInfo = newRoomInfo)
 
         case Ready(playerName, actor) =>
-          println("READY")
+          context.log.debug("READY")
           //Update actualNumberPlayer
           val newRoomInfo = roomInfo.copy(
             roomInfo.basicInfo.copy(
               actualNumberOfPlayer = roomInfo.basicInfo.actualNumberOfPlayer + 1))
-          println("newRoomInfo - "+ newRoomInfo)
+          context.log.debug("newRoomInfo - "+ newRoomInfo)
           //Remove the actor from subscribersList
           val newSubscriber = subscribersRoom - actor
           //Add the actor into readyPlayerList
@@ -95,17 +96,20 @@ object RoomManager {
           notifyUpdateRoomInfo(newSubscriber, newReady, newRoomInfo)
 
           if (newReady.size == newRoomInfo.basicInfo.maxNumberOfPlayer) {
-            println("Room complete. Start Game")
+            context.log.debug("Room complete. Start Game")
             //Game can start
-            //TODO: StartGame(roomInfo.basicInfo.name, context.self.asInstanceOf[ActorRef[_]])
+            //TODO: StartGame()
+            //lobby ! StartGame(roomInfo.basicInfo.name, context.self.asInstanceOf[ActorRef[GameMessage]])
             lobby ! new LobbyMessage {}
             //TODO: Change behavior from Room to Game -> GameManager()
+
+            //return Behaviors.ignore[GameMessage]
           }
-          println("READY DONE")
+          context.log.debug("READY DONE")
           updateBehavior(updatedSub = newSubscriber, updatedReady = newReady, updatedRoomInfo = newRoomInfo)
-          
+
         case Logout(actor) =>
-          println("LOGOUT")
+          context.log.debug("LOGOUT")
           val newSubscriber = subscribersRoom - actor
           updateBehavior(updatedSub = newSubscriber)
 
