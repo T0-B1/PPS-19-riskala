@@ -27,7 +27,7 @@ object RoomManager {
         //TODO: change new PlayerMessage into info
         newReady.foreach(rp => rp._2 ! new PlayerMessage {})
         newSubscribers. foreach(s => s ! new PlayerMessage {})
-        //TODO: newRoomInfo
+
         lobby ! UpdateRoomInfo(newRoomInfo.basicInfo)
       }
 
@@ -63,7 +63,7 @@ object RoomManager {
              (1) send message to lobby (emptyRoom);
              (2)Behaviors.stopped
              */
-            //TODO: call Empty room
+
             lobby ! EmptyRoom(roomInfo.basicInfo.name)
             Behaviors.stopped
           }
@@ -98,7 +98,7 @@ object RoomManager {
           if (newReady.size == newRoomInfo.basicInfo.maxNumberOfPlayer) {
             context.log.debug("Room complete. Start Game")
             //Game can start
-            //TODO: StartGame()
+
             lobby ! StartGame(roomInfo.basicInfo.name, context.self.asInstanceOf[ActorRef[GameMessage]])
             //TODO: Change behavior from Room to Game -> GameManager()
 
