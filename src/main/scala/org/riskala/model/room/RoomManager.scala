@@ -3,6 +3,7 @@ package org.riskala.model.room
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}
 import RoomMessages._
+import org.riskala.controller.actors.PlayerMessages._
 import org.riskala.model.ModelMessages._
 import org.riskala.model.game.GameManager
 import org.riskala.model.lobby.LobbyMessages.{EmptyRoom, StartGame, UpdateRoomInfo}
@@ -50,8 +51,8 @@ object RoomManager {
           context.log.info("beforeJoin "+subscribersRoom.size)
           val newSubscriber = subscribersRoom + actor
           context.log.info("After SUB "+newSubscriber.size)
-          //TODO: change into info - RoomInfoMessage(roomInfo)
-          actor ! new PlayerMessage {}
+          
+          actor ! RoomInfoMessage(roomInfo)
           updateBehavior(updatedSub = newSubscriber)
 
         case Leave(actor) =>
