@@ -2,7 +2,11 @@ package org.riskala.model.game
 
 import org.riskala.model.ModelMessages.GameMessage
 
+import scala.collection.immutable.Queue
+
 object GameMessages {
+
+  case class GameInfo(name: String, scenario: String, players: Queue[String])
 
   /**
    * Message sent when an actor wants to join this game
