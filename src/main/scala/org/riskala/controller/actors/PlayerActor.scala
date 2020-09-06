@@ -3,7 +3,7 @@ package org.riskala.controller.actors
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.actor.typed.scaladsl.Behaviors
 import akka.http.scaladsl.model.ws.{Message, TextMessage}
-import org.riskala.controller.actors.ServerMessages._
+import org.riskala.controller.actors.PlayerMessages._
 
 object PlayerActor {
 
