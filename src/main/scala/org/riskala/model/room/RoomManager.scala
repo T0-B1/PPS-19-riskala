@@ -48,10 +48,9 @@ object RoomManager {
 
       message match {
         case Join(actor) =>
-          context.log.info("beforeJoin "+subscribersRoom.size)
+          context.log.info("JOIN")
           val newSubscriber = subscribersRoom + actor
           context.log.info("After SUB "+newSubscriber.size)
-
           actor ! RoomInfoMessage(roomInfo)
           updateBehavior(updatedSub = newSubscriber)
 
@@ -73,7 +72,7 @@ object RoomManager {
           if(newSubscribers.isEmpty && newReady.isEmpty){
             lobby ! EmptyRoom(roomInfo.basicInfo.name)
             Behaviors.stopped {
-              () => context.log.info("Behavior room stopped")
+              () => context.log.info("LeaveMessage!- Behavior stopped")
             }
           } else {
             updateBehavior(updatedSub = newSubscribers, updatedReady = newReady, updatedRoomInfo = newRoomInfo)
@@ -88,7 +87,6 @@ object RoomManager {
               actualNumberOfPlayer = roomInfo.basicInfo.actualNumberOfPlayer - 1))
           val newSubscriber = subscribersRoom + actor
           notifyUpdateRoomInfo(newSubscriber, newReady, newRoomInfo)
-          context.log.info("UNREADY DONE")
           updateBehavior(updatedSub = newSubscriber, updatedReady = newReady, updatedRoomInfo = newRoomInfo)
 
         case Ready(playerName, actor) =>
@@ -104,9 +102,7 @@ object RoomManager {
           val newReady = readyPlayerList + (playerName -> actor)
 
           if (newReady.size == newRoomInfo.basicInfo.maxNumberOfPlayer) {
-            context.log.info("Room complete. Start Game")
             //Game can start
-
             lobby ! StartGame(roomInfo, newReady, newSubscriber)
             //TODO: Change behavior from Room to Game -> GameManager()
             context.spawn(GameManager(), "GameManager")
@@ -115,7 +111,6 @@ object RoomManager {
             }
           } else {
             notifyUpdateRoomInfo(newSubscriber, newReady, newRoomInfo)
-            context.log.info("READY DONE")
             updateBehavior(updatedSub = newSubscriber, updatedReady = newReady, updatedRoomInfo = newRoomInfo)
           }
 
@@ -136,7 +131,7 @@ object RoomManager {
           if(newSubscribers.isEmpty && newReady.isEmpty){
             lobby ! EmptyRoom(roomInfo.basicInfo.name)
             Behaviors.stopped {
-              () => context.log.info("Behavior room stopped")
+              () => context.log.info("LogoutMessage! - Behavior stopped")
             }
           } else {
             updateBehavior(updatedSub = newSubscribers, updatedReady = newReady, updatedRoomInfo = newRoomInfo)
