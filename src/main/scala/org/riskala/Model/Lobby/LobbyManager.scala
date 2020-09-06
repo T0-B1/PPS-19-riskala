@@ -3,7 +3,9 @@ package org.riskala.model.lobby
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}
 import LobbyMessages._
+import org.riskala.controller.actors.PlayerMessages.{PlayerMessage, RoomAlreadyExistsMessage}
 import org.riskala.model.ModelMessages._
+import org.riskala.model.room.RoomManager
 import org.riskala.model.room.RoomMessages.{Join, RoomBasicInfo}
 
 import scala.collection.immutable.{HashMap, HashSet}
@@ -52,16 +54,15 @@ object LobbyManager {
 
         case CreateRoom(creator, roomInfo) =>
           if (!rooms.contains(roomInfo.basicInfo.name)) {
-            //TODO: spawn RoomManager and send Join msg
-            val room = context.spawn(Behaviors.ignore[RoomMessage], "RoomManager" + roomInfo.basicInfo.name)
+            val room = context.spawn(RoomManager(roomInfo, context.self),
+              "RoomManager-" + roomInfo.basicInfo.name)
             room ! Join(creator)
             val newRooms = rooms + (roomInfo.basicInfo.name -> (room, roomInfo.basicInfo))
             val newSubs = subscribers - creator
             notifyAllSubscribers(getInfo(nextRooms = newRooms),newSubs)
             nextBehavior(nextSubscribers = newSubs,nextRooms = newRooms)
           } else {
-            //TODO: Errore stanza già presente.
-            creator ! new PlayerMessage {}
+            creator ! RoomAlreadyExistsMessage()
             notifyAllSubscribers(getInfo())
             nextBehavior()
           }
