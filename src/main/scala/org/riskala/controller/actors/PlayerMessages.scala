@@ -13,4 +13,14 @@ object PlayerMessages {
 
   final case class RoomInfoMessage() extends PlayerMessage
 
+  final case class LobbyInfoMessage() extends PlayerMessage
+
+  final case class GameInfoMessage() extends PlayerMessage
+
+  final case class RoomAlreadyExistsMessage() extends PlayerMessage
+
+  final case class RoomNotFoundMessage() extends PlayerMessage
+
+  final case class GameNotFoundMessage() extends PlayerMessage
+
 }
