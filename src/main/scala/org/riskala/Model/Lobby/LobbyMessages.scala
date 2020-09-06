@@ -29,7 +29,8 @@ object LobbyMessages {
 
   /** Message sent when a room has reached the maximum number of players
    * @param info              All the information of the room in which the game will be played
-   * @param actor             The actor who is starting the game
+   * @param players           The list of players actor ref who will play the game
+   * @param roomSubscribers   the list of subscribers actor ref who will spectate the game
    * */
   case class StartGame(info: RoomInfo,
                        players: Set[ActorRef[PlayerMessage]],
