@@ -20,6 +20,13 @@ object PlayerActor {
             context.log.info(s"PlayerActor of $username received socket payload: $payload")
             //socket ! TextMessage(s"PlayerActor of $username echoing: $payload")
           }
+          case RegisterSocket(socket) => context.log.info("RegisterSocket")
+          case RoomInfoMessage() => context.log.info("RoomInfoMessage")
+          case LobbyInfoMessage() => context.log.info("LobbyInfoMessage")
+          case GameInfoMessage() => context.log.info("GameInfoMessage")
+          case RoomAlreadyExistsMessage() => context.log.info("RoomAlreadyExistsMessage")
+          case RoomNotFoundMessage() => context.log.info("RoomNotFoundMessage")
+          case GameNotFoundMessage() => context.log.info("GameNotFoundMessage")
         }
         Behaviors.same
       }
