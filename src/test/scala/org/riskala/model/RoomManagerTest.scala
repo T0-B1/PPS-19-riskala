@@ -6,7 +6,7 @@ import org.riskala.controller.actors.PlayerMessages.{PlayerMessage, RoomInfoMess
 import org.riskala.model.room.RoomManager
 import org.riskala.model.room.RoomMessages._
 import org.riskala.model.ModelMessages._
-import org.riskala.model.lobby.LobbyMessages.{StartGame, Subscribe, UpdateRoomInfo}
+import org.riskala.model.lobby.LobbyMessages.{EmptyRoom, StartGame, Subscribe, UpdateRoomInfo}
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.wordspec.AnyWordSpec
 
@@ -76,17 +76,17 @@ class RoomManagerTest extends AnyWordSpec with BeforeAndAfterAll {
       val player_Join: TestProbe[PlayerMessage] = testKit.createTestProbe[PlayerMessage]("player_Join")
 
       room ! Join(playerUnReady.ref)
-      playerUnReady.expectMessageType[PlayerMessage]
+      playerUnReady.expectMessage(RoomInfoMessage(roomInfo))
       room ! Join(player_Join.ref)
-      player_Join.expectMessageType[PlayerMessage]
+      player_Join.expectMessage(RoomInfoMessage(roomInfo))
 
       room ! Ready("playerUnReady", playerUnReady.ref)
-      playerUnReady.expectMessageType[PlayerMessage]
-      player_Join.expectMessageType[PlayerMessage]
+      playerUnReady.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 1, 4), "")))
+      player_Join.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 1, 4), "")))
 
       room ! UnReady("playerUnReady", playerUnReady.ref)
-      player_Join.expectMessageType[PlayerMessage]
-      playerUnReady.expectMessageType[PlayerMessage]
+      player_Join.expectMessage(RoomInfoMessage(roomInfo))
+      playerUnReady.expectMessage(RoomInfoMessage(roomInfo))
     }
   }
 
@@ -151,50 +151,54 @@ class RoomManagerTest extends AnyWordSpec with BeforeAndAfterAll {
       val player4_ : TestProbe[PlayerMessage] = testKit.createTestProbe[PlayerMessage]("player4_")
 
       room ! Join(player_.ref)
-      player_.expectMessageType[PlayerMessage]
+      player_.expectMessage(RoomInfoMessage(roomInfo))
       room ! Join(player2_.ref)
-      player2_.expectMessageType[PlayerMessage]
+      player2_.expectMessage(RoomInfoMessage(roomInfo))
       room ! Join(player3_.ref)
-      player3_.expectMessageType[PlayerMessage]
+      player3_.expectMessage(RoomInfoMessage(roomInfo))
       room ! Join(player4_.ref)
-      player4_.expectMessageType[PlayerMessage]
+      player4_.expectMessage(RoomInfoMessage(roomInfo))
 
       room ! Ready("NarcAle", player_.ref)
-      player_.expectMessageType[PlayerMessage]
-      player2_.expectMessageType[PlayerMessage]
-      player3_.expectMessageType[PlayerMessage]
-      player4_.expectMessageType[PlayerMessage]
+      player_.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 1, 4), "")))
+      player2_.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 1, 4), "")))
+      player3_.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 1, 4), "")))
+      player4_.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 1, 4), "")))
+      lobby.expectMessage(UpdateRoomInfo(RoomBasicInfo("Europa", 1, 4)))
 
       room ! Ready("Giordo", player2_.ref)
-      player_.expectMessageType[PlayerMessage]
-      player2_.expectMessageType[PlayerMessage]
-      player3_.expectMessageType[PlayerMessage]
-      player4_.expectMessageType[PlayerMessage]
+      player_.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 2, 4), "")))
+      player2_.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 2, 4), "")))
+      player3_.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 2, 4), "")))
+      player4_.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 2, 4), "")))
+      lobby.expectMessage(UpdateRoomInfo(RoomBasicInfo("Europa", 2, 4)))
 
       room ! Ready("Marto", player3_.ref)
-      player_.expectMessageType[PlayerMessage]
-      player2_.expectMessageType[PlayerMessage]
-      player3_.expectMessageType[PlayerMessage]
-      player4_.expectMessageType[PlayerMessage]
-
-      room ! Ready("Luca", player4_.ref)
-      player_.expectMessageType[PlayerMessage]
-      player2_.expectMessageType[PlayerMessage]
-      player3_.expectMessageType[PlayerMessage]
-      player4_.expectMessageType[PlayerMessage]
-
-      lobby.expectMessageType[LobbyMessage]
+      player_.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 3, 4), "")))
+      player2_.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 3, 4), "")))
+      player3_.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 3, 4), "")))
+      player4_.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 3, 4), "")))
+      lobby.expectMessage(UpdateRoomInfo(RoomBasicInfo("Europa", 3, 4)))
 
       room ! Logout(player_.ref)
-      player_.expectNoMessage()
-      room ! Logout(player2_.ref)
-      player2_.expectNoMessage()
-      room ! Logout(player3_.ref)
-      player3_.expectNoMessage()
-      room ! Logout(player4_.ref)
-      player4_.expectNoMessage()
+      player2_.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 2, 4), "")))
+      player3_.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 2, 4), "")))
+      player4_.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 2, 4), "")))
+      lobby.expectMessage(UpdateRoomInfo(RoomBasicInfo("Europa", 2, 4)))
 
-      lobby.expectMessageType[LobbyMessage]
+      room ! Logout(player4_.ref)
+      player2_.expectNoMessage()
+      player3_.expectNoMessage()
+
+      room ! Logout(player2_.ref)
+      player3_.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 1, 4), "")))
+      lobby.expectMessage(UpdateRoomInfo(RoomBasicInfo("Europa", 1, 4)))
+
+      room ! Logout(player3_.ref)
+      lobby.expectMessage(UpdateRoomInfo(RoomBasicInfo("Europa", 0, 4)))
+      lobby.expectMessage(EmptyRoom("Europa"))
+
+
     }
   }
 

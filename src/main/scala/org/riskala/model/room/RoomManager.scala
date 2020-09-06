@@ -59,9 +59,13 @@ object RoomManager {
           context.log.info("LEAVE")
           var newReady = readyPlayerList
           var newSubscribers = subscribersRoom
+          var newRoomInfo = roomInfo
           if(readyPlayerList.toList.exists(kv => kv._2 == actor)){
             newReady = readyPlayerList.filter(kv => kv._2 != actor)
-            notifyUpdateRoomInfo(subscribersRoom, newReady, roomInfo)
+            newRoomInfo = roomInfo.copy(
+              roomInfo.basicInfo.copy(
+                actualNumberOfPlayer = roomInfo.basicInfo.actualNumberOfPlayer - 1))
+            notifyUpdateRoomInfo(subscribersRoom, newReady, newRoomInfo)
           } else {
             newSubscribers = subscribersRoom - actor
           }
@@ -72,7 +76,7 @@ object RoomManager {
               () => context.log.info("Behavior room stopped")
             }
           } else {
-            updateBehavior(updatedSub = newSubscribers, updatedReady = newReady)
+            updateBehavior(updatedSub = newSubscribers, updatedReady = newReady, updatedRoomInfo = newRoomInfo)
           }
 
         case UnReady(playerName, actor) =>
@@ -117,12 +121,25 @@ object RoomManager {
 
         case Logout(actor) =>
           context.log.info("LOGOUT")
+          var newReady = readyPlayerList
+          var newSubscribers = subscribersRoom
+          var newRoomInfo = roomInfo
           if(readyPlayerList.toList.exists(kv => kv._2 == actor)){
-            val newReady: HashMap[String,ActorRef[PlayerMessage]] = readyPlayerList.filter(kv => kv._2 != actor)
-            notifyUpdateRoomInfo(subscribersRoom, newReady, roomInfo)
-            updateBehavior(updatedReady = newReady)
+            newReady = readyPlayerList.filter(kv => kv._2 != actor)
+            newRoomInfo = roomInfo.copy(
+              roomInfo.basicInfo.copy(
+                actualNumberOfPlayer = roomInfo.basicInfo.actualNumberOfPlayer - 1))
+            notifyUpdateRoomInfo(newSubscribers, newReady, newRoomInfo)
           } else {
-            updateBehavior(updatedSub = subscribersRoom - actor)
+            newSubscribers = subscribersRoom - actor
+          }
+          if(newSubscribers.isEmpty && newReady.isEmpty){
+            lobby ! EmptyRoom(roomInfo.basicInfo.name)
+            Behaviors.stopped {
+              () => context.log.info("Behavior room stopped")
+            }
+          } else {
+            updateBehavior(updatedSub = newSubscribers, updatedReady = newReady, updatedRoomInfo = newRoomInfo)
           }
       }
     }
