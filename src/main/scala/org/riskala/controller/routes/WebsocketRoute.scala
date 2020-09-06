@@ -12,7 +12,7 @@ import akka.stream.typed.scaladsl.ActorSource
 import org.riskala.controller.AuthManager
 import org.riskala.controller.Server
 import org.riskala.controller.actors.PlayerActor
-import org.riskala.controller.actors.ServerMessages.{PlayerMessage, RegisterSocket, SocketMessage}
+import org.riskala.controller.actors.PlayerMessages._
 
 import scala.concurrent.Future
 
