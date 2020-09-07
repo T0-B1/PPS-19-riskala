@@ -1,18 +1,19 @@
 package org.riskala.controller.routes
 
-import akka.Done
-import akka.actor.typed.{ActorRef, Props}
-import akka.http.scaladsl.model.{StatusCode, StatusCodes}
+import akka.actor.typed.ActorRef
+import akka.actor.typed.receptionist.{Receptionist, ServiceKey}
+import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.model.ws.Message
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
-import akka.stream.{CompletionStrategy, OverflowStrategy}
 import akka.stream.scaladsl.{Flow, Sink, Source}
 import akka.stream.typed.scaladsl.ActorSource
-import org.riskala.controller.AuthManager
-import org.riskala.controller.Server
-import org.riskala.controller.actors.PlayerActor
-import org.riskala.controller.actors.PlayerMessages._
+import akka.stream.{CompletionStrategy, OverflowStrategy}
+import akka.{Done, NotUsed, actor}
+import org.riskala.controller.actors.{PlayerActor, PlayerMessages}
+import org.riskala.controller.actors.PlayerMessages.PlayerMessage
+import org.riskala.controller.{AuthManager, Server}
+import org.riskala.utils.Utils
 
 import scala.concurrent.Future
 
@@ -25,21 +26,42 @@ object WebsocketRoute {
       if( (!AuthManager.checkToken(token)) || AuthManager.getUser(token).isEmpty) complete(StatusCodes.Forbidden)
       else{
         val username = AuthManager.getUser(token).get
-        system.log.info(s"Websocket created for player $username")
-        val (wsActor, wsSource) = source.preMaterialize()
-        // TODO use spawn protocol
-        // https://doc.akka.io/docs/akka/current/typed/actor-lifecycle.html#spawnprotocol
-        val playerActorRef: ActorRef[PlayerMessage] = system.systemActorOf(PlayerActor(username), username)
-        playerActorRef ! RegisterSocket(wsActor)
-        handleWebSocketMessages(Flow.fromSinkAndSource(sinkFromActor(playerActorRef), wsSource))
+        handleWebSocketMessages(createSocketFlow(username))
       }
     }
 
-  private val source: Source[Message, ActorRef[Message]] = ActorSource.actorRef[Message](completionMatcher = {
+  private def createSocketFlow(username: String): Flow[Message, Message, NotUsed] = {
+    val (wsActor, wsSource) = untypedActorSource().preMaterialize()
+    // TODO use spawn protocol
+    // https://doc.akka.io/docs/akka/current/typed/actor-lifecycle.html#spawnprotocol
+    val playerActorRef: ActorRef[PlayerMessage] = spawnOrGetPlayer(username, wsActor)
+    Flow.fromSinkAndSource(sinkFromActor(playerActorRef), wsSource)
+  }
+
+  private def spawnOrGetPlayer(username: String, newSocket: actor.ActorRef): ActorRef[PlayerMessage] = {
+    Utils.askReceptionistToFind[PlayerMessage](username).toSeq match {
+      // No PlayerActor registered found
+      case Seq() => {
+        val ref: ActorRef[PlayerMessage] = system.systemActorOf(PlayerActor(username, newSocket), username)
+        system.receptionist ! Receptionist.Register(ServiceKey[PlayerMessage](username), ref)
+        ref
+      }
+      // The first PlayerActor found
+      case Seq(first, rest@_*) => {
+        first ! PlayerMessages.RegisterSocket(newSocket)
+        first
+      }
+    }
+  }
+
+  private def typedActorSource(): Source[Message, ActorRef[Message]] = ActorSource.actorRef[Message](completionMatcher = {
     case _ => CompletionStrategy.immediately
   }, PartialFunction.empty, bufferSize = 8, overflowStrategy = OverflowStrategy.dropHead)
 
+  private def untypedActorSource(): Source[Message, actor.ActorRef] =
+    Source.actorRef[Message](bufferSize = 8, overflowStrategy = OverflowStrategy.dropHead)
+
   private def sinkFromActor(playerRef: ActorRef[PlayerMessage]): Sink[Message, Future[Done]] =
-    Sink.foreach(m => playerRef ! SocketMessage(m.asTextMessage.getStrictText))
+    Sink.foreach(m => playerRef ! PlayerMessages.SocketMessage(m.asTextMessage.getStrictText))
 
 }

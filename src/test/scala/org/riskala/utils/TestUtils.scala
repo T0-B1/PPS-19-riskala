@@ -1,11 +1,11 @@
-package org.riskala
+package org.riskala.utils
 
 import java.io.FileNotFoundException
 import java.util.Properties
 
 import scala.io.Source
 
-object utils {
+object TestUtils {
 
   val PROPS_PATH = "/test.properties"
 
