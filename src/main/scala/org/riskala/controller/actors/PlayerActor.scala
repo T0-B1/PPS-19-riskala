@@ -14,22 +14,25 @@ object PlayerActor {
 
   private def playerActor(username: String, socket: actor.ActorRef): Behavior[PlayerMessage] =
     Behaviors.receive { (context, message) =>
+
+      def nextBehavior(newUsername: String = username, newSocket: actor.ActorRef = socket): Behavior[PlayerMessage] =
+        playerActor(newUsername, newSocket)
+
       message match {
         case SocketMessage(payload) => {
           context.log.info(s"PlayerActor of $username received socket payload: $payload")
           socket ! TextMessage(s"PlayerActor of $username echoing: $payload")
-          Behaviors.same
-          case RegisterSocket(socket) => context.log.info("RegisterSocket")
-          case RoomInfoMessage() => context.log.info("RoomInfoMessage")
-          case LobbyInfoMessage() => context.log.info("LobbyInfoMessage")
-          case GameInfoMessage() => context.log.info("GameInfoMessage")
-          case RoomAlreadyExistsMessage() => context.log.info("RoomAlreadyExistsMessage")
-          case RoomNotFoundMessage() => context.log.info("RoomNotFoundMessage")
-          case GameNotFoundMessage() => context.log.info("GameNotFoundMessage")
+          nextBehavior()
         }
+        case RoomInfoMessage(roomInfo) => context.log.info("RoomInfoMessage"); nextBehavior()
+        case LobbyInfoMessage(lobbyInfo) => context.log.info("LobbyInfoMessage"); nextBehavior()
+        case GameInfoMessage() => context.log.info("GameInfoMessage"); nextBehavior()
+        case RoomAlreadyExistsMessage() => context.log.info("RoomAlreadyExistsMessage"); nextBehavior()
+        case RoomNotFoundMessage() => context.log.info("RoomNotFoundMessage"); nextBehavior()
+        case GameNotFoundMessage() => context.log.info("GameNotFoundMessage"); nextBehavior()
         case RegisterSocket(newSocketActor) => {
           context.log.info("registering new socket")
-          playerActor(username, newSocketActor)
+          nextBehavior(newSocket = newSocketActor)
         }
       }
     }
