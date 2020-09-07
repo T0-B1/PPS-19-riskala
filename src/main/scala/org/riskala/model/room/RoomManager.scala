@@ -100,9 +100,7 @@ object RoomManager {
 
           if (newReady.size == newRoomInfo.basicInfo.maxNumberOfPlayer) {
             //Game can start
-            lobby ! StartGame(roomInfo, newReady, newSubscriber)
-            //TODO: Change behavior from Room to Game -> GameManager()
-            context.spawn(GameManager(), "GameManager")
+            lobby ! StartGame(newRoomInfo, newReady, newSubscriber)
             context.log.info("Ready room Stopped")
             Behaviors.stopped
           } else {
