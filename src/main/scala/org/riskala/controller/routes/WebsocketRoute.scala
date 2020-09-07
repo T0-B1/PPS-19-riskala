@@ -10,8 +10,8 @@ import akka.stream.scaladsl.{Flow, Sink, Source}
 import akka.stream.typed.scaladsl.ActorSource
 import akka.stream.{CompletionStrategy, OverflowStrategy}
 import akka.{Done, NotUsed, actor}
-import org.riskala.controller.actors.{PlayerActor, ServerMessages}
-import org.riskala.controller.actors.ServerMessages.{PlayerMessage, SocketMessage}
+import org.riskala.controller.actors.{PlayerActor, PlayerMessages}
+import org.riskala.controller.actors.PlayerMessages.PlayerMessage
 import org.riskala.controller.{AuthManager, Server}
 import org.riskala.utils.Utils
 
@@ -48,7 +48,7 @@ object WebsocketRoute {
       }
       // The first PlayerActor found
       case Seq(first, rest@_*) => {
-        first ! ServerMessages.RegisterSocket(newSocket)
+        first ! PlayerMessages.RegisterSocket(newSocket)
         first
       }
     }
@@ -62,6 +62,6 @@ object WebsocketRoute {
     Source.actorRef[Message](bufferSize = 8, overflowStrategy = OverflowStrategy.dropHead)
 
   private def sinkFromActor(playerRef: ActorRef[PlayerMessage]): Sink[Message, Future[Done]] =
-    Sink.foreach(m => playerRef ! SocketMessage(m.asTextMessage.getStrictText))
+    Sink.foreach(m => playerRef ! PlayerMessages.SocketMessage(m.asTextMessage.getStrictText))
 
 }
