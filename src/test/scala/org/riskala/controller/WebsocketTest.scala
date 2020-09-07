@@ -13,7 +13,6 @@ import akka.util.ByteString
 import org.junit.runner.RunWith
 import org.riskala.controller.AuthTest.response
 import org.riskala.controller.routes.WebsocketRoute
-import org.riskala.utils
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.junit.JUnitRunner
@@ -23,11 +22,12 @@ import sun.security.pkcs11.wrapper.Functions
 import akka.actor.typed.receptionist.Receptionist
 import akka.actor.typed.receptionist.ServiceKey
 import akka.testkit
+import org.riskala.utils.Utils
 
 @RunWith(classOf[JUnitRunner])
 class WebsocketTest extends AnyWordSpec with Matchers with ScalatestRouteTest {
 
-  val properties: Properties = utils.loadPropertiesFromResources()
+  val properties: Properties = Utils.loadPropertiesFromResources()
   def socketUri(token: String) = s"/websocket?token=$token"
 
   "A user" should{
