@@ -46,7 +46,9 @@ dependencies {
         [group: "io.spray", name: "spray-json_$scalaMajor", version: "1.3.5"],
         [group: "com.pauldijou", name: "jwt-core_$scalaMajor", version: "4.3.0"],
         [group: "io.argonaut", name: "argonaut_$scalaMajor", version: "6.3.0"],
-        [group: "org.slf4j", name: "slf4j-simple", version: "1.7.25"]
+        [group: "org.slf4j", name: "slf4j-simple", version: "1.7.25"],
+        [group: "com.github.julien-truffaut", name: "monocle-core_$scalaMajor", version: "2.1.0"],
+        [group: "com.github.julien-truffaut", name: "monocle-macro_$scalaMajor", version: "2.1.0"]
     )
 
     testImplementation(
