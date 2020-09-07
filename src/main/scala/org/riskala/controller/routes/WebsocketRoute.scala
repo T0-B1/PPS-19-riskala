@@ -1,6 +1,7 @@
 package org.riskala.controller.routes
 
 import akka.actor.typed.ActorRef
+import akka.actor.typed.receptionist.{Receptionist, ServiceKey}
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.model.ws.Message
 import akka.http.scaladsl.server.Directives._
@@ -12,6 +13,7 @@ import akka.{Done, NotUsed, actor}
 import org.riskala.controller.actors.PlayerActor
 import org.riskala.controller.actors.ServerMessages.{PlayerMessage, SocketMessage}
 import org.riskala.controller.{AuthManager, Server}
+import org.riskala.utils.Utils
 
 import scala.concurrent.Future
 
@@ -32,8 +34,24 @@ object WebsocketRoute {
     val (wsActor, wsSource) = untypedActorSource().preMaterialize()
     // TODO use spawn protocol
     // https://doc.akka.io/docs/akka/current/typed/actor-lifecycle.html#spawnprotocol
-    val playerActorRef: ActorRef[PlayerMessage] = system.systemActorOf(PlayerActor(username, wsActor), username)
+    val playerActorRef: ActorRef[PlayerMessage] = spawnOrGetPlayer(username, wsActor)
     Flow.fromSinkAndSource(sinkFromActor(playerActorRef), wsSource)
+  }
+
+  private def spawnOrGetPlayer(username: String, newSocket: actor.ActorRef): ActorRef[PlayerMessage] = {
+    Utils.askReceptionistToFind[PlayerMessage](username).toSeq match {
+      // No PlayerActor registered found
+      case Seq() => {
+        val ref: ActorRef[PlayerMessage] = system.systemActorOf(PlayerActor(username, newSocket), username)
+        system.receptionist ! Receptionist.Register(ServiceKey[PlayerMessage](username), ref)
+        ref
+      }
+      // The first PlayerActor found
+      case Seq(first, rest@_*) => {
+        // TODO register new socket
+        first
+      }
+    }
   }
 
   private def typedActorSource(): Source[Message, ActorRef[Message]] = ActorSource.actorRef[Message](completionMatcher = {
