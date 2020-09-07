@@ -7,8 +7,9 @@ import org.riskala.controller.actors.PlayerMessages._
 import org.riskala.model.ModelMessages._
 import org.riskala.model.game.GameManager
 import org.riskala.model.lobby.LobbyMessages.{EmptyRoom, StartGame, Subscribe, UpdateRoomInfo}
-
 import scala.collection.immutable.{HashMap, HashSet}
+import monocle.Lens
+import monocle.macros.GenLens
 
 object RoomManager {
 
@@ -20,15 +21,19 @@ object RoomManager {
                   roomInfo: RoomInfo,
                   lobby: ActorRef[LobbyMessage]
                  ):Behavior[RoomMessage] = {
-
     Behaviors.receive { (context, message) =>
+
+      val lensBasicInfo: Lens[RoomInfo,RoomBasicInfo] = GenLens[RoomInfo](_.basicInfo)
+      val lensActualNumber: Lens[RoomBasicInfo, Int] = GenLens[RoomBasicInfo](_.actualNumberOfPlayer)
+
+      def decreaseActualPlayer(ri:RoomInfo):RoomInfo = (lensBasicInfo composeLens lensActualNumber).modify(_ - 1)(ri)
+      def increaseActualPlayer(ri:RoomInfo):RoomInfo = (lensBasicInfo composeLens lensActualNumber).modify(_ + 1)(ri)
 
       def notifyUpdateRoomInfo(newSubscribers: HashSet[ActorRef[PlayerMessage]],
                                newReady: HashMap[String,ActorRef[PlayerMessage]],
                                newRoomInfo: RoomInfo): Unit = {
         newReady.foreach(rp => rp._2 ! RoomInfoMessage(newRoomInfo))
         newSubscribers. foreach(s => s ! RoomInfoMessage(newRoomInfo))
-
         lobby ! UpdateRoomInfo(newRoomInfo.basicInfo)
       }
 
@@ -60,9 +65,7 @@ object RoomManager {
           var newRoomInfo = roomInfo
           if(readyPlayerMap.toList.exists(kv => kv._2 == actor)){
             newReady = readyPlayerMap.filter(kv => kv._2 != actor)
-            newRoomInfo = roomInfo.copy(
-              roomInfo.basicInfo.copy(
-                actualNumberOfPlayer = roomInfo.basicInfo.actualNumberOfPlayer - 1))
+            newRoomInfo = decreaseActualPlayer(roomInfo)
             notifyUpdateRoomInfo(subscribersRoom, newReady, newRoomInfo)
           } else {
             newSubscribers = subscribersRoom - actor
@@ -80,9 +83,7 @@ object RoomManager {
           context.log.info("UNREADY")
           val newReady = readyPlayerMap - playerName
           //Update actualNumberPlayer
-          val newRoomInfo = roomInfo.copy(
-            roomInfo.basicInfo.copy(
-              actualNumberOfPlayer = roomInfo.basicInfo.actualNumberOfPlayer - 1))
+          val newRoomInfo = decreaseActualPlayer(roomInfo)
           val newSubscriber = subscribersRoom + actor
           notifyUpdateRoomInfo(newSubscriber, newReady, newRoomInfo)
           updateBehavior(updatedSub = newSubscriber, updatedReady = newReady, updatedRoomInfo = newRoomInfo)
@@ -90,9 +91,7 @@ object RoomManager {
         case Ready(playerName, actor) =>
           context.log.info("READY")
           //Update actualNumberPlayer
-          val newRoomInfo = roomInfo.copy(
-            roomInfo.basicInfo.copy(
-              actualNumberOfPlayer = roomInfo.basicInfo.actualNumberOfPlayer + 1))
+          val newRoomInfo = increaseActualPlayer(roomInfo)
           context.log.info("newRoomInfo - "+ newRoomInfo)
           //Remove the actor from subscribersList
           val newSubscriber = subscribersRoom - actor
@@ -118,18 +117,15 @@ object RoomManager {
           var newRoomInfo = roomInfo
           if(readyPlayerMap.toList.exists(kv => kv._2 == actor)){
             newReady = readyPlayerMap.filter(kv => kv._2 != actor)
-            newRoomInfo = roomInfo.copy(
-              roomInfo.basicInfo.copy(
-                actualNumberOfPlayer = roomInfo.basicInfo.actualNumberOfPlayer - 1))
+            newRoomInfo = decreaseActualPlayer(roomInfo)
             notifyUpdateRoomInfo(newSubscribers, newReady, newRoomInfo)
           } else {
             newSubscribers = subscribersRoom - actor
           }
           if(newSubscribers.isEmpty && newReady.isEmpty){
             lobby ! EmptyRoom(roomInfo.basicInfo.name)
-            Behaviors.stopped {
-              () => context.log.info("LogoutMessage! - Behavior stopped")
-            }
+            context.log.info("LogoutMessage! - Behavior stopped")
+            Behaviors.stopped
           } else {
             updateBehavior(updatedSub = newSubscribers, updatedReady = newReady, updatedRoomInfo = newRoomInfo)
           }
