@@ -5,16 +5,16 @@ import java.util.Properties
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity, StatusCodes}
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import org.junit.runner.RunWith
+import org.riskala.utils.TestUtils
 import org.scalatest.Assertion
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.junit.JUnitRunner
-import org.riskala.utils
 
 @RunWith(classOf[JUnitRunner])
 class AuthTest extends AnyWordSpec with Matchers with ScalatestRouteTest {
 
-  val properties: Properties = utils.loadPropertiesFromResources()
+  val properties: Properties = TestUtils.loadPropertiesFromResources()
 
   "A user" when {
     "registered" should {
