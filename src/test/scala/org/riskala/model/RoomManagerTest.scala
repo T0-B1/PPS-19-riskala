@@ -32,7 +32,7 @@ class RoomManagerTest extends AnyWordSpec with BeforeAndAfterAll {
   }
 
   "Leave room" should {
-    "remove user from roomUpdateInfo and close behavior" in {
+    "remove user from roomUpdateInfo" in {
       val leaveLobby: TestProbe[LobbyMessage] = testKit.createTestProbe[LobbyMessage]("leaveLobby")
       val room: ActorRef[RoomMessage] = testKit.spawn(RoomManager(roomInfo, leaveLobby.ref), "RoomLeave")
       val playerLeave: TestProbe[PlayerMessage] = testKit.createTestProbe[PlayerMessage]("playerLeave")
@@ -68,7 +68,7 @@ class RoomManagerTest extends AnyWordSpec with BeforeAndAfterAll {
     }
   }
 
-  "UnReady in room" should {
+  "Submitting command UnReady to room" should {
     "remove from roomInfo" in {
       val unReadyLobby: TestProbe[LobbyMessage] = testKit.createTestProbe[LobbyMessage]("unReadyLobby")
       val room: ActorRef[RoomMessage] = testKit.spawn(RoomManager(roomInfo, unReadyLobby.ref), "RoomUnReady")
