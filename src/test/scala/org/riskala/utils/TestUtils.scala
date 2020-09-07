@@ -5,7 +5,7 @@ import java.util.Properties
 
 import scala.io.Source
 
-object Utils {
+object TestUtils {
 
   val PROPS_PATH = "/test.properties"
 
