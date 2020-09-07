@@ -2,7 +2,8 @@ package org.riskala.model.game
 
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.actor.typed.scaladsl.Behaviors
-import org.riskala.model.ModelMessages.{GameMessage, PlayerMessage}
+import org.riskala.controller.actors.PlayerMessages.PlayerMessage
+import org.riskala.model.ModelMessages.GameMessage
 
 import scala.collection.immutable.HashSet
 

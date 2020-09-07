@@ -3,7 +3,11 @@ package org.riskala.model.lobby
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}
 import LobbyMessages._
+import org.riskala.controller.actors.PlayerMessages._
 import org.riskala.model.ModelMessages._
+import org.riskala.model.game.GameManager
+import org.riskala.model.room.RoomManager
+import org.riskala.model.room.RoomMessages.{Join, RoomBasicInfo}
 
 import scala.collection.immutable.{HashMap, HashSet}
 
@@ -36,7 +40,7 @@ object LobbyManager {
         val terminatedGameList: List[String] = nextTerminatedGames.keys.toList
         Lobby(roomList, gameList, terminatedGameList)
         //TODO: return playerMessage
-        new PlayerMessage {}
+        LobbyInfoMessage()
       }
 
       def notifyAllSubscribers(info: PlayerMessage,
@@ -51,18 +55,15 @@ object LobbyManager {
 
         case CreateRoom(creator, roomInfo) =>
           if (!rooms.contains(roomInfo.basicInfo.name)) {
-            //TODO: spawn RoomManager and send Join msg
-            val room = context.spawn(Behaviors.ignore[RoomMessage], "RoomManager" + roomInfo.basicInfo.name)
-            //room ! Join(creator)
-            room ! new RoomMessage {}
-            //TODO: swap null with room
+            val room = context.spawn(RoomManager(roomInfo, context.self),
+              "RoomManager-" + roomInfo.basicInfo.name)
+            room ! Join(creator)
             val newRooms = rooms + (roomInfo.basicInfo.name -> (room, roomInfo.basicInfo))
             val newSubs = subscribers - creator
             notifyAllSubscribers(getInfo(nextRooms = newRooms),newSubs)
             nextBehavior(nextSubscribers = newSubs,nextRooms = newRooms)
           } else {
-            //TODO: Errore stanza già presente.
-            creator ! new PlayerMessage {}
+            creator ! RoomAlreadyExistsMessage()
             notifyAllSubscribers(getInfo())
             nextBehavior()
           }
@@ -70,17 +71,18 @@ object LobbyManager {
         case JoinTo(actor, name) =>
           if (rooms.contains(name)) {
             val newSubs = subscribers - actor
-            rooms.get(name).head._1 ! new RoomMessage {}
+            rooms.get(name).head._1 ! Join(actor)
             nextBehavior(nextSubscribers = newSubs)
           } else {
-            //TODO: Errore stanza non trovata.
-            actor ! new PlayerMessage {}
+            actor ! RoomNotFoundMessage()
             nextBehavior()
           }
           
-        case StartGame(name, actor) =>
-          val newRooms = rooms - name
-          val newGames = games + (name -> actor)
+        case StartGame(info, players, roomSubscribers) =>
+          val newRooms = rooms - info.basicInfo.name
+          //TODO: pass info to GM (roomInfo + subscribers+ players)
+          val game = context.spawn(GameManager(), "GameManager-"+info.basicInfo.name)
+          val newGames = games + (info.basicInfo.name -> game)
           notifyAllSubscribers(getInfo(nextRooms = newRooms,nextGames = newGames))
           nextBehavior(nextRooms = newRooms,nextGames = newGames)
 
