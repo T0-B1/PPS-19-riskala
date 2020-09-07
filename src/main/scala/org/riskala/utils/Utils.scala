@@ -16,7 +16,7 @@ object Utils{
     val serviceKey: ServiceKey[T] = ServiceKey[T](key)
     val receptionist: ActorRef[Receptionist.Command] = system.receptionist
     val response: Future[Receptionist.Listing] =
-      receptionist.ask(replyTo => Receptionist.find(serviceKey, replyTo))
+      receptionist ? (replyTo => Receptionist.find(serviceKey, replyTo))
     Await.result(response, 3.seconds).serviceInstances(serviceKey)
   }
 
