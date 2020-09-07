@@ -30,6 +30,7 @@ object PlayerActor {
         case RoomAlreadyExistsMessage() => context.log.info("RoomAlreadyExistsMessage"); nextBehavior()
         case RoomNotFoundMessage() => context.log.info("RoomNotFoundMessage"); nextBehavior()
         case GameNotFoundMessage() => context.log.info("GameNotFoundMessage"); nextBehavior()
+        case ErrorMessage(error) => context.log.info("ErrorMessage"); nextBehavior()
         case RegisterSocket(newSocketActor) => {
           context.log.info("registering new socket")
           nextBehavior(newSocket = newSocketActor)

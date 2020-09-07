@@ -20,6 +20,8 @@ object PlayerMessages {
 
   final case class GameInfoMessage() extends PlayerMessage
 
+  final case class ErrorMessage(error: String) extends PlayerMessage
+
   final case class RoomAlreadyExistsMessage() extends PlayerMessage
 
   final case class RoomNotFoundMessage() extends PlayerMessage
