@@ -15,7 +15,8 @@ class RoomManagerTest extends AnyWordSpec with BeforeAndAfterAll {
 
   override def afterAll(): Unit = testKit.shutdownTestKit()
 
-  val roomInfo: RoomInfo = RoomInfo(RoomBasicInfo("Europa", 0, 4), "")
+  val roomBasicInfo = RoomBasicInfo("Europa", 0, 4)
+  val roomInfo: RoomInfo = RoomInfo(roomBasicInfo, "")
 
   "Join to room" should {
     "give roomInfo" in {
@@ -48,7 +49,7 @@ class RoomManagerTest extends AnyWordSpec with BeforeAndAfterAll {
       room ! Leave(player2Leave.ref)
       player2Leave.expectNoMessage()
       leaveLobby.expectMessage(Subscribe(player2Leave.ref))
-      leaveLobby.expectMessage(EmptyRoom(roomInfo.basicInfo.name))
+      leaveLobby.expectMessage(EmptyRoom(roomBasicInfo.name))
     }
   }
 
@@ -102,7 +103,6 @@ class RoomManagerTest extends AnyWordSpec with BeforeAndAfterAll {
       val player2: TestProbe[PlayerMessage] = testKit.createTestProbe[PlayerMessage]("player2")
       val player3: TestProbe[PlayerMessage] = testKit.createTestProbe[PlayerMessage]("player3")
       val player4: TestProbe[PlayerMessage] = testKit.createTestProbe[PlayerMessage]("player4")
-
       val playerList:List[TestProbe[PlayerMessage]] = List(player,player2,player3,player4)
 
       room ! Join(player.ref)
@@ -134,7 +134,7 @@ class RoomManagerTest extends AnyWordSpec with BeforeAndAfterAll {
       assert(receivedStart.players.contains("Luca"))
       assert(receivedStart.players.contains("Marto"))
       assert(receivedStart.info == RoomInfo(RoomBasicInfo("Europa", 3, 4), ""))
-      assert(receivedStart.players.size == roomInfo.basicInfo.maxNumberOfPlayer)
+      assert(receivedStart.players.size == roomBasicInfo.maxNumberOfPlayer)
     }
   }
 
@@ -185,10 +185,7 @@ class RoomManagerTest extends AnyWordSpec with BeforeAndAfterAll {
 
       room ! Logout(player3_.ref)
       lobby.expectMessage(UpdateRoomInfo(RoomBasicInfo("Europa", 0, 4)))
-      lobby.expectMessage(EmptyRoom("Europa"))
-
-
+      lobby.expectMessage(EmptyRoom(roomBasicInfo.name))
     }
   }
-
 }
