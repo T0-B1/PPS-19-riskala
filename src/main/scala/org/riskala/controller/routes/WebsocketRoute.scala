@@ -10,7 +10,7 @@ import akka.stream.scaladsl.{Flow, Sink, Source}
 import akka.stream.typed.scaladsl.ActorSource
 import akka.stream.{CompletionStrategy, OverflowStrategy}
 import akka.{Done, NotUsed, actor}
-import org.riskala.controller.actors.PlayerActor
+import org.riskala.controller.actors.{PlayerActor, ServerMessages}
 import org.riskala.controller.actors.ServerMessages.{PlayerMessage, SocketMessage}
 import org.riskala.controller.{AuthManager, Server}
 import org.riskala.utils.Utils
@@ -48,7 +48,7 @@ object WebsocketRoute {
       }
       // The first PlayerActor found
       case Seq(first, rest@_*) => {
-        // TODO register new socket
+        first ! ServerMessages.RegisterSocket(newSocket)
         first
       }
     }
