@@ -2,33 +2,25 @@ package org.riskala.controller
 
 import java.util.Properties
 
-import akka.actor.ActorSystem
 import akka.http.scaladsl.model.StatusCodes
-import akka.http.scaladsl.model.ws.BinaryMessage
-import akka.http.scaladsl.testkit.WSProbe
-import akka.http.scaladsl.testkit.WSTestRequestBuilding._
 import akka.http.scaladsl.testkit.ScalatestRouteTest
-import akka.util.ByteString
+import akka.stream.scaladsl.Flow
 import org.junit.runner.RunWith
-import org.riskala.controller.AuthTest.response
 import org.riskala.controller.routes.WebsocketRoute
-import org.riskala.utils
+import org.riskala.utils.TestUtils
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.junit.JUnitRunner
-import org.scalatest.time.SpanSugar._
-import akka.stream.scaladsl.{Flow, Sink, Source}
-import sun.security.pkcs11.wrapper.Functions
 
 
 @RunWith(classOf[JUnitRunner])
-class WsTest extends AnyWordSpec with Matchers with ScalatestRouteTest {
+class WebsocketTest extends AnyWordSpec with Matchers with ScalatestRouteTest {
 
-  val properties: Properties = utils.loadPropertiesFromResources()
+  val properties: Properties = TestUtils.loadPropertiesFromResources()
   def socketUri(token: String) = s"/websocket?token=$token"
 
-  "Nobody" should{
-    "be able to open a socket without a valid token" in {
+  "A user" should{
+    "not be able to open a socket without a valid token" in {
       WS(socketUri(""), Flow.fromFunction(identity)) ~> WebsocketRoute.websocketRoute ~>
         check { response.status shouldEqual StatusCodes.Forbidden }
     }
@@ -36,16 +28,22 @@ class WsTest extends AnyWordSpec with Matchers with ScalatestRouteTest {
 
   "A user" when {
     "logged" should{
-
+/*
       "be able to open a socket using this token" in {
         val token = AuthTest.login(properties.get("testAccountUsername").toString, properties.get("testAccountPassword").toString)
         WS(socketUri(token), Flow.fromFunction(identity)) ~> WebsocketRoute.websocketRoute ~>
           check { response.status shouldEqual StatusCodes.SwitchingProtocols }
       }
+
+ */
 /*
       "trigger the spawn of a playerActor upon opening the socket" in {
-
+        val token = AuthTest.login(properties.get("testAccountUsername").toString, properties.get("testAccountPassword").toString)
+        WS(socketUri(token), Flow.fromFunction(identity)) ~> WebsocketRoute.websocketRoute ~>
+          check { response.status shouldEqual StatusCodes.SwitchingProtocols }
       }
+
+ */
 
       "be able to send messages to the playerActor" in {
       }
@@ -56,7 +54,6 @@ class WsTest extends AnyWordSpec with Matchers with ScalatestRouteTest {
       "cause the death of the playerActor upon disconnecting" in {
       }
 
- */
     }
   }
 
