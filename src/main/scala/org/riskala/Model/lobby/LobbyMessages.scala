@@ -1,27 +1,23 @@
 package org.riskala.model.lobby
 
 import akka.actor.typed.ActorRef
+import org.riskala.controller.actors.PlayerMessages.PlayerMessage
 import org.riskala.model.ModelMessages._
+import org.riskala.model.room.RoomMessages.{RoomBasicInfo, RoomInfo}
+
+import scala.collection.immutable.HashMap
 
 /**
- * Lobby messages
+ * lobby messages
  */
 object LobbyMessages {
 
-  /**
-   * @param name                    Room name
-   * @param actualNumberOfPlayer    Number of players in a room
-   * @param maxNumberOfPlayer       Maximum number of players in a room
+  /** Lobby's information
+   * @param rooms              The list of name of the rooms
+   * @param games              The list of name of the games
+   * @param terminatedGames    The list of name of the terminated games
    * */
-  case class RoomBasicInfo(name: String,
-                      actualNumberOfPlayer: Int,
-                      maxNumberOfPlayer: Int)
-
-  /**
-   * @param basicInfo               Object containing basic information of a room
-   * @param scenario                Name of the game map
-   * */
-  case class RoomInfo(basicInfo: RoomBasicInfo, scenario: String)
+  case class LobbyInfo(rooms: List[String], games: List[String], terminatedGames: List[String])
 
   /** Message sent to subscribe to the lobby
    * @param subscriber              The actor who wants to subscribe to the lobby
@@ -41,10 +37,13 @@ object LobbyMessages {
   case class JoinTo(actor: ActorRef[PlayerMessage], name: String) extends LobbyMessage
 
   /** Message sent when a room has reached the maximum number of players
-   * @param name              The name of the room in which the game will be played
-   * @param actor             The actor who is starting the game
+   * @param info              All the information of the room in which the game will be played
+   * @param players           The list of players actor ref who will play the game
+   * @param roomSubscribers   the list of subscribers actor ref who will spectate the game
    * */
-  case class StartGame(name: String, actor: ActorRef[GameMessage]) extends LobbyMessage
+  case class StartGame(info: RoomInfo,
+                       players: HashMap[String,ActorRef[PlayerMessage]],
+                       roomSubscribers: Set[ActorRef[PlayerMessage]]) extends LobbyMessage
 
   /** Message sent when a game ends
    * @param name             The name of the game that ended
