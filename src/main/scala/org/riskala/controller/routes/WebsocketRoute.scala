@@ -8,7 +8,7 @@ import akka.http.scaladsl.server.Route
 import akka.stream.scaladsl.{Flow, Sink, Source}
 import akka.stream.typed.scaladsl.ActorSource
 import akka.stream.{CompletionStrategy, OverflowStrategy}
-import akka.{Done, actor}
+import akka.{Done, NotUsed, actor}
 import org.riskala.controller.actors.PlayerActor
 import org.riskala.controller.actors.ServerMessages.{PlayerMessage, SocketMessage}
 import org.riskala.controller.{AuthManager, Server}
@@ -24,14 +24,17 @@ object WebsocketRoute {
       if( (!AuthManager.checkToken(token)) || AuthManager.getUser(token).isEmpty) complete(StatusCodes.Forbidden)
       else{
         val username = AuthManager.getUser(token).get
-        system.log.info(s"Websocket created for player $username")
-        val (wsActor, wsSource) = untypedActorSource().preMaterialize()
-        // TODO use spawn protocol
-        // https://doc.akka.io/docs/akka/current/typed/actor-lifecycle.html#spawnprotocol
-        val playerActorRef: ActorRef[PlayerMessage] = system.systemActorOf(PlayerActor(username, wsActor), username)
-        handleWebSocketMessages(Flow.fromSinkAndSource(sinkFromActor(playerActorRef), wsSource))
+        handleWebSocketMessages(createSocketFlow(username))
       }
     }
+
+  private def createSocketFlow(username: String): Flow[Message, Message, NotUsed] = {
+    val (wsActor, wsSource) = untypedActorSource().preMaterialize()
+    // TODO use spawn protocol
+    // https://doc.akka.io/docs/akka/current/typed/actor-lifecycle.html#spawnprotocol
+    val playerActorRef: ActorRef[PlayerMessage] = system.systemActorOf(PlayerActor(username, wsActor), username)
+    Flow.fromSinkAndSource(sinkFromActor(playerActorRef), wsSource)
+  }
 
   private def typedActorSource(): Source[Message, ActorRef[Message]] = ActorSource.actorRef[Message](completionMatcher = {
     case _ => CompletionStrategy.immediately
