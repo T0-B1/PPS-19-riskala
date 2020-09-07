@@ -45,6 +45,10 @@ class RoomManagerTest extends AnyWordSpec with BeforeAndAfterAll {
       room ! Leave(playerLeave.ref)
       playerLeave.expectNoMessage()
       leaveLobby.expectMessage(Subscribe(playerLeave.ref))
+      room ! Leave(player2Leave.ref)
+      player2Leave.expectNoMessage()
+      leaveLobby.expectMessage(Subscribe(player2Leave.ref))
+      leaveLobby.expectMessage(EmptyRoom(roomInfo.basicInfo.name))
     }
   }
 
