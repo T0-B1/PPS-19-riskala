@@ -12,10 +12,16 @@ import monocle.macros.GenLens
 
 object RoomManager {
 
+  /**
+   * Creates a new room behavior
+   * @param roomInfo    Information for this room
+   * @param lobby       Actor ref of the lobby
+   * @return A new Behavior[RoomMessage]
+   * */
   def apply(roomInfo: RoomInfo, lobby: ActorRef[LobbyMessage]): Behavior[RoomMessage] =
     roomManager(HashSet.empty, HashMap.empty, roomInfo, lobby)
 
-  def roomManager(subscribersRoom: HashSet[ActorRef[PlayerMessage]],
+  private def roomManager(subscribersRoom: HashSet[ActorRef[PlayerMessage]],
                   readyPlayerMap: HashMap[String,ActorRef[PlayerMessage]],
                   roomInfo: RoomInfo,
                   lobby: ActorRef[LobbyMessage]
@@ -41,24 +47,23 @@ object RoomManager {
                          updatedRoomInfo: RoomInfo = roomInfo,
                          updatedLobby: ActorRef[LobbyMessage] = lobby
                         ):Behavior[RoomMessage] = {
-        context.log.info("updSub: -> "+ updatedSub.toList)
-        context.log.info("updReady: -> "+ updatedReady.toList)
-        context.log.info("updRI: -> "+ updatedRoomInfo)
-        context.log.info("updLobby: -> "+ updatedLobby)
+        context.log.info("Room updated subscribers: -> "+ updatedSub.toList)
+        context.log.info("Room updated ready player: -> "+ updatedReady.toList)
+        context.log.info("Room updated room info: -> "+ updatedRoomInfo)
         context.log.info( "------- --------")
         roomManager(updatedSub, updatedReady, updatedRoomInfo, updatedLobby)
       }
 
       message match {
         case Join(actor) =>
-          context.log.info("JOIN")
+          context.log.info("Room received JOIN message")
           val newSubscriber = subscribersRoom + actor
-          context.log.info("After SUB "+newSubscriber.size)
+          context.log.info("Number of subscribers after subscriprion into the room "+newSubscriber.size)
           actor ! RoomInfoMessage(roomInfo)
           updateBehavior(updatedSub = newSubscriber)
 
         case Leave(actor) =>
-          context.log.info("LEAVE")
+          context.log.info("Room received LEAVE message")
           var newReady = readyPlayerMap
           var newSubscribers = subscribersRoom
           var newRoomInfo = roomInfo
@@ -72,35 +77,29 @@ object RoomManager {
           lobby ! Subscribe(actor)
           if(newSubscribers.isEmpty && newReady.isEmpty){
             lobby ! EmptyRoom(roomInfo.basicInfo.name)
-            context.log.info("LeaveMessage!- Behavior stopped")
+            context.log.info("Everybody leaved the room - Behavior stopped")
             Behaviors.stopped
           } else {
             updateBehavior(updatedSub = newSubscribers, updatedReady = newReady, updatedRoomInfo = newRoomInfo)
           }
 
         case UnReady(playerName, actor) =>
-          context.log.info("UNREADY")
+          context.log.info("Room received UNREADY message")
           val newReady = readyPlayerMap - playerName
-          //Update actualNumberPlayer
           val newRoomInfo = decreaseActualPlayer(roomInfo)
           val newSubscriber = subscribersRoom + actor
           notifyUpdateRoomInfo(newSubscriber, newReady, newRoomInfo)
           updateBehavior(updatedSub = newSubscriber, updatedReady = newReady, updatedRoomInfo = newRoomInfo)
 
         case Ready(playerName, actor) =>
-          context.log.info("READY")
-          //Update actualNumberPlayer
+          context.log.info("Room received READY message")
           val newRoomInfo = increaseActualPlayer(roomInfo)
-          context.log.info("newRoomInfo - "+ newRoomInfo)
-          //Remove the actor from subscribersList
+          context.log.info("Updated newRoomInfo - "+ newRoomInfo)
           val newSubscriber = subscribersRoom - actor
-          //Add the actor into readyPlayerList
           val newReady = readyPlayerMap + (playerName -> actor)
-
           if (newReady.size == newRoomInfo.basicInfo.maxNumberOfPlayer) {
-            //Game can start
             lobby ! StartGame(newRoomInfo, newReady, newSubscriber)
-            context.log.info("Ready room Stopped")
+            context.log.info("Everybody into the room are ready. Start game and Room behavior stopped")
             Behaviors.stopped
           } else {
             notifyUpdateRoomInfo(newSubscriber, newReady, newRoomInfo)
@@ -108,7 +107,7 @@ object RoomManager {
           }
 
         case Logout(actor) =>
-          context.log.info("LOGOUT")
+          context.log.info("Room received LOGOUT message")
           var newReady = readyPlayerMap
           var newSubscribers = subscribersRoom
           var newRoomInfo = roomInfo
@@ -121,7 +120,7 @@ object RoomManager {
           }
           if(newSubscribers.isEmpty && newReady.isEmpty){
             lobby ! EmptyRoom(roomInfo.basicInfo.name)
-            context.log.info("LogoutMessage! - Behavior stopped")
+            context.log.info("Everybody into the room logout. Room is empty and behavior stopped")
             Behaviors.stopped
           } else {
             updateBehavior(updatedSub = newSubscribers, updatedReady = newReady, updatedRoomInfo = newRoomInfo)
