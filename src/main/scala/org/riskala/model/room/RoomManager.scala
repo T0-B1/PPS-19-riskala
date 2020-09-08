@@ -5,7 +5,6 @@ import akka.actor.typed.{ActorRef, Behavior}
 import RoomMessages._
 import org.riskala.controller.actors.PlayerMessages._
 import org.riskala.model.ModelMessages._
-import org.riskala.model.game.GameManager
 import org.riskala.model.lobby.LobbyMessages.{EmptyRoom, StartGame, Subscribe, UpdateRoomInfo}
 import scala.collection.immutable.{HashMap, HashSet}
 import monocle.Lens
