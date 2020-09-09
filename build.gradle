@@ -58,13 +58,10 @@ task provideSourcesToScalajs(type: Copy) {
 
     def scalaJsClasses = ["org/riskala/model/*.scala"]
     def scalaJsIgnore = ["org/riskala/model/ModelMessages.scala"]
-
-
     from "$projectDir/src/main/scala/" 
     include scalaJsClasses 
     exclude scalaJsIgnore
     into "$projectDir/src/scalajs/src/main/scala/"
-
 }
 
 task fetchCompiledScalaJsSources(type: Copy) {
@@ -74,8 +71,6 @@ task fetchCompiledScalaJsSources(type: Copy) {
     into "$projectDir/src/vuejs/dist/scala.js" 
 }
 
-tasks.getByPath(':src:scalajs:scalaJs').mustRunAfter(provideSourcesToScalajs)
-
 task copyFrontendToResources(type: Copy) {
     dependsOn fetchCompiledScalaJsSources
     dependsOn ':src:vuejs:npm_run_build'
@@ -83,13 +78,14 @@ task copyFrontendToResources(type: Copy) {
     into "$projectDir/src/main/resources/static"
 }
 
-copyFrontendToResources.mustRunAfter(fetchCompiledScalaJsSources)
-processResources.mustRunAfter(copyFrontendToResources)
-
 jar {
     dependsOn copyFrontendToResources
 }
 
 shadowJar {
-  append 'reference.conf'
+    append 'reference.conf'
 }
+
+tasks.getByPath(':src:scalajs:scalaJs').mustRunAfter(provideSourcesToScalajs)
+copyFrontendToResources.mustRunAfter(fetchCompiledScalaJsSources)
+processResources.mustRunAfter(copyFrontendToResources)
