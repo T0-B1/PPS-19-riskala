@@ -60,3 +60,28 @@ dependencies {
         [group: "org.scala-lang.modules", name: "scala-xml_$scalaMajor", version: "1.2.0"]
     )
 }
+
+task fetchCompiledScalaJsSources() {
+    
+}
+
+
+task provideSourcesToScalajs() {
+    
+    //def scalaJsClasses = "org/riskala/model/**/*"
+    //def scalaJsIgnore = [
+    //"org/riskala/model/ModelMessages.scala",
+    //"org/riskala/model/game/**/*",
+    //"org/riskala/model/lobby/**/*",
+    //"org/riskala/model/room/**/*"]
+
+    def scalaJsClasses = ["org/riskala/model/*.scala"]
+    def scalaJsIgnore = ["org/riskala/model/ModelMessages.scala"]
+
+    copy{
+        from "$projectDir/src/main/scala/" 
+        include scalaJsClasses 
+        exclude scalaJsIgnore
+        into "$projectDir/src/scalajs/scala/"
+    }
+}
