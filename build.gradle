@@ -69,7 +69,7 @@ task fetchCompiledScalaJsSources(type: Copy) {
     dependsOn provideSourcesToScalajs
     dependsOn ':src:scalajs:scalaJs'
     from "$projectDir/src/scalajs/build/js/scala.js"
-    into "$projectDir/src/vuejs/dist/scala.js" 
+    into "$projectDir/src/vuejs/public/scala.js" 
 }
 
 task copyFrontendToResources(type: Copy) {
