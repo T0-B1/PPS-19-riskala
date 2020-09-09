@@ -29,8 +29,8 @@ shadowJar {
   append 'reference.conf'
 }
 
-def scalaMajor = '2.13'
-def scalaMinor = '3'
+def scalaMajor = '2.12'
+def scalaMinor = '1'
 def akkaVersion = '2.6.8'
 def akkaHttpVersion = '10.2.0'
 
