@@ -6,7 +6,6 @@ version '1.0-SNAPSHOT'
 
 apply plugin: 'scalajs-plugin'
 apply plugin: 'scala'
-apply plugin: 'idea'
 
 sourceCompatibility = 1.8
 
