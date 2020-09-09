@@ -65,7 +65,7 @@ dependencies {
 
 
 
-task provideSourcesToScalajs() {
+task provideSourcesToScalajs(type: Copy) {
     
     //def scalaJsClasses = "org/riskala/model/**/*"
     //def scalaJsIgnore = [
@@ -77,18 +77,19 @@ task provideSourcesToScalajs() {
     def scalaJsClasses = ["org/riskala/model/*.scala"]
     def scalaJsIgnore = ["org/riskala/model/ModelMessages.scala"]
 
-    copy{
-        from "$projectDir/src/main/scala/" 
-        include scalaJsClasses 
-        exclude scalaJsIgnore
-        into "$projectDir/src/scalajs/src/main/scala/"
-    }
+
+    from "$projectDir/src/main/scala/" 
+    include scalaJsClasses 
+    exclude scalaJsIgnore
+    into "$projectDir/src/scalajs/src/main/scala/"
+
 }
 
-task fetchCompiledScalaJsSources() {
+task fetchCompiledScalaJsSources(type: Copy) {
     dependsOn provideSourcesToScalajs
     dependsOn ':src:scalajs:scalaJs'
-    
+    from "$projectDir/src/scalajs/build/js/scala.js"
+    into "$projectDir/src/vuejs/dist/scala.js" 
 }
 
 tasks.getByPath(':src:scalajs:scalaJs').mustRunAfter(provideSourcesToScalajs)
