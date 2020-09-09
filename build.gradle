@@ -15,22 +15,6 @@ allprojects {
     }
 }
 
-task copyFrontendToResources(type: Copy) {
-    dependsOn ':src:vuejs:npm_run_build'
-    from "$projectDir/src/vuejs/dist/"
-    into "$projectDir/src/main/resources/static"
-}
-
-jar {
-    dependsOn copyFrontendToResources
-}
-
-processResources.mustRunAfter(copyFrontendToResources)
-
-shadowJar {
-  append 'reference.conf'
-}
-
 def scalaMajor = '2.12'
 def scalaMinor = '1'
 def akkaVersion = '2.6.8'
@@ -63,8 +47,6 @@ dependencies {
     )
 }
 
-
-
 task provideSourcesToScalajs(type: Copy) {
     
     //def scalaJsClasses = "org/riskala/model/**/*"
@@ -93,3 +75,19 @@ task fetchCompiledScalaJsSources(type: Copy) {
 }
 
 tasks.getByPath(':src:scalajs:scalaJs').mustRunAfter(provideSourcesToScalajs)
+
+task copyFrontendToResources(type: Copy) {
+    dependsOn ':src:vuejs:npm_run_build'
+    from "$projectDir/src/vuejs/dist/"
+    into "$projectDir/src/main/resources/static"
+}
+
+processResources.mustRunAfter(copyFrontendToResources)
+
+jar {
+    dependsOn copyFrontendToResources
+}
+
+shadowJar {
+  append 'reference.conf'
+}
