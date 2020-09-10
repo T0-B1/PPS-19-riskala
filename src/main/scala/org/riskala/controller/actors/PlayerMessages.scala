@@ -25,6 +25,34 @@ object PlayerMessages {
 
   final case class GameInfoMessage() extends PlayerMessage
 
+  final case class JoinMessage(name: String) extends PlayerMessage
+
+  final case class CreateMessage(name: String, maxPlayer: Int, scenario: String) extends PlayerMessage
+
+  final case class LeaveMessage() extends PlayerMessage
+
+  final case class DeployMessage(from: String,
+                                 to: String,
+                                 attacking: Int,
+                                 defending: Int,
+                                 invading: Int) extends PlayerMessage
+
+  final case class MoveMessage(from: String,
+                               to: String,
+                               attacking: Int,
+                               defending: Int,
+                               invading: Int) extends PlayerMessage
+
+  final case class AttackMessage(from: String,
+                                 to: String,
+                                 attacking: Int,
+                                 defending: Int,
+                                 invading: Int) extends PlayerMessage
+
+  final case class RedeemBonusMessage(cardType: String) extends PlayerMessage
+
+  final case class EndTurnMessage() extends PlayerMessage
+
   final case class ErrorMessage(error: String) extends PlayerMessage
   object ErrorMessage {
     implicit def ErrorCodecJson =
