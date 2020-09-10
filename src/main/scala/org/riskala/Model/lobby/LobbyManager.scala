@@ -50,7 +50,9 @@ object LobbyManager {
           nextBehavior(nextSubscribers = subscribers + subscriber)
 
         case CreateRoom(creator, roomInfo) =>
-          if (!rooms.contains(roomInfo.basicInfo.name)) {
+          if(!games.contains(roomInfo.basicInfo.name) &&
+            !terminatedGames.contains(roomInfo.basicInfo.name) &&
+            !rooms.contains(roomInfo.basicInfo.name)) {
             val room = context.spawn(RoomManager(roomInfo, context.self),
               "RoomManager-" + roomInfo.basicInfo.name)
             room ! Join(creator)
