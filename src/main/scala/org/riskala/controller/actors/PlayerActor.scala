@@ -5,6 +5,7 @@ import akka.actor.typed.{ActorRef, Behavior}
 import akka.actor.typed.scaladsl.Behaviors
 import akka.http.scaladsl.model.ws.{Message, TextMessage}
 import org.riskala.controller.actors.PlayerMessages._
+import org.riskala.utils.Deserializer
 
 object PlayerActor {
 
@@ -22,14 +23,23 @@ object PlayerActor {
         case SocketMessage(payload) => {
           context.log.info(s"PlayerActor of $username received socket payload: $payload")
           socket ! TextMessage(s"PlayerActor of $username echoing: $payload")
+          Deserializer.retrieveWrapped(payload).foreach(wrapped=>wrapped.classType match {
+            case "ErrorMessage" =>
+              val opt = Deserializer.retrieveMessage[ErrorMessage](wrapped.payload,ErrorMessage.ErrorCodecJson.Decoder)
+
+          })
           nextBehavior()
         }
         case RoomInfoMessage(roomInfo) => context.log.info("RoomInfoMessage"); nextBehavior()
         case LobbyInfoMessage(lobbyInfo) => context.log.info("LobbyInfoMessage"); nextBehavior()
         case GameInfoMessage() => context.log.info("GameInfoMessage"); nextBehavior()
-        case RoomAlreadyExistsMessage() => context.log.info("RoomAlreadyExistsMessage"); nextBehavior()
-        case RoomNotFoundMessage() => context.log.info("RoomNotFoundMessage"); nextBehavior()
-        case GameNotFoundMessage() => context.log.info("GameNotFoundMessage"); nextBehavior()
+        case JoinMessage(name) => context.log.info("JoinMessage"); nextBehavior()
+        case ReadyMessage() => context.log.info("ReadyMessage"); nextBehavior()
+        case CreateMessage(name,maxPlayer,scenario) => context.log.info("CreateMessage"); nextBehavior()
+        case LeaveMessage() => context.log.info("LeaveMessage"); nextBehavior()
+        case ActionMessage(from,to,attacking,defending,invading) => context.log.info("ActionMessage"); nextBehavior()
+        case RedeemBonusMessage(cardType) => context.log.info("RedeemBonusMessage"); nextBehavior()
+        case EndTurnMessage() => context.log.info("EndTurnMessage"); nextBehavior()
         case ErrorMessage(error) => context.log.info("ErrorMessage"); nextBehavior()
         case RegisterSocket(newSocketActor) => {
           context.log.info("registering new socket")
