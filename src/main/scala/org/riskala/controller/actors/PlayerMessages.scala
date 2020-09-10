@@ -67,6 +67,8 @@ object PlayerMessages {
 
   final case class EndTurnMessage() extends PlayerMessage
 
+  final case class LogoutMessage() extends PlayerMessage
+
   final case class ErrorMessage(error: String) extends PlayerMessage
   object ErrorMessage {
     implicit def ErrorCodecJson =
