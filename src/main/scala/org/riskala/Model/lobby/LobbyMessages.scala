@@ -25,6 +25,10 @@ object LobbyMessages {
    * @param terminatedGames    The list of name of the terminated games
    * */
   case class LobbyInfo(rooms: List[RoomNameInfo], games: List[String], terminatedGames: List[String])
+  object LobbyInfo {
+    implicit def LobbyInfoCodecJson =
+      casecodec3(LobbyInfo.apply,LobbyInfo.unapply)("rooms","games","terminatedGames")
+  }
 
   /** Message sent to subscribe to the lobby
    * @param subscriber              The actor who wants to subscribe to the lobby
