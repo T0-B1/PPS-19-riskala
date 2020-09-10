@@ -1,9 +1,11 @@
 package org.riskala.controller.actors
 
 import akka.actor
+import akka.actor.typed.ActorRef
 import org.riskala.model.lobby.LobbyMessages.LobbyInfo
 import org.riskala.model.room.RoomMessages.RoomInfo
 import argonaut.Argonaut._
+import org.riskala.model.ModelMessages.{GameMessage, LobbyMessage, RoomMessage}
 
 object PlayerMessages {
 
@@ -18,6 +20,12 @@ object PlayerMessages {
   final case class SocketMessage(payload: String) extends PlayerMessage
 
   final case class RegisterSocket(socketActor: actor.ActorRef) extends PlayerMessage
+
+  final case class LobbyReferent(room: ActorRef[LobbyMessage]) extends PlayerMessage
+
+  final case class RoomReferent(room: ActorRef[RoomMessage]) extends PlayerMessage
+
+  final case class GameReferent(room: ActorRef[GameMessage]) extends PlayerMessage
 
   final case class RoomInfoMessage(roomInfo: RoomInfo) extends PlayerMessage
 
