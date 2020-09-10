@@ -9,7 +9,7 @@ import org.riskala.model.ModelMessages.{GameMessage, LobbyMessage, RoomMessage}
 
 object PlayerMessages {
 
-  trait PlayerMessage
+  sealed trait PlayerMessage
 
   final case class WrappedMessage(classType: String, payload: String) extends PlayerMessage
   object WrappedMessage {
@@ -33,41 +33,43 @@ object PlayerMessages {
 
   final case class GameInfoMessage() extends PlayerMessage
 
-  final case class JoinMessage(name: String) extends PlayerMessage
+  sealed trait FromClient
+
+  final case class JoinMessage(name: String) extends FromClient
   object JoinMessage {
     implicit def JoinCodecJson =
       casecodec1(JoinMessage.apply,JoinMessage.unapply)("name")
   }
 
-  final case class ReadyMessage() extends PlayerMessage
+  final case class ReadyMessage() extends FromClient
 
-  final case class CreateMessage(name: String, maxPlayer: Int, scenario: String) extends PlayerMessage
+  final case class CreateMessage(name: String, maxPlayer: Int, scenario: String) extends FromClient
   object CreateMessage {
     implicit def CreateCodecJson =
       casecodec3(CreateMessage.apply,CreateMessage.unapply)("name", "maxPlayer", "scenario")
   }
 
-  final case class LeaveMessage() extends PlayerMessage
+  final case class LeaveMessage() extends FromClient
 
   final case class ActionMessage(from: String,
                                  to: String,
                                  attacking: Int,
                                  defending: Int,
-                                 invading: Int) extends PlayerMessage
+                                 invading: Int) extends FromClient
   object ActionMessage {
     implicit def ActionCodecJson =
       casecodec5(ActionMessage.apply,ActionMessage.unapply)("from", "to", "attacking","defending","invading")
   }
 
-  final case class RedeemBonusMessage(cardType: String) extends PlayerMessage
+  final case class RedeemBonusMessage(cardType: String) extends FromClient
   object RedeemBonusMessage {
     implicit def RedeemBonusCodecJson =
       casecodec1(RedeemBonusMessage.apply,RedeemBonusMessage.unapply)("cardType")
   }
 
-  final case class EndTurnMessage() extends PlayerMessage
+  final case class EndTurnMessage() extends FromClient
 
-  final case class LogoutMessage() extends PlayerMessage
+  final case class LogoutMessage() extends FromClient
 
   final case class ErrorMessage(error: String) extends PlayerMessage
   object ErrorMessage {
