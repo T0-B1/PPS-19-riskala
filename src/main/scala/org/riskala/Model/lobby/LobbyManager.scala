@@ -5,6 +5,7 @@ import akka.actor.typed.{ActorRef, Behavior}
 import org.riskala.controller.actors.PlayerMessages._
 import org.riskala.model.ModelMessages._
 import org.riskala.model.game.GameManager
+import org.riskala.model.game.GameMessages.JoinGame
 import org.riskala.model.lobby.LobbyMessages._
 import org.riskala.model.room.RoomManager
 import org.riskala.model.room.RoomMessages.{Join, RoomBasicInfo}
@@ -66,15 +67,17 @@ object LobbyManager {
           }
 
         case JoinTo(actor, name) =>
-          if (rooms.contains(name)) {
+          if(rooms.contains(name) || games.contains(name) || terminatedGames.contains(name)){
             val newSubs = subscribers - actor
-            rooms.get(name).head._1 ! Join(actor)
+            rooms.get(name).foreach(_._1 ! Join(actor))
+            games.get(name).foreach(_ ! JoinGame(actor))
+            terminatedGames.get(name).filter(_._2).foreach(_._1 ! JoinGame(actor))
             nextBehavior(nextSubscribers = newSubs)
           } else {
             actor ! ErrorMessage("Room not found")
             nextBehavior()
           }
-          
+
         case StartGame(info, players, roomSubscribers) =>
           val newRooms = rooms - info.basicInfo.name
           //TODO: pass info to GM (roomInfo + subscribers+ players)
