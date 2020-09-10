@@ -6,13 +6,9 @@
   </div>
   <hr class="divider"/>
   <div class="buttons_div">
-    <router-link to='create_room'>
-      <b-button variant="outline-primary" >Crea partita</b-button>
-    </router-link>
-    <router-link to='room'>
-      <b-button id="joinBtn" variant="outline-primary" v-bind:disabled="disabled">Join partita</b-button>
-    </router-link>
-    <b-button variant="outline-primary">Carica partita</b-button>
+    <b-button variant="outline-primary" @click="createRoom">Crea stanza</b-button>
+    <b-button id="joinBtn" variant="outline-primary" v-bind:disabled="disabled" @click="joinRoom">Join <b>{{this.join}}</b></b-button>
+    <!--<b-button variant="outline-primary">Carica partita</b-button>-->
   </div>
 </div>
 </template>
@@ -23,15 +19,36 @@
       return {
         disabled:true,
         join: '',
-        items: [
-          { Nome_Partita: 'Classic', Giocatori: '3/8'},
-          { Nome_Partita: 'Small', Giocatori: '2/4'},
-          { Nome_Partita: 'Random', Giocatori: '1/5'},
-          { Nome_Partita: '1Vs1', Giocatori: '2/2'}
-        ]
+        items: [{Nome_Partita: '', Giocatori: ''}]
       }
     },
+    mounted() {
+      this.readSocketMessage()
+    },
     methods: {
+      readSocketMessage() {
+        this.$store.websocket.onmessage = function(evt) { onMessage(evt) };
+        function onMessage(evt) {
+          console.log('LOBBY - Mounted receive message: ' + evt.data);
+          //var  dW = metodo deserializzaWrapped
+          //scalaUpdateLobby(this)
+        }
+      },
+      updateLobbyInfo(/*lobbyInfo*/) {
+        this.$store.websocket.send("LOBBY - updated info into lobby")
+        //this.items = lobbyInfo
+      },
+      createRoom(){
+        console.log('LOBBY - Call create_room')
+        this.$router.push('/create_room')
+      },
+      joinRoom(){
+        this.$store.websocket.send('LOBBY - Join room '+this.join)
+        this.$router.push('/room')
+      },
+      joinFailed() {
+        console.log("join failed")
+      },
       myRowClickHandler(row) {
         this.join = row.Nome_Partita
         this.disabled=false
