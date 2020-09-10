@@ -1,12 +1,11 @@
 <template>
   <div class="container">
-    
       <div class="subcontainer">
         <b-card
           class="card"
           title="Crea partita">
           <div class="formInput">
-            <h5 class="title">Nome partita</h5>
+            <h5 class="title">Nome Stanza</h5>
             <input type="text" class="form-control" placeholder="Nome della partita">
           </div>
           <hr class="divider"/>
@@ -25,26 +24,35 @@
                   <option v-for="index in 5" :key="index">{{index}}</option>
               </select>
             </div>
-            <div>
+            <!--<div>
               <h5>Imposta le tue regole</h5>
                <router-link to='new_rules'>
                   <b-button variant="outline-primary">Crea regole</b-button>
                 </router-link>
-            </div>
+            </div>-->
           </div>
           <hr class="divider"/>
           <div>
-            <router-link to='room'>
-              <b-button variant="outline-primary">Crea Partita</b-button>
-            </router-link>
+          <b-button variant="outline-primary" @click="createGame">Crea Partita</b-button>
           </div>
         </b-card>
       </div>
-      
-    
-    
   </div>
 </template>
+
+<script>
+export default {
+  name:'CreateRoom',
+  
+  methods: {
+    createGame() {
+      this.$store.websocket.send("ROOM - Room creation")
+      this.$router.push('/room')
+    }
+  }
+
+}
+</script>
 
 <style lang="sass">
 @import './CreateRoom.sass'
