@@ -26,30 +26,36 @@ object PlayerMessages {
   final case class GameInfoMessage() extends PlayerMessage
 
   final case class JoinMessage(name: String) extends PlayerMessage
+  object JoinMessage {
+    implicit def JoinCodecJson =
+      casecodec1(JoinMessage.apply,JoinMessage.unapply)("name")
+  }
+
+  final case class ReadyMessage() extends PlayerMessage
 
   final case class CreateMessage(name: String, maxPlayer: Int, scenario: String) extends PlayerMessage
+  object CreateMessage {
+    implicit def CreateCodecJson =
+      casecodec3(CreateMessage.apply,CreateMessage.unapply)("name", "maxPlayer", "scenario")
+  }
 
   final case class LeaveMessage() extends PlayerMessage
 
-  final case class DeployMessage(from: String,
+  final case class ActionMessage(from: String,
                                  to: String,
                                  attacking: Int,
                                  defending: Int,
                                  invading: Int) extends PlayerMessage
-
-  final case class MoveMessage(from: String,
-                               to: String,
-                               attacking: Int,
-                               defending: Int,
-                               invading: Int) extends PlayerMessage
-
-  final case class AttackMessage(from: String,
-                                 to: String,
-                                 attacking: Int,
-                                 defending: Int,
-                                 invading: Int) extends PlayerMessage
+  object ActionMessage {
+    implicit def ActionCodecJson =
+      casecodec5(ActionMessage.apply,ActionMessage.unapply)("from", "to", "attacking","defending","invading")
+  }
 
   final case class RedeemBonusMessage(cardType: String) extends PlayerMessage
+  object RedeemBonusMessage {
+    implicit def RedeemBonusCodecJson =
+      casecodec1(RedeemBonusMessage.apply,RedeemBonusMessage.unapply)("cardType")
+  }
 
   final case class EndTurnMessage() extends PlayerMessage
 
@@ -58,11 +64,5 @@ object PlayerMessages {
     implicit def ErrorCodecJson =
       casecodec1(ErrorMessage.apply,ErrorMessage.unapply)("error")
   }
-
-  final case class RoomAlreadyExistsMessage() extends PlayerMessage
-
-  final case class RoomNotFoundMessage() extends PlayerMessage
-
-  final case class GameNotFoundMessage() extends PlayerMessage
 
 }
