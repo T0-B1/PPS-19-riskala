@@ -1,5 +1,7 @@
 package org.riskala.model
 
+import scala.scalajs.js.annotation.JSExportAll
+import scala.scalajs.js.annotation.JSExportTopLevel
 import argonaut.Argonaut._
 import org.riskala.model.State.State
 
@@ -9,6 +11,8 @@ import org.riskala.model.State.State
  * @param state2         second state
  * @param userCreated    true if bridge is defined by user
  */
+@JSExportTopLevel("Bridge")
+@JSExportAll
 case class Bridge(state1: State,
                   state2: State,
                   userCreated: Boolean) {

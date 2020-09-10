@@ -2,35 +2,22 @@ plugins {
     id 'scala'
     id 'application'
     id 'com.github.johnrengelman.shadow' version '6.0.0'
+    id 'org.scoverage' version '4.0.2'
 }
 
 version '0.0.0'
 mainClassName = 'org.riskala.controller.Main'
 sourceCompatibility = 1.8
 
-repositories {
-    jcenter()
-    mavenCentral()
+allprojects {
+    repositories {
+        jcenter()
+        mavenCentral()
+    }
 }
 
-task copyFrontendToResources(type: Copy) {
-    dependsOn ':src:vuejs:npm_run_build'
-    from "$projectDir/src/vuejs/dist/"
-    into "$projectDir/src/main/resources/static"
-}
-
-jar {
-    dependsOn copyFrontendToResources
-}
-
-processResources.mustRunAfter(copyFrontendToResources)
-
-shadowJar {
-  append 'reference.conf'
-}
-
-def scalaMajor = '2.13'
-def scalaMinor = '3'
+def scalaMajor = '2.12'
+def scalaMinor = '1'
 def akkaVersion = '2.6.8'
 def akkaHttpVersion = '10.2.0'
 
@@ -48,7 +35,9 @@ dependencies {
         [group: "io.argonaut", name: "argonaut_$scalaMajor", version: "6.3.0"],
         [group: "org.slf4j", name: "slf4j-simple", version: "1.7.25"],
         [group: "com.github.julien-truffaut", name: "monocle-core_$scalaMajor", version: "2.1.0"],
-        [group: "com.github.julien-truffaut", name: "monocle-macro_$scalaMajor", version: "2.1.0"]
+        [group: "com.github.julien-truffaut", name: "monocle-macro_$scalaMajor", version: "2.1.0"],
+        [group: "org.scala-js", name: "scalajs-library_2.12", version: "0.6.15"],
+        [group: "com.lihaoyi", name: "scalatags_sjs0.6_2.12", version: "0.6.3"]
     )
 
     testImplementation(
@@ -62,3 +51,46 @@ dependencies {
         [group: "org.scala-lang.modules", name: "scala-xml_$scalaMajor", version: "1.2.0"]
     )
 }
+
+task provideSourcesToScalajs(type: Copy) {
+    
+    //def scalaJsClasses = "org/riskala/model/**/*"
+    //def scalaJsIgnore = [
+    //"org/riskala/model/ModelMessages.scala",
+    //"org/riskala/model/game/**/*",
+    //"org/riskala/model/lobby/**/*",
+    //"org/riskala/model/room/**/*"]
+
+    def scalaJsClasses = ["org/riskala/model/*.scala"]
+    def scalaJsIgnore = ["org/riskala/model/ModelMessages.scala"]
+    from "$projectDir/src/main/scala/" 
+    include scalaJsClasses 
+    exclude scalaJsIgnore
+    into "$projectDir/src/scalajs/src/main/scala/"
+}
+
+task fetchCompiledScalaJsSources(type: Copy) {
+    dependsOn provideSourcesToScalajs
+    dependsOn ':src:scalajs:scalaJs'
+    from "$projectDir/src/scalajs/build/js/scala.js"
+    into "$projectDir/src/vuejs/public" 
+}
+
+task copyFrontendToResources(type: Copy) {
+    dependsOn fetchCompiledScalaJsSources
+    dependsOn ':src:vuejs:npm_run_build'
+    from "$projectDir/src/vuejs/dist/"
+    into "$projectDir/src/main/resources/static"
+}
+
+jar {
+    dependsOn copyFrontendToResources
+}
+
+shadowJar {
+    append 'reference.conf'
+}
+
+tasks.getByPath(':src:scalajs:scalaJs').mustRunAfter(provideSourcesToScalajs)
+copyFrontendToResources.mustRunAfter(fetchCompiledScalaJsSources)
+processResources.mustRunAfter(copyFrontendToResources)

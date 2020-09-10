@@ -119,5 +119,4 @@ gradle-app.setting
 #==================== Custom ====================#
 
 .idea/*
-src/main/resources/static/
-src/vuejs/public/scala.js
+src/*
