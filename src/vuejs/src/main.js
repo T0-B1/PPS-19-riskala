@@ -12,8 +12,8 @@ Vue.use(Vuex);
 
 Vue.config.productionTip = false
 
-
 const store = new Vuex.Store({
+  websocket: null,
   state: {
     isLogged: false,
     http: Axios.create({
