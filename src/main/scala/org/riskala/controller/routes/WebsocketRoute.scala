@@ -32,8 +32,6 @@ object WebsocketRoute {
 
   private def createSocketFlow(username: String): Flow[Message, Message, NotUsed] = {
     val (wsActor, wsSource) = untypedActorSource().preMaterialize()
-    // TODO use spawn protocol
-    // https://doc.akka.io/docs/akka/current/typed/actor-lifecycle.html#spawnprotocol
     val playerActorRef: ActorRef[PlayerMessage] = spawnOrGetPlayer(username, wsActor)
     Flow.fromSinkAndSource(sinkFromActor(playerActorRef), wsSource)
   }
@@ -42,6 +40,8 @@ object WebsocketRoute {
     Utils.askReceptionistToFind[PlayerMessage](username).toSeq match {
       // No PlayerActor registered found
       case Seq() => {
+        // TODO use spawn protocol
+        // https://doc.akka.io/docs/akka/current/typed/actor-lifecycle.html#spawnprotocol
         val ref: ActorRef[PlayerMessage] = system.systemActorOf(PlayerActor(username, newSocket), username)
         system.receptionist ! Receptionist.Register(ServiceKey[PlayerMessage](username), ref)
         ref
