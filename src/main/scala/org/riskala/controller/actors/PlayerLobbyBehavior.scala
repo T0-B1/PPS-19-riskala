@@ -9,7 +9,7 @@ import org.riskala.model.ModelMessages.LobbyMessage
 import org.riskala.model.lobby.LobbyMessages.JoinTo
 import org.riskala.utils.Parser
 
-object PlayerActor {
+object PlayerLobbyBehavior {
 
   def apply(username: String, socket: actor.ActorRef): Behavior[PlayerMessage] = {
     playerActor(username, socket)
