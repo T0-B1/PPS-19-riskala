@@ -1,6 +1,7 @@
 package org.riskala.model.lobby
 
 import akka.actor.typed.ActorRef
+import argonaut.Argonaut._
 import org.riskala.controller.actors.PlayerMessages.PlayerMessage
 import org.riskala.model.ModelMessages._
 import org.riskala.model.room.RoomMessages.{RoomBasicInfo, RoomInfo}
@@ -13,6 +14,10 @@ import scala.collection.immutable.HashMap
 object LobbyMessages {
 
   case class RoomNameInfo(name: String, players: String)
+  object RoomNameInfo {
+    implicit def RoomNameInfoCodecJson =
+      casecodec2(RoomNameInfo.apply,RoomNameInfo.unapply)("name","players")
+  }
 
   /** Lobby's information
    * @param rooms              The list of name of the rooms
