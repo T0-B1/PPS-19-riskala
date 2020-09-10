@@ -61,7 +61,7 @@ object LobbyManager {
             notifyAllSubscribers(getInfo(nextRooms = newRooms),newSubs)
             nextBehavior(nextSubscribers = newSubs,nextRooms = newRooms)
           } else {
-            creator ! RoomAlreadyExistsMessage()
+            creator ! ErrorMessage("Room already exists")
             nextBehavior()
           }
 
@@ -71,7 +71,7 @@ object LobbyManager {
             rooms.get(name).head._1 ! Join(actor)
             nextBehavior(nextSubscribers = newSubs)
           } else {
-            actor ! RoomNotFoundMessage()
+            actor ! ErrorMessage("Room not found")
             nextBehavior()
           }
           
