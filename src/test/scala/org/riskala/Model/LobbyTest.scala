@@ -70,7 +70,7 @@ class LobbyTest extends AnyWordSpec with BeforeAndAfterAll {
       probeJoin3.expectNoMessage()
       //probe3 try join and receive error response
       lobby ! JoinTo(probeJoin3.ref, "America")
-      probeJoin3.expectMessage(RoomNotFoundMessage())
+      probeJoin3.expectMessage(ErrorMessage("Room not found"))
     }
   }
 
