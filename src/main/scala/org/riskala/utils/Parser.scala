@@ -8,8 +8,6 @@ object Parser {
 
   case class TypedMessage(classType: Class[_], payload: String)
 
-  //val x: Class[WrappedMessage] = classOf[WrappedMessage]
-
   def unwrap(message: String): TypedMessage = {
     val parsedMsg: WrappedMessage = retrieveWrapped(message).get
     val classType = Class.forName(parsedMsg.classType)
