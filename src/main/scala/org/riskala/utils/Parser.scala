@@ -4,7 +4,17 @@ import org.riskala.controller.actors.PlayerMessages.WrappedMessage
 import argonaut.Argonaut._
 import argonaut.DecodeJson
 
-object Deserializer {
+object Parser {
+
+  case class TypedMessage(classType: Class[_], payload: String)
+
+  //val x: Class[WrappedMessage] = classOf[WrappedMessage]
+
+  def unwrap(message: String): TypedMessage = {
+    val parsedMsg: WrappedMessage = message.decodeOption[WrappedMessage].get
+    val classType = Class.forName(parsedMsg.classType)
+    TypedMessage(classType, parsedMsg.payload)
+  }
 
   def retrieveWrapped(wrappedJson: String): Option[WrappedMessage] = {
     wrappedJson.decodeOption[WrappedMessage]

@@ -5,7 +5,9 @@ import akka.actor.typed.{ActorRef, Behavior}
 import akka.actor.typed.scaladsl.Behaviors
 import akka.http.scaladsl.model.ws.{Message, TextMessage}
 import org.riskala.controller.actors.PlayerMessages._
-import org.riskala.utils.Deserializer
+import org.riskala.model.ModelMessages.LobbyMessage
+import org.riskala.model.lobby.LobbyMessages.JoinTo
+import org.riskala.utils.Parser
 
 object PlayerActor {
 
@@ -23,9 +25,19 @@ object PlayerActor {
         case SocketMessage(payload) => {
           context.log.info(s"PlayerActor of $username received socket payload: $payload")
           socket ! TextMessage(s"PlayerActor of $username echoing: $payload")
-          Deserializer.retrieveWrapped(payload).foreach(wrapped=>wrapped.classType match {
+
+          val referent: ActorRef[LobbyMessage] = ???
+          val typed = Parser.unwrap(payload)
+          typed.classType match {
+            case _: Class[JoinMessage] => {
+              Parser.retrieveMessage(typed.payload, JoinMessage.JoinCodecJson.Decoder)
+                .foreach(j => referent ! JoinTo(context.self,j.name))
+            }
+          }
+
+          Parser.retrieveWrapped(payload).foreach(wrapped=>wrapped.classType match {
             case "ErrorMessage" =>
-              val opt = Deserializer.retrieveMessage[ErrorMessage](wrapped.payload,ErrorMessage.ErrorCodecJson.Decoder)
+              val opt = Parser.retrieveMessage[ErrorMessage](wrapped.payload,ErrorMessage.ErrorCodecJson.Decoder)
 
           })
           nextBehavior()
