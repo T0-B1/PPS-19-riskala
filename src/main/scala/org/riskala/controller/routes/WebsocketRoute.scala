@@ -42,7 +42,7 @@ object WebsocketRoute {
     Utils.askReceptionistToFind[PlayerMessage](username).toSeq match {
       // No PlayerActor registered found
       case Seq() => {
-        val ref: ActorRef[PlayerMessage] = system.systemActorOf(PlayerLobbyBehavior(username, newSocket), username)
+        val ref: ActorRef[PlayerMessage] = system.systemActorOf(PlayerLobbyBehavior(username, socket = newSocket), username)
         system.receptionist ! Receptionist.Register(ServiceKey[PlayerMessage](username), ref)
         ref
       }
