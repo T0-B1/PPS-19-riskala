@@ -3,13 +3,13 @@ package org.riskala.controller.actors
 import akka.actor
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.actor.typed.scaladsl.Behaviors
-import akka.http.scaladsl.model.ws.{Message, TextMessage}
+import akka.http.scaladsl.model.ws.TextMessage
 import org.riskala.controller.actors.PlayerMessages._
 import org.riskala.model.ModelMessages.{LobbyMessage, Logout}
-import org.riskala.model.lobby.LobbyMessages.{CreateRoom, JoinTo, LobbyInfo}
-import org.riskala.model.room.RoomMessages.{RoomBasicInfo, RoomInfo}
+import org.riskala.model.lobby.LobbyMessages.{CreateRoom, JoinTo}
 import org.riskala.utils.Parser
-import argonaut.Argonaut._
+import org.riskala.view.messages.FromClientMessages.{CreateMessage, JoinMessage, LogoutMessage}
+import org.riskala.view.messages.ToClientMessages.{LobbyInfo, RoomBasicInfo, RoomInfo}
 
 object PlayerLobbyBehavior {
 
@@ -53,6 +53,7 @@ object PlayerLobbyBehavior {
           nextBehavior()
         case error: ErrorMessage =>
           context.log.info(s"PlayerActor of $username received ErrorMessage")
+          import org.riskala.view.messages.ToClientMessages.ErrorMessage
           socket ! TextMessage(Parser.wrap("ErrorMessage",error, ErrorMessage.ErrorCodecJson.Encoder))
           nextBehavior()
         case RegisterSocket(newSocketActor) =>
