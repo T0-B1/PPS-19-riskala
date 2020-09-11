@@ -14,7 +14,13 @@ import scala.collection.immutable.{HashMap, HashSet}
 
 object LobbyManager {
 
-  def apply(): Behavior[LobbyMessage] = lobbyManager(HashSet.empty,HashMap.empty,HashMap.empty,HashMap.empty)
+  def apply(): Behavior[LobbyMessage] = setupLobbyManager()
+
+  private def setupLobbyManager(): Behavior[LobbyMessage] = {
+    Behaviors.setup { context =>
+      lobbyManager(HashSet.empty,HashMap.empty,HashMap.empty,HashMap.empty)
+    }
+  }
 
   // TODO use Set and Map
   private def lobbyManager(subscribers: HashSet[ActorRef[PlayerMessage]],
