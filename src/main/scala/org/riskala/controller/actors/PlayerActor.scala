@@ -1,9 +1,9 @@
 package org.riskala.controller.actors
 
 import akka.actor
-import akka.actor.typed.{ActorRef, Behavior}
+import akka.actor.typed.Behavior
 import akka.actor.typed.scaladsl.Behaviors
-import akka.http.scaladsl.model.ws.{Message, TextMessage}
+import akka.http.scaladsl.model.ws.TextMessage
 import org.riskala.controller.actors.PlayerMessages._
 
 object PlayerActor {
@@ -19,22 +19,19 @@ object PlayerActor {
         playerActor(newUsername, newSocket)
 
       message match {
-        case SocketMessage(payload) => {
+        case SocketMessage(payload) =>
           context.log.info(s"PlayerActor of $username received socket payload: $payload")
           socket ! TextMessage(s"PlayerActor of $username echoing: $payload")
           nextBehavior()
-        }
+
         case RoomInfoMessage(roomInfo) => context.log.info("RoomInfoMessage"); nextBehavior()
         case LobbyInfoMessage(lobbyInfo) => context.log.info("LobbyInfoMessage"); nextBehavior()
         case GameInfoMessage() => context.log.info("GameInfoMessage"); nextBehavior()
-        case RoomAlreadyExistsMessage() => context.log.info("RoomAlreadyExistsMessage"); nextBehavior()
-        case RoomNotFoundMessage() => context.log.info("RoomNotFoundMessage"); nextBehavior()
-        case GameNotFoundMessage() => context.log.info("GameNotFoundMessage"); nextBehavior()
         case ErrorMessage(error) => context.log.info("ErrorMessage"); nextBehavior()
-        case RegisterSocket(newSocketActor) => {
+        case RegisterSocket(newSocketActor) =>
           context.log.info("registering new socket")
           nextBehavior(newSocket = newSocketActor)
-        }
+        
       }
     }
 
