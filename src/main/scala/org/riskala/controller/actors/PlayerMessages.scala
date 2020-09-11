@@ -25,7 +25,7 @@ object PlayerMessages {
 
   final case class RoomReferent(room: ActorRef[RoomMessage]) extends PlayerMessage
 
-  final case class GameReferent(room: ActorRef[GameMessage]) extends PlayerMessage
+  final case class GameReferent(game: ActorRef[GameMessage]) extends PlayerMessage
 
   final case class RoomInfoMessage(roomInfo: RoomInfo) extends PlayerMessage
 
