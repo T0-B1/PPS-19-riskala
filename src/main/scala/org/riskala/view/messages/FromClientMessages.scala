@@ -2,6 +2,9 @@ package org.riskala.view.messages
 
 import argonaut.Argonaut._
 
+import scala.scalajs.js.annotation.JSExportAll
+
+@JSExportAll
 object FromClientMessages {
 
   final case class JoinMessage(name: String)
