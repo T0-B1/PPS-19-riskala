@@ -32,9 +32,8 @@ object LobbyManager {
                   nextGames: HashMap[String, ActorRef[GameMessage]] = games,
                   nextTerminatedGames: HashMap[String, (ActorRef[GameMessage], Boolean)] = terminatedGames
                  ): PlayerMessage = {
-        val roomList: List[String] = nextRooms.map(kv => kv._1 + " "
-          + kv._2._2.actualNumberOfPlayer
-          + " / " + kv._2._2.maxNumberOfPlayer).toList
+        val roomList: List[RoomNameInfo] = nextRooms.map(kv => RoomNameInfo(kv._1,
+          kv._2._2.actualNumberOfPlayer + "/" + kv._2._2.maxNumberOfPlayer)).toList
         val gameList: List[String] = nextGames.keys.toList
         val terminatedGameList: List[String] = nextTerminatedGames.keys.toList
         LobbyInfoMessage(LobbyInfo(roomList, gameList, terminatedGameList))
