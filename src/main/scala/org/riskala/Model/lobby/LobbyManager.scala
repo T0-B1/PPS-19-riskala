@@ -17,9 +17,11 @@ object LobbyManager {
 
   def apply(): Behavior[LobbyMessage] = setupLobbyManager()
 
+  val lobbyServiceKey: ServiceKey[LobbyMessage] = ServiceKey[LobbyMessage]("LobbyManager")
+
   private def setupLobbyManager(): Behavior[LobbyMessage] = {
     Behaviors.setup { context =>
-      context.system.receptionist ! Receptionist.register(ServiceKey[LobbyMessage]("LobbyManager"), context.self)
+      context.system.receptionist ! Receptionist.register(lobbyServiceKey, context.self)
       lobbyManager(Set.empty,Map.empty,Map.empty,Map.empty)
     }
   }
