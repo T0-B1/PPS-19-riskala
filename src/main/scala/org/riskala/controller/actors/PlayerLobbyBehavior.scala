@@ -51,10 +51,11 @@ object PlayerLobbyBehavior {
           context.log.info(s"PlayerActor of $username received LobbyInfoMessage")
           socket ! TextMessage(Parser.wrap("LobbyInfo",lobbyInfo,LobbyInfo.LobbyInfoCodecJson.Encoder))
           nextBehavior()
-        case error: ErrorMessage =>
+        case errorMessage: ErrorMessage =>
           context.log.info(s"PlayerActor of $username received ErrorMessage")
           import org.riskala.view.messages.ToClientMessages.ErrorMessage
-          socket ! TextMessage(Parser.wrap("ErrorMessage",error, ErrorMessage.ErrorCodecJson.Encoder))
+          val clientError = ErrorMessage(errorMessage.error)
+          socket ! TextMessage(Parser.wrap("ErrorMessage",clientError, ErrorMessage.ErrorCodecJson.Encoder))
           nextBehavior()
         case RegisterSocket(newSocketActor) =>
           context.log.info("registering new socket")
