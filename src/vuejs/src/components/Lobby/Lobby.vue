@@ -2,12 +2,20 @@
 <div class="container">
   <div class="subcontainer">
     <h1> Lobby </h1>
-    <h2> Stanze </h2>
-    <b-table striped hover :items="itemsRoom" @row-clicked="myRowClickHandler"></b-table>
-    <h2> Partite </h2>
-    <b-table striped hover :items="itemsGame"></b-table>
-    <h2> Partite Terminate </h2>
-    <b-table striped hover :items="itemsTerminated"></b-table>
+    <b-tabs content-class="mt-3">
+      <b-tab title="Stanze" active>
+        <h1>Stanze in corso </h1>
+        <b-table striped hover :items="itemsRoom" @row-clicked="myRowClickHandler"></b-table>
+      </b-tab>
+      <b-tab title="Partite">
+        <h1>Partite</h1>
+        <b-table striped hover :items="itemsGame" @row-clicked="myRowClickHandler"></b-table>
+      </b-tab>
+      <b-tab title="Partite Terminate">
+        <h1>Partite Terminate</h1>
+        <b-table striped hover :items="itemsTerminated" @row-clicked="myRowClickHandler"></b-table>
+      </b-tab>
+    </b-tabs>
   </div>
   <hr class="divider"/>
   <div class="buttons_div">
@@ -30,28 +38,39 @@
       }
     },
     mounted() {
-      this.readSocketMessage()
+      //console.log("Before readSockel LOBBY")
+      //console.log(this.$store.state.websocket)
+      //this.readSocketMessage()
+      /*this.$store.state.websocket.onmessage = function(evt) {
+        console.log("received msg from lobby"+evt.data)
+      }*/
+      //console.log("After readSocket LOBBY")
     },
     methods: {
       readSocketMessage() {
-        this.$store.websocket.onmessage = function(evt) { onMessage(evt) };
+        this.$store.state.websocket.onmessage = function(evt) { console.log("rec.msg"+evt.data); onMessage(evt) };
+        console.log("cerco di fare on message")
         function onMessage(evt) {
           console.log('LOBBY - Receive message: ' + evt.data);
           //var  dW = metodo deserializzaWrapped
+          new ClientLobby().handleLobbyMessage(evt.data, this)
           //scalaUpdateLobby(this)
         }
       },
       updateLobbyInfo(lobbyInfo) {
-        this.$store.websocket.send("LOBBY - updated info into lobby")
+        this.$store.state.websocket.send("LOBBY - updated info into lobby")
         console.log(lobbyInfo.rooms, lobbyInfo.games, lobbyInfo.terminatedGames)
-        //this.items = lobbyInfo
+        this.itemsRoom = lobbyInfo.rooms
+        this.itemsGame = lobbyInfo.games
+        this.itemsTerminated = lobbyInfo.terminatedGames
+        console.log("rooms"+this.itemsRoom, "games"+this.itemsGame,"terminated"+this.itemsTerminated)
       },
       createRoom(){
         console.log('LOBBY - Call create_room')
         this.$router.push('/create_room')
       },
       joinRoom(){
-        this.$store.websocket.send('LOBBY - Join room '+this.join)
+        this.$store.state.websocket.send('LOBBY - Join room '+this.join)
         this.$router.push('/room')
       },
       notifyError(error) {

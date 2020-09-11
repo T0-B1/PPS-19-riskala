@@ -13,8 +13,8 @@ Vue.use(Vuex);
 Vue.config.productionTip = false
 
 const store = new Vuex.Store({
-  websocket: null,
   state: {
+    websocket: null,
     isLogged: false,
     http: Axios.create({
       timeout: 10000,
@@ -39,6 +39,9 @@ const store = new Vuex.Store({
         timeout: 10000,
         headers: { token: 'InvalidToken' },
       })
+    },
+    openWebsocket(state, newWebsocket) {
+      state.websocket = newWebsocket;
     }
   }
 });
