@@ -21,10 +21,10 @@ object RoomManager {
    * @return A new Behavior[RoomMessage]
    * */
   def apply(roomInfo: RoomInfo, lobby: ActorRef[LobbyMessage]): Behavior[RoomMessage] =
-    roomManager(HashSet.empty, HashMap.empty, roomInfo, lobby)
+    roomManager(Set.empty, Map.empty, roomInfo, lobby)
 
-  private def roomManager(subscribersRoom: HashSet[ActorRef[PlayerMessage]],
-                  readyPlayerMap: HashMap[String,ActorRef[PlayerMessage]],
+  private def roomManager(subscribersRoom: Set[ActorRef[PlayerMessage]],
+                  readyPlayerMap: Map[String,ActorRef[PlayerMessage]],
                   roomInfo: RoomInfo,
                   lobby: ActorRef[LobbyMessage]
                  ):Behavior[RoomMessage] = {
@@ -36,16 +36,16 @@ object RoomManager {
       def decreaseActualPlayer(ri:RoomInfo):RoomInfo = (lensBasicInfo composeLens lensActualNumber).modify(_ - 1)(ri)
       def increaseActualPlayer(ri:RoomInfo):RoomInfo = (lensBasicInfo composeLens lensActualNumber).modify(_ + 1)(ri)
 
-      def notifyUpdateRoomInfo(newSubscribers: HashSet[ActorRef[PlayerMessage]],
-                               newReady: HashMap[String,ActorRef[PlayerMessage]],
+      def notifyUpdateRoomInfo(newSubscribers: Set[ActorRef[PlayerMessage]],
+                               newReady: Map[String,ActorRef[PlayerMessage]],
                                newRoomInfo: RoomInfo): Unit = {
         newReady.foreach(rp => rp._2 ! RoomInfoMessage(newRoomInfo))
         newSubscribers. foreach(s => s ! RoomInfoMessage(newRoomInfo))
         lobby ! UpdateRoomInfo(newRoomInfo.basicInfo)
       }
 
-      def updateBehavior(updatedSub: HashSet[ActorRef[PlayerMessage]] = subscribersRoom,
-                         updatedReady: HashMap[String,ActorRef[PlayerMessage]] = readyPlayerMap,
+      def updateBehavior(updatedSub: Set[ActorRef[PlayerMessage]] = subscribersRoom,
+                         updatedReady: Map[String,ActorRef[PlayerMessage]] = readyPlayerMap,
                          updatedRoomInfo: RoomInfo = roomInfo,
                          updatedLobby: ActorRef[LobbyMessage] = lobby
                         ):Behavior[RoomMessage] = {

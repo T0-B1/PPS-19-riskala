@@ -6,8 +6,6 @@ import argonaut.Argonaut._
 import org.riskala.model.ModelMessages.{GameMessage, LobbyMessage, RoomMessage}
 import org.riskala.view.messages.ToClientMessages.{LobbyInfo, RoomInfo}
 
-import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
-
 object PlayerMessages {
 
   trait PlayerMessage

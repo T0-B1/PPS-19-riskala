@@ -1,12 +1,10 @@
 package org.riskala.model.lobby
 
 import akka.actor.typed.ActorRef
-import argonaut.Argonaut._
 import org.riskala.controller.actors.PlayerMessages.PlayerMessage
 import org.riskala.model.ModelMessages._
 import org.riskala.view.messages.ToClientMessages.{RoomBasicInfo, RoomInfo}
 
-import scala.collection.immutable.HashMap
 
 /**
  * lobby messages
@@ -54,7 +52,7 @@ object LobbyMessages {
    * @param roomSubscribers   the list of subscribers actor ref who will spectate the game
    * */
   case class StartGame(info: RoomInfo,
-                       players: HashMap[String,ActorRef[PlayerMessage]],
+                       players: Map[String,ActorRef[PlayerMessage]],
                        roomSubscribers: Set[ActorRef[PlayerMessage]]) extends LobbyMessage
 
   /** Message sent when a game ends
@@ -67,7 +65,7 @@ object LobbyMessages {
    * @param name             The name of the game that ended
    * @param subscribers      List the game's players
    * */
-  case class GameClosed(name: String, subscribers: List[ActorRef[PlayerMessage]]) extends LobbyMessage
+  case class GameClosed(name: String, subscribers: Seq[ActorRef[PlayerMessage]]) extends LobbyMessage
 
   /** Message sent to update room information
    * @param info             Room information
