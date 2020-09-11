@@ -10,8 +10,7 @@ import org.riskala.model.game.GameMessages.JoinGame
 import org.riskala.model.lobby.LobbyMessages._
 import org.riskala.model.room.RoomManager
 import org.riskala.model.room.RoomMessages.{Join, RoomBasicInfo}
-
-import scala.collection.immutable.{HashMap, HashSet}
+import org.riskala.view.messages.ToClientMessages.{LobbyInfo, RoomNameInfo}
 
 object LobbyManager {
 
