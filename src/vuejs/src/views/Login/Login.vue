@@ -97,6 +97,7 @@ export default {
       var vue = this
       var HOST = location.origin.replace(/^http/, 'ws')
       this.$store.websocket = new WebSocket(HOST + "/websocket?token=" + token)
+      window.socket = this.$store.websocket
       this.$store.websocket.onopen = function() { onOpen(vue) };
       this.$store.websocket.onclose = function() { onClose() };
       this.$store.websocket.onmessage = function(evt) { onMessage(evt) };
