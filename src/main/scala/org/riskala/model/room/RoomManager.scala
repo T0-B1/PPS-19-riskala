@@ -5,65 +5,71 @@ import akka.actor.typed.{ActorRef, Behavior}
 import RoomMessages._
 import org.riskala.controller.actors.PlayerMessages._
 import org.riskala.model.ModelMessages._
-import org.riskala.model.game.GameManager
 import org.riskala.model.lobby.LobbyMessages.{EmptyRoom, StartGame, Subscribe, UpdateRoomInfo}
-
 import scala.collection.immutable.{HashMap, HashSet}
+import monocle.Lens
+import monocle.macros.GenLens
 
 object RoomManager {
 
+  /**
+   * Creates a new room behavior
+   * @param roomInfo    Information for this room
+   * @param lobby       Actor ref of the lobby
+   * @return A new Behavior[RoomMessage]
+   * */
   def apply(roomInfo: RoomInfo, lobby: ActorRef[LobbyMessage]): Behavior[RoomMessage] =
     roomManager(HashSet.empty, HashMap.empty, roomInfo, lobby)
 
-  def roomManager(subscribersRoom: HashSet[ActorRef[PlayerMessage]],
-                  readyPlayerList: HashMap[String,ActorRef[PlayerMessage]],
+  private def roomManager(subscribersRoom: HashSet[ActorRef[PlayerMessage]],
+                  readyPlayerMap: HashMap[String,ActorRef[PlayerMessage]],
                   roomInfo: RoomInfo,
                   lobby: ActorRef[LobbyMessage]
                  ):Behavior[RoomMessage] = {
-
     Behaviors.receive { (context, message) =>
+
+      val lensBasicInfo: Lens[RoomInfo,RoomBasicInfo] = GenLens[RoomInfo](_.basicInfo)
+      val lensActualNumber: Lens[RoomBasicInfo, Int] = GenLens[RoomBasicInfo](_.actualNumberOfPlayer)
+
+      def decreaseActualPlayer(ri:RoomInfo):RoomInfo = (lensBasicInfo composeLens lensActualNumber).modify(_ - 1)(ri)
+      def increaseActualPlayer(ri:RoomInfo):RoomInfo = (lensBasicInfo composeLens lensActualNumber).modify(_ + 1)(ri)
 
       def notifyUpdateRoomInfo(newSubscribers: HashSet[ActorRef[PlayerMessage]],
                                newReady: HashMap[String,ActorRef[PlayerMessage]],
                                newRoomInfo: RoomInfo): Unit = {
-        
         newReady.foreach(rp => rp._2 ! RoomInfoMessage(newRoomInfo))
         newSubscribers. foreach(s => s ! RoomInfoMessage(newRoomInfo))
-
         lobby ! UpdateRoomInfo(newRoomInfo.basicInfo)
       }
 
       def updateBehavior(updatedSub: HashSet[ActorRef[PlayerMessage]] = subscribersRoom,
-                         updatedReady: HashMap[String,ActorRef[PlayerMessage]] = readyPlayerList,
+                         updatedReady: HashMap[String,ActorRef[PlayerMessage]] = readyPlayerMap,
                          updatedRoomInfo: RoomInfo = roomInfo,
                          updatedLobby: ActorRef[LobbyMessage] = lobby
                         ):Behavior[RoomMessage] = {
-        context.log.info("updSub: -> "+ updatedSub.toList)
-        context.log.info("updReady: -> "+ updatedReady.toList)
-        context.log.info("updRI: -> "+ updatedRoomInfo)
-        context.log.info("updLobby: -> "+ updatedLobby)
+        context.log.info("Room updated subscribers: -> "+ updatedSub.toList)
+        context.log.info("Room updated ready player: -> "+ updatedReady.toList)
+        context.log.info("Room updated room info: -> "+ updatedRoomInfo)
         context.log.info( "------- --------")
         roomManager(updatedSub, updatedReady, updatedRoomInfo, updatedLobby)
       }
 
       message match {
         case Join(actor) =>
-          context.log.info("JOIN")
+          context.log.info("Room received JOIN message")
           val newSubscriber = subscribersRoom + actor
-          context.log.info("After SUB "+newSubscriber.size)
+          context.log.info("Number of subscribers after subscriprion into the room "+newSubscriber.size)
           actor ! RoomInfoMessage(roomInfo)
           updateBehavior(updatedSub = newSubscriber)
 
         case Leave(actor) =>
-          context.log.info("LEAVE")
-          var newReady = readyPlayerList
+          context.log.info("Room received LEAVE message")
+          var newReady = readyPlayerMap
           var newSubscribers = subscribersRoom
           var newRoomInfo = roomInfo
-          if(readyPlayerList.toList.exists(kv => kv._2 == actor)){
-            newReady = readyPlayerList.filter(kv => kv._2 != actor)
-            newRoomInfo = roomInfo.copy(
-              roomInfo.basicInfo.copy(
-                actualNumberOfPlayer = roomInfo.basicInfo.actualNumberOfPlayer - 1))
+          if(readyPlayerMap.toList.exists(kv => kv._2 == actor)){
+            newReady = readyPlayerMap.filter(kv => kv._2 != actor)
+            newRoomInfo = decreaseActualPlayer(roomInfo)
             notifyUpdateRoomInfo(subscribersRoom, newReady, newRoomInfo)
           } else {
             newSubscribers = subscribersRoom - actor
@@ -71,68 +77,51 @@ object RoomManager {
           lobby ! Subscribe(actor)
           if(newSubscribers.isEmpty && newReady.isEmpty){
             lobby ! EmptyRoom(roomInfo.basicInfo.name)
-            Behaviors.stopped {
-              () => context.log.info("LeaveMessage!- Behavior stopped")
-            }
+            context.log.info("Everybody leaved the room - Behavior stopped")
+            Behaviors.stopped
           } else {
             updateBehavior(updatedSub = newSubscribers, updatedReady = newReady, updatedRoomInfo = newRoomInfo)
           }
 
         case UnReady(playerName, actor) =>
-          context.log.info("UNREADY")
-          val newReady = readyPlayerList - playerName
-          //Update actualNumberPlayer
-          val newRoomInfo = roomInfo.copy(
-            roomInfo.basicInfo.copy(
-              actualNumberOfPlayer = roomInfo.basicInfo.actualNumberOfPlayer - 1))
+          context.log.info("Room received UNREADY message")
+          val newReady = readyPlayerMap - playerName
+          val newRoomInfo = decreaseActualPlayer(roomInfo)
           val newSubscriber = subscribersRoom + actor
           notifyUpdateRoomInfo(newSubscriber, newReady, newRoomInfo)
           updateBehavior(updatedSub = newSubscriber, updatedReady = newReady, updatedRoomInfo = newRoomInfo)
 
         case Ready(playerName, actor) =>
-          context.log.info("READY")
-          //Update actualNumberPlayer
-          val newRoomInfo = roomInfo.copy(
-            roomInfo.basicInfo.copy(
-              actualNumberOfPlayer = roomInfo.basicInfo.actualNumberOfPlayer + 1))
-          context.log.info("newRoomInfo - "+ newRoomInfo)
-          //Remove the actor from subscribersList
+          context.log.info("Room received READY message")
+          val newRoomInfo = increaseActualPlayer(roomInfo)
+          context.log.info("Updated newRoomInfo - "+ newRoomInfo)
           val newSubscriber = subscribersRoom - actor
-          //Add the actor into readyPlayerList
-          val newReady = readyPlayerList + (playerName -> actor)
-
+          val newReady = readyPlayerMap + (playerName -> actor)
           if (newReady.size == newRoomInfo.basicInfo.maxNumberOfPlayer) {
-            //Game can start
-            lobby ! StartGame(roomInfo, newReady, newSubscriber)
-            //TODO: Change behavior from Room to Game -> GameManager()
-            context.spawn(GameManager(), "GameManager")
-            Behaviors.stopped {
-              () => context.log.info("Ready room Stopped")
-            }
+            lobby ! StartGame(newRoomInfo, newReady, newSubscriber)
+            context.log.info("Everybody into the room are ready. Start game and Room behavior stopped")
+            Behaviors.stopped
           } else {
             notifyUpdateRoomInfo(newSubscriber, newReady, newRoomInfo)
             updateBehavior(updatedSub = newSubscriber, updatedReady = newReady, updatedRoomInfo = newRoomInfo)
           }
 
         case Logout(actor) =>
-          context.log.info("LOGOUT")
-          var newReady = readyPlayerList
+          context.log.info("Room received LOGOUT message")
+          var newReady = readyPlayerMap
           var newSubscribers = subscribersRoom
           var newRoomInfo = roomInfo
-          if(readyPlayerList.toList.exists(kv => kv._2 == actor)){
-            newReady = readyPlayerList.filter(kv => kv._2 != actor)
-            newRoomInfo = roomInfo.copy(
-              roomInfo.basicInfo.copy(
-                actualNumberOfPlayer = roomInfo.basicInfo.actualNumberOfPlayer - 1))
+          if(readyPlayerMap.toList.exists(kv => kv._2 == actor)){
+            newReady = readyPlayerMap.filter(kv => kv._2 != actor)
+            newRoomInfo = decreaseActualPlayer(roomInfo)
             notifyUpdateRoomInfo(newSubscribers, newReady, newRoomInfo)
           } else {
             newSubscribers = subscribersRoom - actor
           }
           if(newSubscribers.isEmpty && newReady.isEmpty){
             lobby ! EmptyRoom(roomInfo.basicInfo.name)
-            Behaviors.stopped {
-              () => context.log.info("LogoutMessage! - Behavior stopped")
-            }
+            context.log.info("Everybody into the room logout. Room is empty and behavior stopped")
+            Behaviors.stopped
           } else {
             updateBehavior(updatedSub = newSubscribers, updatedReady = newReady, updatedRoomInfo = newRoomInfo)
           }
