@@ -1,8 +1,8 @@
 package org.riskala.utils
 
-import org.riskala.controller.actors.PlayerMessages.WrappedMessage
 import argonaut.Argonaut._
 import argonaut.{DecodeJson, EncodeJson}
+import org.riskala.view.messages.WrappedMessage
 
 object Parser {
 

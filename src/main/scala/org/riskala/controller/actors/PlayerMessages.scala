@@ -9,12 +9,13 @@ import org.riskala.view.messages.ToClientMessages.{LobbyInfo, RoomInfo}
 object PlayerMessages {
 
   trait PlayerMessage
-
+/*
   final case class WrappedMessage(classType: String, payload: String) extends PlayerMessage
   object WrappedMessage {
     implicit def WrappedCodecJson =
       casecodec2(WrappedMessage.apply,WrappedMessage.unapply)("classType","payload")
   }
+*/
 
   final case class SocketMessage(payload: String) extends PlayerMessage
 
