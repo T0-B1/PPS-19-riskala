@@ -15,6 +15,7 @@ object PlayerLobbyBehavior {
 
   def apply(username: String, lobby: ActorRef[LobbyMessage] = null, socket: actor.ActorRef): Behavior[PlayerMessage] = {
     playerActor(username, lobby, socket)
+    //TODO: retrieve Lobby ActorRef 
   }
 
   private def playerActor(username: String,
