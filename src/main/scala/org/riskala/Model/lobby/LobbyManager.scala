@@ -20,17 +20,17 @@ object LobbyManager {
   private def setupLobbyManager(): Behavior[LobbyMessage] = {
     Behaviors.setup { context =>
       context.system.receptionist ! Receptionist.register(ServiceKey[LobbyMessage]("LobbyManager"), context.self)
-      lobbyManager(HashSet.empty,HashMap.empty,HashMap.empty,HashMap.empty)
+      lobbyManager(Set.empty,Map.empty,Map.empty,Map.empty)
     }
   }
 
-  private def lobbyManager(subscribers: HashSet[ActorRef[PlayerMessage]],
+  private def lobbyManager(subscribers: Set[ActorRef[PlayerMessage]],
                    rooms: Map[String, (ActorRef[RoomMessage], RoomBasicInfo)],
                    games: Map[String, ActorRef[GameMessage]],
                    terminatedGames: Map[String, (ActorRef[GameMessage], Boolean)]): Behavior[LobbyMessage] =
     Behaviors.receive { (context, message) => {
       
-      def nextBehavior(nextSubscribers: HashSet[ActorRef[PlayerMessage]] = subscribers,
+      def nextBehavior(nextSubscribers: Set[ActorRef[PlayerMessage]] = subscribers,
                        nextRooms: Map[String, (ActorRef[RoomMessage], RoomBasicInfo)] = rooms,
                        nextGames: Map[String, ActorRef[GameMessage]] = games,
                        nextTerminatedGames: Map[String, (ActorRef[GameMessage], Boolean)] = terminatedGames
