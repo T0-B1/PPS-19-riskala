@@ -1,5 +1,6 @@
 package org.riskala.model.lobby
 
+import akka.actor.typed.receptionist.{Receptionist, ServiceKey}
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}
 import org.riskala.controller.actors.PlayerMessages._
@@ -18,6 +19,7 @@ object LobbyManager {
 
   private def setupLobbyManager(): Behavior[LobbyMessage] = {
     Behaviors.setup { context =>
+      context.system.receptionist ! Receptionist.register(ServiceKey[LobbyMessage]("LobbyManager"), context.self)
       lobbyManager(HashSet.empty,HashMap.empty,HashMap.empty,HashMap.empty)
     }
   }
