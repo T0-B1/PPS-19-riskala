@@ -22,11 +22,11 @@ object PlayerGameBehavior {
 
       message match {
         case SocketMessage(payload) => nextBehavior()
-        case ActionMessage(from,to,attacking,defending,invading) => nextBehavior()
+        //case ActionMessage(from,to,attacking,defending,invading) => nextBehavior()
         case GameInfoMessage() => nextBehavior()
         case LobbyReferent(lobby) => nextBehavior()
-        case LeaveMessage() => nextBehavior()
-        case LogoutMessage() => nextBehavior()
+        //case LeaveMessage() => nextBehavior()
+        //case LogoutMessage() => nextBehavior()
         case ErrorMessage(error) => nextBehavior()
       }
     }

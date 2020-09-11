@@ -25,9 +25,9 @@ object PlayerRoomBehavior {
       case RoomInfoMessage(roomInfo) => nextBehavior()
       case LobbyReferent(lobby) => nextBehavior()
       case GameReferent(game) => nextBehavior()
-      case ReadyMessage() => nextBehavior()
-      case LeaveMessage() => nextBehavior()
-      case LogoutMessage() => nextBehavior()
+      //case ReadyMessage() => nextBehavior()
+      //case LeaveMessage() => nextBehavior()
+      //case LogoutMessage() => nextBehavior()
       case ErrorMessage(error) => nextBehavior()
     }
   }
