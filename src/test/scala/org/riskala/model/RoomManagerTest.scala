@@ -15,7 +15,8 @@ class RoomManagerTest extends AnyWordSpec with BeforeAndAfterAll {
 
   override def afterAll(): Unit = testKit.shutdownTestKit()
 
-  val roomInfo: RoomInfo = RoomInfo(RoomBasicInfo("Europa", 0, 4), "")
+  val roomBasicInfo = RoomBasicInfo("Europa", 0, 4)
+  val roomInfo: RoomInfo = RoomInfo(roomBasicInfo, "")
 
   "Join to room" should {
     "give roomInfo" in {
@@ -32,7 +33,7 @@ class RoomManagerTest extends AnyWordSpec with BeforeAndAfterAll {
   }
 
   "Leave room" should {
-    "remove user from roomUpdateInfo and close behavior" in {
+    "remove user from roomUpdateInfo" in {
       val leaveLobby: TestProbe[LobbyMessage] = testKit.createTestProbe[LobbyMessage]("leaveLobby")
       val room: ActorRef[RoomMessage] = testKit.spawn(RoomManager(roomInfo, leaveLobby.ref), "RoomLeave")
       val playerLeave: TestProbe[PlayerMessage] = testKit.createTestProbe[PlayerMessage]("playerLeave")
@@ -45,6 +46,10 @@ class RoomManagerTest extends AnyWordSpec with BeforeAndAfterAll {
       room ! Leave(playerLeave.ref)
       playerLeave.expectNoMessage()
       leaveLobby.expectMessage(Subscribe(playerLeave.ref))
+      room ! Leave(player2Leave.ref)
+      player2Leave.expectNoMessage()
+      leaveLobby.expectMessage(Subscribe(player2Leave.ref))
+      leaveLobby.expectMessage(EmptyRoom(roomBasicInfo.name))
     }
   }
 
@@ -68,7 +73,7 @@ class RoomManagerTest extends AnyWordSpec with BeforeAndAfterAll {
     }
   }
 
-  "UnReady in room" should {
+  "Submitting command UnReady to room" should {
     "remove from roomInfo" in {
       val unReadyLobby: TestProbe[LobbyMessage] = testKit.createTestProbe[LobbyMessage]("unReadyLobby")
       val room: ActorRef[RoomMessage] = testKit.spawn(RoomManager(roomInfo, unReadyLobby.ref), "RoomUnReady")
@@ -98,6 +103,7 @@ class RoomManagerTest extends AnyWordSpec with BeforeAndAfterAll {
       val player2: TestProbe[PlayerMessage] = testKit.createTestProbe[PlayerMessage]("player2")
       val player3: TestProbe[PlayerMessage] = testKit.createTestProbe[PlayerMessage]("player3")
       val player4: TestProbe[PlayerMessage] = testKit.createTestProbe[PlayerMessage]("player4")
+      val playerList:List[TestProbe[PlayerMessage]] = List(player,player2,player3,player4)
 
       room ! Join(player.ref)
       player.expectMessage(RoomInfoMessage(roomInfo))
@@ -109,24 +115,15 @@ class RoomManagerTest extends AnyWordSpec with BeforeAndAfterAll {
       player4.expectMessage(RoomInfoMessage(roomInfo))
 
       room ! Ready("NarcAle", player.ref)
-      player.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 1, 4), "")))
-      player2.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 1, 4), "")))
-      player3.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 1, 4), "")))
-      player4.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 1, 4), "")))
+      playerList.foreach(pl => pl.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 1, 4), ""))))
       lobby.expectMessage(UpdateRoomInfo(RoomBasicInfo("Europa", 1, 4)))
 
       room ! Ready("Giordo", player2.ref)
-      player.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 2, 4), "")))
-      player2.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 2, 4), "")))
-      player3.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 2, 4), "")))
-      player4.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 2, 4), "")))
+      playerList.foreach(pl => pl.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 2, 4), ""))))
       lobby.expectMessage(UpdateRoomInfo(RoomBasicInfo("Europa", 2, 4)))
 
       room ! Ready("Marto", player3.ref)
-      player.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 3, 4), "")))
-      player2.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 3, 4), "")))
-      player3.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 3, 4), "")))
-      player4.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 3, 4), "")))
+      playerList.foreach(pl => pl.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 3, 4), ""))))
       lobby.expectMessage(UpdateRoomInfo(RoomBasicInfo("Europa", 3, 4)))
 
       room ! Ready("Luca", player4.ref)
@@ -137,7 +134,7 @@ class RoomManagerTest extends AnyWordSpec with BeforeAndAfterAll {
       assert(receivedStart.players.contains("Luca"))
       assert(receivedStart.players.contains("Marto"))
       assert(receivedStart.info == RoomInfo(RoomBasicInfo("Europa", 3, 4), ""))
-      assert(receivedStart.players.size == roomInfo.basicInfo.maxNumberOfPlayer)
+      assert(receivedStart.players.size == roomBasicInfo.maxNumberOfPlayer)
     }
   }
 
@@ -150,6 +147,8 @@ class RoomManagerTest extends AnyWordSpec with BeforeAndAfterAll {
       val player3_ : TestProbe[PlayerMessage] = testKit.createTestProbe[PlayerMessage]("player3_")
       val player4_ : TestProbe[PlayerMessage] = testKit.createTestProbe[PlayerMessage]("player4_")
 
+      val playerList:List[TestProbe[PlayerMessage]] = List(player_,player2_,player3_,player4_)
+
       room ! Join(player_.ref)
       player_.expectMessage(RoomInfoMessage(roomInfo))
       room ! Join(player2_.ref)
@@ -160,30 +159,20 @@ class RoomManagerTest extends AnyWordSpec with BeforeAndAfterAll {
       player4_.expectMessage(RoomInfoMessage(roomInfo))
 
       room ! Ready("NarcAle", player_.ref)
-      player_.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 1, 4), "")))
-      player2_.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 1, 4), "")))
-      player3_.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 1, 4), "")))
-      player4_.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 1, 4), "")))
+      playerList.foreach(pl => pl.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 1, 4), ""))))
       lobby.expectMessage(UpdateRoomInfo(RoomBasicInfo("Europa", 1, 4)))
 
       room ! Ready("Giordo", player2_.ref)
-      player_.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 2, 4), "")))
-      player2_.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 2, 4), "")))
-      player3_.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 2, 4), "")))
-      player4_.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 2, 4), "")))
+      playerList.foreach(pl => pl.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 2, 4), ""))))
       lobby.expectMessage(UpdateRoomInfo(RoomBasicInfo("Europa", 2, 4)))
 
       room ! Ready("Marto", player3_.ref)
-      player_.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 3, 4), "")))
-      player2_.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 3, 4), "")))
-      player3_.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 3, 4), "")))
-      player4_.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 3, 4), "")))
+      playerList.foreach(pl => pl.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 3, 4), ""))))
       lobby.expectMessage(UpdateRoomInfo(RoomBasicInfo("Europa", 3, 4)))
 
       room ! Logout(player_.ref)
-      player2_.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 2, 4), "")))
-      player3_.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 2, 4), "")))
-      player4_.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 2, 4), "")))
+      playerList.filter( _ != player_).
+        foreach(pl => pl.expectMessage(RoomInfoMessage(RoomInfo(RoomBasicInfo("Europa", 2, 4), ""))))
       lobby.expectMessage(UpdateRoomInfo(RoomBasicInfo("Europa", 2, 4)))
 
       room ! Logout(player4_.ref)
@@ -196,10 +185,7 @@ class RoomManagerTest extends AnyWordSpec with BeforeAndAfterAll {
 
       room ! Logout(player3_.ref)
       lobby.expectMessage(UpdateRoomInfo(RoomBasicInfo("Europa", 0, 4)))
-      lobby.expectMessage(EmptyRoom("Europa"))
-
-
+      lobby.expectMessage(EmptyRoom(roomBasicInfo.name))
     }
   }
-
 }

@@ -1,6 +1,7 @@
 package org.riskala.model.lobby
 
 import akka.actor.typed.ActorRef
+import argonaut.Argonaut._
 import org.riskala.controller.actors.PlayerMessages.PlayerMessage
 import org.riskala.model.ModelMessages._
 import org.riskala.model.room.RoomMessages.{RoomBasicInfo, RoomInfo}
@@ -12,12 +13,22 @@ import scala.collection.immutable.HashMap
  */
 object LobbyMessages {
 
+  case class RoomNameInfo(name: String, players: String)
+  object RoomNameInfo {
+    implicit def RoomNameInfoCodecJson =
+      casecodec2(RoomNameInfo.apply,RoomNameInfo.unapply)("name","players")
+  }
+
   /** Lobby's information
    * @param rooms              The list of name of the rooms
    * @param games              The list of name of the games
    * @param terminatedGames    The list of name of the terminated games
    * */
-  case class LobbyInfo(rooms: List[String], games: List[String], terminatedGames: List[String])
+  case class LobbyInfo(rooms: List[RoomNameInfo], games: List[String], terminatedGames: List[String])
+  object LobbyInfo {
+    implicit def LobbyInfoCodecJson =
+      casecodec3(LobbyInfo.apply,LobbyInfo.unapply)("rooms","games","terminatedGames")
+  }
 
   /** Message sent to subscribe to the lobby
    * @param subscriber              The actor who wants to subscribe to the lobby
