@@ -1,8 +1,7 @@
 package org.riskala.view.lobby
 
-import org.riskala.controller.actors.PlayerMessages.ErrorMessage
-import org.riskala.model.lobby.LobbyMessages.LobbyInfo
 import org.riskala.utils.Parser
+import org.riskala.view.messages.ToClientMessages.{ErrorMessage, LobbyInfo}
 
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 

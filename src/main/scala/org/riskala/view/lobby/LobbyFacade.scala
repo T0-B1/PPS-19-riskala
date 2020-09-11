@@ -1,6 +1,6 @@
 package org.riskala.view.lobby
 
-import org.riskala.model.lobby.LobbyMessages.LobbyInfo
+import org.riskala.view.messages.ToClientMessages.LobbyInfo
 
 import scala.scalajs.js
 import scala.scalajs.js.annotation.JSGlobal
