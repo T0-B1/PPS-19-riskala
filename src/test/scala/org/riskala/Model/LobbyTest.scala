@@ -8,7 +8,7 @@ import org.riskala.controller.actors.PlayerMessages._
 import org.riskala.model.lobby.LobbyManager
 import org.riskala.model.lobby.LobbyMessages._
 import org.riskala.model.ModelMessages._
-import org.riskala.model.room.RoomMessages.{RoomBasicInfo, RoomInfo}
+import org.riskala.view.messages.ToClientMessages.{LobbyInfo, RoomBasicInfo, RoomInfo, RoomNameInfo}
 import org.scalatest.BeforeAndAfterAll
 
 import scala.collection.immutable.{HashMap, HashSet}

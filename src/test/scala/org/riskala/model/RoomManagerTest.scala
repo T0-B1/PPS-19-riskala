@@ -7,6 +7,7 @@ import org.riskala.model.room.RoomManager
 import org.riskala.model.room.RoomMessages._
 import org.riskala.model.ModelMessages._
 import org.riskala.model.lobby.LobbyMessages.{EmptyRoom, StartGame, Subscribe, UpdateRoomInfo}
+import org.riskala.view.messages.ToClientMessages.{RoomBasicInfo, RoomInfo}
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.wordspec.AnyWordSpec
 
@@ -133,7 +134,7 @@ class RoomManagerTest extends AnyWordSpec with BeforeAndAfterAll {
       val receivedStart = receivedMsg.asInstanceOf[StartGame]
       assert(receivedStart.players.contains("Luca"))
       assert(receivedStart.players.contains("Marto"))
-      assert(receivedStart.info == RoomInfo(RoomBasicInfo("Europa", 3, 4), ""))
+      assert(receivedStart.info == RoomInfo(RoomBasicInfo("Europa", 4, 4), ""))
       assert(receivedStart.players.size == roomBasicInfo.maxNumberOfPlayer)
     }
   }
