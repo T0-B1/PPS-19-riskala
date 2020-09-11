@@ -66,6 +66,7 @@ task provideSourcesToScalajs(type: Copy) {
                           "org/riskala/view/messages/*.scala",
                           "org/riskala/utils/Parser.scala"]
     def scalaJsIgnore = ["org/riskala/model/ModelMessages.scala"]
+    delete "$projectDir/src/scalajs/src"
     from "$projectDir/src/main/scala/"
     include scalaJsClasses 
     exclude scalaJsIgnore
