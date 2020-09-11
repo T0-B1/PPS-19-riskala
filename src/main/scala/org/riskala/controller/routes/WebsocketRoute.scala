@@ -10,7 +10,7 @@ import akka.stream.scaladsl.{Flow, Sink, Source}
 import akka.stream.typed.scaladsl.ActorSource
 import akka.stream.{CompletionStrategy, OverflowStrategy}
 import akka.{Done, NotUsed, actor}
-import org.riskala.controller.actors.{PlayerLobbyBehavior, PlayerMessages}
+import org.riskala.controller.actors.{PlayerActor, PlayerLobbyBehavior, PlayerMessages}
 import org.riskala.controller.actors.PlayerMessages.PlayerMessage
 import org.riskala.controller.{AuthManager, Server}
 import org.riskala.utils.Utils
@@ -42,7 +42,7 @@ object WebsocketRoute {
     Utils.askReceptionistToFind[PlayerMessage](username).toSeq match {
       // No PlayerActor registered found
       case Seq() => {
-        val ref: ActorRef[PlayerMessage] = system.systemActorOf(PlayerLobbyBehavior(username, socket = newSocket), username)
+        val ref: ActorRef[PlayerMessage] = system.systemActorOf(PlayerActor(username, newSocket), username)
         system.receptionist ! Receptionist.Register(ServiceKey[PlayerMessage](username), ref)
         ref
       }
