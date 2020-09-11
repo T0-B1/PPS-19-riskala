@@ -18,16 +18,18 @@ class LobbyTest extends AnyWordSpec with BeforeAndAfterAll {
 
   override def afterAll(): Unit = testKit.shutdownTestKit()
 
-  val europeBasicInfo: RoomBasicInfo = RoomBasicInfo("Europe", 0, 4)
+  val europe: String = "Europe"
+  val europeBasicInfo: RoomBasicInfo = RoomBasicInfo(europe, 0, 4)
   val europeInfo: RoomInfo = RoomInfo(europeBasicInfo, "")
-  val emptyList: List[String] = List.empty[String]
+  val emptyStringList: List[String] = List.empty[String]
+  val emptyRoomNameInfoList: List[RoomNameInfo] = List.empty[RoomNameInfo]
 
   "Subscribe to Lobby" should {
     "give Lobby info" in {
       val lobby: ActorRef[LobbyMessage] = testKit.spawn(LobbyManager(), "LobbySub")
       val probeSub: TestProbe[PlayerMessage] = testKit.createTestProbe[PlayerMessage]("probeSub")
       lobby ! Subscribe(probeSub.ref)
-      probeSub.expectMessage(LobbyInfoMessage(LobbyInfo(List.empty[RoomNameInfo],emptyList,emptyList)))
+      probeSub.expectMessage(LobbyInfoMessage(LobbyInfo(emptyRoomNameInfoList,emptyStringList,emptyStringList)))
       lobby ! Logout(probeSub.ref)
       probeSub.expectNoMessage()
     }
@@ -40,10 +42,10 @@ class LobbyTest extends AnyWordSpec with BeforeAndAfterAll {
       val probeCreate2: TestProbe[PlayerMessage] = testKit.createTestProbe[PlayerMessage]("probeCreate2")
       lobby ! Subscribe(probeCreate.ref)
       lobby ! Subscribe(probeCreate2.ref)
-      probeCreate.expectMessage(LobbyInfoMessage(LobbyInfo(List.empty[RoomNameInfo],emptyList,emptyList)))
-      probeCreate2.expectMessage(LobbyInfoMessage(LobbyInfo(List.empty[RoomNameInfo],emptyList,emptyList)))
+      probeCreate.expectMessage(LobbyInfoMessage(LobbyInfo(emptyRoomNameInfoList,emptyStringList,emptyStringList)))
+      probeCreate2.expectMessage(LobbyInfoMessage(LobbyInfo(emptyRoomNameInfoList,emptyStringList,emptyStringList)))
       lobby ! CreateRoom(probeCreate.ref, europeInfo)
-      probeCreate2.expectMessage(LobbyInfoMessage(LobbyInfo(List(RoomNameInfo("Europa","0/4")),emptyList,emptyList)))
+      probeCreate2.expectMessage(LobbyInfoMessage(LobbyInfo(List(RoomNameInfo(europe,"0/4")),emptyStringList,emptyStringList)))
     }
   }
 
@@ -53,8 +55,8 @@ class LobbyTest extends AnyWordSpec with BeforeAndAfterAll {
       val probeJoin: TestProbe[PlayerMessage] = testKit.createTestProbe[PlayerMessage]("probeJoin")
       val probeJoin2: TestProbe[PlayerMessage] = testKit.createTestProbe[PlayerMessage]("probeJoin2")
       val probeJoin3: TestProbe[PlayerMessage] = testKit.createTestProbe[PlayerMessage]("probeJoin3")
-      val emptyLobby = LobbyInfo(List.empty[RoomNameInfo],emptyList,emptyList)
-      val nonEmptyLobby = LobbyInfo(List(RoomNameInfo("Usa","0/6")),emptyList,emptyList)
+      val emptyLobby = LobbyInfo(emptyRoomNameInfoList,emptyStringList,emptyStringList)
+      val nonEmptyLobby = LobbyInfo(List(RoomNameInfo("Usa","0/6")),emptyStringList,emptyStringList)
       lobby ! Subscribe(probeJoin.ref)
       lobby ! Subscribe(probeJoin2.ref)
       lobby ! Subscribe(probeJoin3.ref)
@@ -80,10 +82,10 @@ class LobbyTest extends AnyWordSpec with BeforeAndAfterAll {
       val probeSub: TestProbe[PlayerMessage] = testKit.createTestProbe[PlayerMessage]("probeStart")
       lobby ! Subscribe(probeSub.ref)
       probeSub.expectMessageType[LobbyInfoMessage]
-      lobby ! StartGame(RoomInfo(RoomBasicInfo("Europe", 4,4), "Europe"),
+      lobby ! StartGame(RoomInfo(RoomBasicInfo(europe, 4,4), europe),
         HashMap.empty[String,ActorRef[PlayerMessage]],
         HashSet.empty[ActorRef[PlayerMessage]])
-      probeSub.expectMessage(LobbyInfoMessage(LobbyInfo(List.empty[RoomNameInfo],List("Europe"),emptyList)))
+      probeSub.expectMessage(LobbyInfoMessage(LobbyInfo(emptyRoomNameInfoList,List(europe),emptyStringList)))
     }
   }
 
@@ -92,11 +94,11 @@ class LobbyTest extends AnyWordSpec with BeforeAndAfterAll {
       val lobby: ActorRef[LobbyMessage] = testKit.spawn(LobbyManager(), "LobbyEnd")
       val game: ActorRef[GameMessage] = testKit.spawn(Behaviors.ignore[GameMessage], "GameEnd")
       val probeSub: TestProbe[PlayerMessage] = testKit.createTestProbe[PlayerMessage]("probeEnd")
-      val emptyLobby = LobbyInfo(List.empty[RoomNameInfo],emptyList,emptyList)
-      val nonEmptyLobby = LobbyInfo(List.empty[RoomNameInfo],emptyList,List("Europa"))
+      val emptyLobby = LobbyInfo(emptyRoomNameInfoList,emptyStringList,emptyStringList)
+      val nonEmptyLobby = LobbyInfo(emptyRoomNameInfoList,emptyStringList,List(europe))
       lobby ! Subscribe(probeSub.ref)
       probeSub.expectMessage(LobbyInfoMessage(emptyLobby))
-      lobby ! EndGame("Europe",game)
+      lobby ! EndGame(europe,game)
       probeSub.expectMessage(LobbyInfoMessage(nonEmptyLobby))
     }
   }
@@ -106,13 +108,13 @@ class LobbyTest extends AnyWordSpec with BeforeAndAfterAll {
       val lobby: ActorRef[LobbyMessage] = testKit.spawn(LobbyManager(), "LobbyClose")
       val game: ActorRef[GameMessage] = testKit.spawn(Behaviors.ignore[GameMessage], "GameClose")
       val probeSub: TestProbe[PlayerMessage] = testKit.createTestProbe[PlayerMessage]("probeClose")
-      val emptyLobby = LobbyInfo(List.empty[RoomNameInfo],emptyList,emptyList)
-      val nonEmptyLobby = LobbyInfo(List.empty[RoomNameInfo],emptyList,List("Europa"))
+      val emptyLobby = LobbyInfo(emptyRoomNameInfoList,emptyStringList,emptyStringList)
+      val nonEmptyLobby = LobbyInfo(emptyRoomNameInfoList,emptyStringList,List(europe))
       lobby ! Subscribe(probeSub.ref)
       probeSub.expectMessage(LobbyInfoMessage(emptyLobby))
-      lobby ! EndGame("Europe",game)
+      lobby ! EndGame(europe,game)
       probeSub.expectMessage(LobbyInfoMessage(nonEmptyLobby))
-      lobby ! GameClosed("Europe", List.empty[ActorRef[PlayerMessage]])
+      lobby ! GameClosed(europe, List.empty[ActorRef[PlayerMessage]])
       probeSub.expectMessage(LobbyInfoMessage(nonEmptyLobby))
     }
   }
@@ -122,8 +124,8 @@ class LobbyTest extends AnyWordSpec with BeforeAndAfterAll {
       val lobby: ActorRef[LobbyMessage] = testKit.spawn(LobbyManager(), "LobbyUpdate")
       val probeUpdate: TestProbe[PlayerMessage] = testKit.createTestProbe[PlayerMessage]("probeUpdate")
       val probeUpdate2: TestProbe[PlayerMessage] = testKit.createTestProbe[PlayerMessage]("probeUpdate2")
-      val emptyLobby = LobbyInfo(List.empty[RoomNameInfo],emptyList,emptyList)
-      val nonEmptyLobby = LobbyInfo(List(RoomNameInfo("Europa","0/4")),emptyList,emptyList)
+      val emptyLobby = LobbyInfo(emptyRoomNameInfoList,emptyStringList,emptyStringList)
+      val nonEmptyLobby = LobbyInfo(List(RoomNameInfo(europe,"0/4")),emptyStringList,emptyStringList)
       lobby ! Subscribe(probeUpdate.ref)
       lobby ! Subscribe(probeUpdate2.ref)
       probeUpdate.expectMessage(LobbyInfoMessage(emptyLobby))
@@ -142,8 +144,8 @@ class LobbyTest extends AnyWordSpec with BeforeAndAfterAll {
       val lobby: ActorRef[LobbyMessage] = testKit.spawn(LobbyManager(), "LobbyEmpty")
       val probeEmpty: TestProbe[PlayerMessage] = testKit.createTestProbe[PlayerMessage]("probeEmpty")
       val probeEmpty2: TestProbe[PlayerMessage] = testKit.createTestProbe[PlayerMessage]("probeEmpty2")
-      val emptyLobby = LobbyInfo(List.empty[RoomNameInfo],emptyList,emptyList)
-      val nonEmptyLobby = LobbyInfo(List(RoomNameInfo("Europa","0/4")),emptyList,emptyList)
+      val emptyLobby = LobbyInfo(emptyRoomNameInfoList,emptyStringList,emptyStringList)
+      val nonEmptyLobby = LobbyInfo(List(RoomNameInfo(europe,"0/4")),emptyStringList,emptyStringList)
       lobby ! Subscribe(probeEmpty.ref)
       lobby ! Subscribe(probeEmpty2.ref)
       probeEmpty.expectMessage(LobbyInfoMessage(emptyLobby))
