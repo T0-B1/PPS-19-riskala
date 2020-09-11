@@ -9,7 +9,7 @@ import org.riskala.model.ModelMessages.{GameMessage, LobbyMessage, RoomMessage}
 
 object PlayerMessages {
 
-  sealed trait PlayerMessage
+  trait PlayerMessage
 
   final case class WrappedMessage(classType: String, payload: String) extends PlayerMessage
   object WrappedMessage {

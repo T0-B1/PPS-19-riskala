@@ -1,5 +1,6 @@
 package org.riskala.model.lobby
 
+import akka.actor.typed.receptionist.{Receptionist, ServiceKey}
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}
 import org.riskala.controller.actors.PlayerMessages._
@@ -14,23 +15,32 @@ import scala.collection.immutable.{HashMap, HashSet}
 
 object LobbyManager {
 
-  def apply(): Behavior[LobbyMessage] = lobbyManager(HashSet.empty,HashMap.empty,HashMap.empty,HashMap.empty)
+  def apply(): Behavior[LobbyMessage] = setupLobbyManager()
 
-  private def lobbyManager(subscribers: HashSet[ActorRef[PlayerMessage]],
-                   rooms: HashMap[String, (ActorRef[RoomMessage], RoomBasicInfo)],
-                   games: HashMap[String, ActorRef[GameMessage]],
-                   terminatedGames: HashMap[String, (ActorRef[GameMessage], Boolean)]): Behavior[LobbyMessage] =
+  val lobbyServiceKey: ServiceKey[LobbyMessage] = ServiceKey[LobbyMessage]("LobbyManager")
+
+  private def setupLobbyManager(): Behavior[LobbyMessage] = {
+    Behaviors.setup { context =>
+      context.system.receptionist ! Receptionist.register(lobbyServiceKey, context.self)
+      lobbyManager(Set.empty,Map.empty,Map.empty,Map.empty)
+    }
+  }
+
+  private def lobbyManager(subscribers: Set[ActorRef[PlayerMessage]],
+                   rooms: Map[String, (ActorRef[RoomMessage], RoomBasicInfo)],
+                   games: Map[String, ActorRef[GameMessage]],
+                   terminatedGames: Map[String, (ActorRef[GameMessage], Boolean)]): Behavior[LobbyMessage] =
     Behaviors.receive { (context, message) => {
-
-      def nextBehavior(nextSubscribers: HashSet[ActorRef[PlayerMessage]] = subscribers,
-                       nextRooms: HashMap[String, (ActorRef[RoomMessage], RoomBasicInfo)] = rooms,
-                       nextGames: HashMap[String, ActorRef[GameMessage]] = games,
-                       nextTerminatedGames: HashMap[String, (ActorRef[GameMessage], Boolean)] = terminatedGames
+      
+      def nextBehavior(nextSubscribers: Set[ActorRef[PlayerMessage]] = subscribers,
+                       nextRooms: Map[String, (ActorRef[RoomMessage], RoomBasicInfo)] = rooms,
+                       nextGames: Map[String, ActorRef[GameMessage]] = games,
+                       nextTerminatedGames: Map[String, (ActorRef[GameMessage], Boolean)] = terminatedGames
                       ): Behavior[LobbyMessage] = lobbyManager(nextSubscribers,nextRooms,nextGames,nextTerminatedGames)
 
-      def getInfo(nextRooms: HashMap[String, (ActorRef[RoomMessage], RoomBasicInfo)] = rooms,
-                  nextGames: HashMap[String, ActorRef[GameMessage]] = games,
-                  nextTerminatedGames: HashMap[String, (ActorRef[GameMessage], Boolean)] = terminatedGames
+      def getInfo(nextRooms: Map[String, (ActorRef[RoomMessage], RoomBasicInfo)] = rooms,
+                  nextGames: Map[String, ActorRef[GameMessage]] = games,
+                  nextTerminatedGames: Map[String, (ActorRef[GameMessage], Boolean)] = terminatedGames
                  ): PlayerMessage = {
         val roomList: List[RoomNameInfo] = nextRooms.map(kv => RoomNameInfo(kv._1,
           kv._2._2.actualNumberOfPlayer + "/" + kv._2._2.maxNumberOfPlayer)).toList
@@ -40,7 +50,7 @@ object LobbyManager {
       }
 
       def notifyAllSubscribers(info: PlayerMessage,
-                               subs: HashSet[ActorRef[PlayerMessage]] = subscribers): Unit = {
+                               subs: Set[ActorRef[PlayerMessage]] = subscribers): Unit = {
         subs.foreach(s => s ! info)
       }
 
