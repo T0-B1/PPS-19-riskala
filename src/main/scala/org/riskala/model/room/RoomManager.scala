@@ -6,9 +6,11 @@ import RoomMessages._
 import org.riskala.controller.actors.PlayerMessages._
 import org.riskala.model.ModelMessages._
 import org.riskala.model.lobby.LobbyMessages.{EmptyRoom, StartGame, Subscribe, UpdateRoomInfo}
+
 import scala.collection.immutable.{HashMap, HashSet}
 import monocle.Lens
 import monocle.macros.GenLens
+import org.riskala.view.messages.ToClientMessages.{RoomBasicInfo, RoomInfo}
 
 object RoomManager {
 

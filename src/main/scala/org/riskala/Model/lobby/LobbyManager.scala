@@ -9,8 +9,8 @@ import org.riskala.model.game.GameManager
 import org.riskala.model.game.GameMessages.JoinGame
 import org.riskala.model.lobby.LobbyMessages._
 import org.riskala.model.room.RoomManager
-import org.riskala.model.room.RoomMessages.{Join, RoomBasicInfo}
-import org.riskala.view.messages.ToClientMessages.{LobbyInfo, RoomNameInfo}
+import org.riskala.model.room.RoomMessages.Join
+import org.riskala.view.messages.ToClientMessages.{LobbyInfo, RoomBasicInfo, RoomNameInfo}
 
 object LobbyManager {
 

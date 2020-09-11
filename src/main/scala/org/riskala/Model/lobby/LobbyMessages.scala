@@ -4,7 +4,8 @@ import akka.actor.typed.ActorRef
 import argonaut.Argonaut._
 import org.riskala.controller.actors.PlayerMessages.PlayerMessage
 import org.riskala.model.ModelMessages._
-import org.riskala.model.room.RoomMessages.{RoomBasicInfo, RoomInfo}
+import org.riskala.view.messages.ToClientMessages.{RoomBasicInfo, RoomInfo}
+
 import scala.collection.immutable.HashMap
 
 /**

@@ -8,7 +8,7 @@ import org.riskala.model.ModelMessages._
  * Room messages
  */
 object RoomMessages {
-
+/*
   /**
    * @param name                    Room name
    * @param actualNumberOfPlayer    Number of players in a room
@@ -23,6 +23,7 @@ object RoomMessages {
    * @param scenario                Name of the game map
    * */
   case class RoomInfo(basicInfo: RoomBasicInfo, scenario: String)
+*/
 
   /** Message sent when an actor is ready in a room
    *  @param playerName     The name of the player who is ready in a room

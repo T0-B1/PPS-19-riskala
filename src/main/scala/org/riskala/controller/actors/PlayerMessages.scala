@@ -2,10 +2,9 @@ package org.riskala.controller.actors
 
 import akka.actor
 import akka.actor.typed.ActorRef
-import org.riskala.model.room.RoomMessages.RoomInfo
 import argonaut.Argonaut._
 import org.riskala.model.ModelMessages.{GameMessage, LobbyMessage, RoomMessage}
-import org.riskala.view.messages.ToClientMessages.LobbyInfo
+import org.riskala.view.messages.ToClientMessages.{LobbyInfo, RoomInfo}
 
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 
