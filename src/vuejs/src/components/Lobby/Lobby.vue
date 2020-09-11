@@ -2,7 +2,12 @@
 <div class="container">
   <div class="subcontainer">
     <h1> Lobby </h1>
-    <b-table striped hover :items="items" @row-clicked="myRowClickHandler"></b-table>
+    <h2> Stanze </h2>
+    <b-table striped hover :items="itemsRoom" @row-clicked="myRowClickHandler"></b-table>
+    <h2> Partite </h2>
+    <b-table striped hover :items="itemsGame"></b-table>
+    <h2> Partite Terminate </h2>
+    <b-table striped hover :items="itemsTerminated"></b-table>
   </div>
   <hr class="divider"/>
   <div class="buttons_div">
@@ -19,7 +24,9 @@
       return {
         disabled:true,
         join: '',
-        items: [{Nome_Partita: '', Giocatori: ''}]
+        itemsRoom: [{Nome_Stanza: '', Giocatori: ''}],
+        itemsGame: [{Nome_Partita: ''}],
+        itemsTerminated: [{Partita_Terminata: ''}]
       }
     },
     mounted() {
@@ -29,13 +36,14 @@
       readSocketMessage() {
         this.$store.websocket.onmessage = function(evt) { onMessage(evt) };
         function onMessage(evt) {
-          console.log('LOBBY - Mounted receive message: ' + evt.data);
+          console.log('LOBBY - Receive message: ' + evt.data);
           //var  dW = metodo deserializzaWrapped
           //scalaUpdateLobby(this)
         }
       },
-      updateLobbyInfo(/*lobbyInfo*/) {
+      updateLobbyInfo(lobbyInfo) {
         this.$store.websocket.send("LOBBY - updated info into lobby")
+        console.log(lobbyInfo.rooms, lobbyInfo.games, lobbyInfo.terminatedGames)
         //this.items = lobbyInfo
       },
       createRoom(){
@@ -46,8 +54,8 @@
         this.$store.websocket.send('LOBBY - Join room '+this.join)
         this.$router.push('/room')
       },
-      joinFailed() {
-        console.log("join failed")
+      notifyError(error) {
+        console.log(error)
       },
       myRowClickHandler(row) {
         this.join = row.Nome_Partita
