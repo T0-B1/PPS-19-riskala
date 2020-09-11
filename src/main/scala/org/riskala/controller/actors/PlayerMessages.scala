@@ -2,7 +2,6 @@ package org.riskala.controller.actors
 
 import akka.actor
 import akka.actor.typed.ActorRef
-import argonaut.Argonaut._
 import org.riskala.model.ModelMessages.{GameMessage, LobbyMessage, RoomMessage}
 import org.riskala.view.messages.ToClientMessages.{LobbyInfo, RoomInfo}
 
