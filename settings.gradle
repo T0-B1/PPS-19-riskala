@@ -10,3 +10,4 @@
 rootProject.name = 'riskala'
 
 include 'src:vuejs'
+include 'src:scalajs'

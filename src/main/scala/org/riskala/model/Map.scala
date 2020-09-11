@@ -2,6 +2,9 @@ package org.riskala.model
 
 import org.riskala.model.State.State
 
+import scala.scalajs.js.annotation.JSExportTopLevel
+
+@JSExportTopLevel("State")
 object State {
   type State = String
 }
