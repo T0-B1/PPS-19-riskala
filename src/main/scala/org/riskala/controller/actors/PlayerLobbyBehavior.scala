@@ -61,6 +61,9 @@ object PlayerLobbyBehavior {
         case RoomReferent(room) =>
           context.log.info(s"PlayerActor of $username received RoomReferent")
           PlayerRoomBehavior(username,room,socket)
+        case GameReferent(game) =>
+          context.log.info(s"PlayerActor of $username received GameReferent")
+          PlayerGameBehavior(username,game,socket)
         case x =>
           context.log.info(s"PlayerActor of $username received "+ x +", IGNORED")
           nextBehavior()
