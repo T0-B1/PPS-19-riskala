@@ -58,7 +58,9 @@ object PlayerLobbyBehavior {
         case RegisterSocket(newSocketActor) =>
           context.log.info("registering new socket")
           nextBehavior(newSocket = newSocketActor)
-
+        case RoomReferent(room) =>
+          context.log.info(s"PlayerActor of $username received RoomReferent")
+          PlayerRoomBehavior(username,room,socket)
         case x =>
           context.log.info(s"PlayerActor of $username received "+ x +", IGNORED")
           nextBehavior()
