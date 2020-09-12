@@ -6,23 +6,17 @@
           title="Crea partita">
           <div class="formInput">
             <h5 class="title">Nome Stanza</h5>
-            <input type="text" class="form-control" placeholder="Nome della partita">
+            <input type="text" v-model="nomePartita" class="form-control" placeholder="Nome della partita" required>
           </div>
           <hr class="divider"/>
           <div class="infoPlay">
             <div>
               <h5>Numero giocatori</h5>
-              <select class="form-control">
-                <option disabled value="">Select</option>
-                  <option v-for="index in 10" :key="index">{{index}}</option>
-              </select>
+              <input type="number" v-model="numeroGiocatori" class="form-control" placeholder="Nome della partita" required>
             </div>
             <div>
               <h5>Seleziona scenario</h5>
-              <select class="form-control">
-                <option disabled value="">Select</option>
-                  <option v-for="index in 5" :key="index">{{index}}</option>
-              </select>
+              <b-form-select v-model="selected" :options="options"></b-form-select>
             </div>
             <!--<div>
               <h5>Imposta le tue regole</h5>
@@ -37,17 +31,45 @@
           </div>
         </b-card>
       </div>
+      <b-modal id="modal-error" auto-focus-button="ok" ok-only title="Error Message">
+        <p class="my-4"><i>{{this.error}}</i></p>
+      </b-modal>
   </div>
 </template>
 
 <script>
 export default {
   name:'CreateRoom',
-  
+  data() {
+    return {
+      nomePartita: '',
+      numeroGiocatori: 4,
+      selected: '',
+      error: '',
+      options: [{text: 'Europa'}],
+    }
+  },
   methods: {
     createGame() {
-      this.$store.websocket.send("ROOM - Room creation")
-      this.$router.push('/room')
+      //this.$store.websocket.send("ROOM - Room creation")
+      if(this.nomePartita !== '' && this.numeroGiocatori != 0 && this.selected !== '') {
+        this.$bvModal.hide('modal-error')
+        //chiama wrapped message e manda i dati 
+        this.$router.push('/room')
+      } else {
+          if(this.numeroGiocatori == 0) {
+            this.error = 'Numero di giocatori non può essere 0.'
+          } else {
+              if(!this.nomePartita) {
+                this.error = 'Devi inserire il nome della partita.'
+              } else {
+                if(!this.selected) {
+                  this.error= 'Devi selezionare lo scenario su cui giocare.'
+                }
+              }
+          }
+        this.$bvModal.show('modal-error')
+      }
     }
   }
 
