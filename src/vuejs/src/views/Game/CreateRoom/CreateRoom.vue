@@ -16,7 +16,7 @@
             </div>
             <div>
               <h5>Seleziona scenario</h5>
-              <b-form-select v-model="selected" :options="options"></b-form-select>
+              <b-form-select v-model="selectedScenario" :options="options"></b-form-select>
             </div>
             <!--<div>
               <h5>Imposta le tue regole</h5>
@@ -44,15 +44,15 @@ export default {
     return {
       nomePartita: '',
       numeroGiocatori: 4,
-      selected: '',
+      selectedScenario: '',
       error: '',
       passed: false,
-      options: [{text: 'Europa'}],
+      options: [{value: 'Europa', text: 'Europa'}],
     }
   },
   methods: {
     checkForm(){
-      if(this.nomePartita !== '' && this.numeroGiocatori != 0 && this.selected !== '') {
+      if(this.nomePartita !== '' && this.numeroGiocatori != 0 && this.selectedScenario !== '') {
         this.$bvModal.hide('modal-error')
         this.passed = true
       } else {
@@ -62,7 +62,7 @@ export default {
               if(!this.nomePartita) {
                 this.error = 'Devi inserire il nome della partita.'
               } else {
-                if(!this.selected) {
+                if(!this.selectedScenario) {
                   this.error= 'Devi selezionare lo scenario su cui giocare.'
                 }
               }
