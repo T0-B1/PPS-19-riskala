@@ -41,7 +41,7 @@ object ToClientMessages {
    * @param games              The list of name of the games
    * @param terminatedGames    The list of name of the terminated games
    * */
-  case class LobbyInfo(rooms: List[RoomNameInfo], games: List[String], terminatedGames: List[String])
+  case class LobbyInfo(rooms: Set[RoomNameInfo], games: Set[String], terminatedGames: Set[String])
   object LobbyInfo {
     implicit def LobbyInfoCodecJson =
       casecodec3(LobbyInfo.apply,LobbyInfo.unapply)("rooms","games","terminatedGames")
