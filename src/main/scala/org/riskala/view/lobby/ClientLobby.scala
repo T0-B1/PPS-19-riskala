@@ -3,11 +3,19 @@ package org.riskala.view.lobby
 import org.riskala.utils.Parser
 import org.riskala.view.messages.ToClientMessages.{ErrorMessage, LobbyInfo}
 import argonaut.Argonaut._
+import org.riskala.view.messages.FromClientMessages.JoinMessage
+import org.riskala.view.messages.WrappedMessage
 
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 
 @JSExportTopLevel("ClientLobby")
 object ClientLobby {
+
+  @JSExport
+  def getJoinMsgWrapped(): String = {
+    WrappedMessage("JoinMessage",JoinMessage("JSRoom").asJson.pretty(nospace)).asJson.pretty(nospace)
+  }
+
   @JSExport
   def handleLobbyMessage(message: String, lobbyFacade: LobbyFacade): Unit = {
     println(s"inside handleLobby. Message = $message")

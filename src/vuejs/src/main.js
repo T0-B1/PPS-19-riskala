@@ -44,6 +44,9 @@ const store = new Vuex.Store({
       state.websocket = newWebsocket;
       // For debug purposes
       Window.websocket = newWebsocket;
+    },
+    changeHandler(state, newHandler) {
+      state.websocket.onmessage = newHandler
     }
   }
 });

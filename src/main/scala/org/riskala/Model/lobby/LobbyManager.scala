@@ -21,7 +21,7 @@ object LobbyManager {
   private def setupLobbyManager(): Behavior[LobbyMessage] = {
     Behaviors.setup { context =>
       context.system.receptionist ! Receptionist.register(lobbyServiceKey, context.self)
-      println("SetupLobbyManager")
+      context.log.info("SetupLobbyManager")
       lobbyManager(Set.empty,Map.empty,Map.empty,Map.empty)
     }
   }
@@ -57,7 +57,7 @@ object LobbyManager {
       message match {
         case Subscribe(subscriber) =>
           subscriber ! getInfo()
-          println(s"Subscribe from $subscriber")
+          context.log.info(s"Subscribe from $subscriber")
           println(getInfo())
           nextBehavior(nextSubscribers = subscribers + subscriber)
 

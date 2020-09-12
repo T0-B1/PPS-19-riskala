@@ -38,6 +38,13 @@
       }
     },
     mounted() {
+      var vue = this
+      var newHandler = function(evt) {
+        console.log('LOBBY - Receive message: ' + evt.data);
+        ClientLobby.handleLobbyMessage(evt.data, vue)
+      }
+      this.$store.commit('changeHandler', newHandler)
+      this.$store.state.websocket.send(ClientLobby.getJoinMsgWrapped())
       //console.log("Before readSockel LOBBY")
       //console.log(this.$store.state.websocket)
       //this.readSocketMessage()
@@ -53,17 +60,21 @@
         function onMessage(evt) {
           console.log('LOBBY - Receive message: ' + evt.data);
           //var  dW = metodo deserializzaWrapped
-          new ClientLobby().handleLobbyMessage(evt.data, this)
+          ClientLobby.handleLobbyMessage(evt.data, this)
           //scalaUpdateLobby(this)
         }
       },
       updateLobbyInfo(lobbyInfo) {
+        console.log("Inside updateLobbyInfo of vue")
+        console.log(lobbyInfo)
+        /*
         this.$store.state.websocket.send("LOBBY - updated info into lobby")
         console.log(lobbyInfo.rooms, lobbyInfo.games, lobbyInfo.terminatedGames)
         this.itemsRoom = lobbyInfo.rooms
         this.itemsGame = lobbyInfo.games
         this.itemsTerminated = lobbyInfo.terminatedGames
         console.log("rooms"+this.itemsRoom, "games"+this.itemsGame,"terminated"+this.itemsTerminated)
+        */
       },
       createRoom(){
         console.log('LOBBY - Call create_room')
