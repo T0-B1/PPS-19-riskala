@@ -46,16 +46,15 @@ export default {
       numeroGiocatori: 4,
       selected: '',
       error: '',
+      passed: false,
       options: [{text: 'Europa'}],
     }
   },
   methods: {
-    createGame() {
-      //this.$store.websocket.send("ROOM - Room creation")
+    checkForm(){
       if(this.nomePartita !== '' && this.numeroGiocatori != 0 && this.selected !== '') {
         this.$bvModal.hide('modal-error')
-        //chiama wrapped message e manda i dati 
-        this.$router.push('/room')
+        this.passed = true
       } else {
           if(this.numeroGiocatori == 0) {
             this.error = 'Numero di giocatori non può essere 0.'
@@ -68,8 +67,16 @@ export default {
                 }
               }
           }
+          this.passed = false
         this.$bvModal.show('modal-error')
       }
+    },
+    createGame() {
+      this.checkForm()
+      if(this.passed) {
+        //chiama wrapped message e manda i dati 
+        this.$router.push('/room')
+      }      
     }
   }
 
