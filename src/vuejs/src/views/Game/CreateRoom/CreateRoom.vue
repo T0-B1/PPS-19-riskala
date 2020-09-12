@@ -72,10 +72,11 @@ export default {
       }
     },
     createGame() {
-      this.checkForm()
+      this.checkForm();
       if(this.passed) {
-        //chiama wrapped message e manda i dati 
-        this.$router.push('/room')
+        this.$store.state.websocket.send(
+          ClientCreateRoom.getCreateMsgWrapped(this.nomePartita, this.numeroGiocatori, this.selectedScenario))
+        //this.$router.push('/room')
       }      
     }
   }
