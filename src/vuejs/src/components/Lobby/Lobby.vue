@@ -44,14 +44,6 @@
         ClientLobby.handleLobbyMessage(evt.data, vue)
       }
       this.$store.commit('changeHandler', newHandler)
-      this.$store.state.websocket.send(ClientLobby.getJoinMsgWrapped("NonExistingRoom"))
-      //console.log("Before readSockel LOBBY")
-      //console.log(this.$store.state.websocket)
-      //this.readSocketMessage()
-      /*this.$store.state.websocket.onmessage = function(evt) {
-        console.log("received msg from lobby"+evt.data)
-      }*/
-      //console.log("After readSocket LOBBY")
     },
     methods: {
       readSocketMessage() {
@@ -59,30 +51,32 @@
         console.log("cerco di fare on message")
         function onMessage(evt) {
           console.log('LOBBY - Receive message: ' + evt.data);
-          //var  dW = metodo deserializzaWrapped
           ClientLobby.handleLobbyMessage(evt.data, this)
-          //scalaUpdateLobby(this)
         }
       },
-      updateLobbyInfo(lobbyInfo) {
-        console.log("Inside updateLobbyInfo of vue")
-        console.log(lobbyInfo)
-        /*
-        this.$store.state.websocket.send("LOBBY - updated info into lobby")
-        console.log(lobbyInfo.rooms, lobbyInfo.games, lobbyInfo.terminatedGames)
-        this.itemsRoom = lobbyInfo.rooms
-        this.itemsGame = lobbyInfo.games
-        this.itemsTerminated = lobbyInfo.terminatedGames
-        console.log("rooms"+this.itemsRoom, "games"+this.itemsGame,"terminated"+this.itemsTerminated)
-        */
+      cleanLobby() {
+        this.itemsRoom.splice(0)
+        this.itemsGame.splice(0)
+        this.itemsTerminated.splice(0)
       },
-      createRoom(){
+      addRoom(name,player) {
+        this.itemsRoom.push({Nome_Stanza: name, Giocatori:player})
+      },
+      addGame(name) {
+        this.itemsGame.push({Nome_Partita: name})
+      },
+      addTerminated(name) {
+        this.itemsTerminated.push({Partita_Terminata: name})
+      },
+      createRoom() {
         console.log('LOBBY - Call create_room')
         this.$router.push('/create_room')
       },
-      joinRoom(){
-        this.$store.state.websocket.send('LOBBY - Join room '+this.join)
-        this.$router.push('/room')
+      joinRoom() {
+        if(this.join !== ''){
+          this.$store.state.websocket.send(ClientLobby.getJoinMsgWrapped(this.join))
+          //this.$router.push('/room')
+        }
       },
       notifyError(error) {
         console.log(error)

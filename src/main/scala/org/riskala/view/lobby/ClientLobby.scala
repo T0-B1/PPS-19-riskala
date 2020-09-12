@@ -1,7 +1,7 @@
 package org.riskala.view.lobby
 
 import org.riskala.utils.Parser
-import org.riskala.view.messages.ToClientMessages.{ErrorMessage, LobbyInfo}
+import org.riskala.view.messages.ToClientMessages.{ErrorMessage, LobbyInfo, RoomNameInfo}
 import argonaut.Argonaut._
 import org.riskala.view.messages.FromClientMessages.JoinMessage
 import org.riskala.view.messages.WrappedMessage
@@ -27,7 +27,10 @@ object ClientLobby {
         val lobbyInfoMsg =
           Parser.retrieveMessage(wrappedMsg.payload, LobbyInfo.LobbyInfoCodecJson.Decoder).get
         println("Ended parser retrieve message")
-        lobbyFacade.updateLobbyInfo(lobbyInfoMsg)
+        lobbyFacade.cleanLobby()
+        lobbyInfoMsg.rooms.foreach(r=>lobbyFacade.addRoom(r.name,r.players))
+        lobbyInfoMsg.games.foreach(g=>lobbyFacade.addGame(g))
+        lobbyInfoMsg.terminatedGames.foreach(t=>lobbyFacade.addTerminated(t))
       }
       case "ErrorMessage" => {
         val errorMsg = Parser.retrieveMessage(wrappedMsg.payload, ErrorMessage.ErrorCodecJson.Decoder).get
