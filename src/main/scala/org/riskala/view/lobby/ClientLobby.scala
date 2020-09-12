@@ -12,8 +12,8 @@ import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 object ClientLobby {
 
   @JSExport
-  def getJoinMsgWrapped(): String = {
-    WrappedMessage("JoinMessage",JoinMessage("JSRoom").asJson.pretty(nospace)).asJson.pretty(nospace)
+  def getJoinMsgWrapped(roomName: String): String = {
+    WrappedMessage("JoinMessage",JoinMessage(roomName).asJson.pretty(nospace)).asJson.pretty(nospace)
   }
 
   @JSExport

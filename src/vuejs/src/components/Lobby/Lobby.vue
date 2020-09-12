@@ -44,7 +44,7 @@
         ClientLobby.handleLobbyMessage(evt.data, vue)
       }
       this.$store.commit('changeHandler', newHandler)
-      this.$store.state.websocket.send(ClientLobby.getJoinMsgWrapped())
+      this.$store.state.websocket.send(ClientLobby.getJoinMsgWrapped("NonExistingRoom"))
       //console.log("Before readSockel LOBBY")
       //console.log(this.$store.state.websocket)
       //this.readSocketMessage()
