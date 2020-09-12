@@ -42,6 +42,8 @@ const store = new Vuex.Store({
     },
     openWebsocket(state, newWebsocket) {
       state.websocket = newWebsocket;
+      // For debug purposes
+      Window.websocket = newWebsocket;
     }
   }
 });
