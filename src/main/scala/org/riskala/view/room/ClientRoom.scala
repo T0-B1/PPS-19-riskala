@@ -22,6 +22,20 @@ object ClientRoom {
   }
 
   @JSExport
+  def getLeaveMsgWrapped(): String = {
+    WrappedMessage("LeaveMessage", "").asJson.pretty(nospace)
+  }
+
+  @JSExport
+  def setupRoom(roomInfo: String, roomFacade: RoomFacade): Unit = {
+    val room = Parser.retrieveMessage(roomInfo, RoomInfo.RoomInfoCodecJson.Decoder).get
+    roomFacade.setName(room.basicInfo.name)
+    roomFacade.clearPlayer()
+    room.players.foreach(pl => roomFacade.addPlayers(pl))
+    //TODO gestione scenario
+  }
+
+  @JSExport
   def handleRoomMessage(message: String, roomFacade: RoomFacade): Unit = {
     println(s"inside handleRoom. Message = $message")
     val wrappedMsg = Parser.retrieveWrapped(message).get
