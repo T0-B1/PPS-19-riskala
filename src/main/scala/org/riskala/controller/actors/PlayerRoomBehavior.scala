@@ -6,7 +6,7 @@ import akka.actor.typed.{ActorRef, Behavior}
 import akka.http.scaladsl.model.ws.TextMessage
 import org.riskala.controller.actors.PlayerMessages.{ErrorMessage, GameReferent, LobbyReferent, PlayerMessage, RoomInfoMessage, SocketMessage}
 import org.riskala.model.ModelMessages.{Logout, RoomMessage}
-import org.riskala.model.room.RoomMessages.{Leave, Ready}
+import org.riskala.model.room.RoomMessages.{Leave, Ready, UnReady}
 import org.riskala.utils.Parser
 import org.riskala.view.messages.ToClientMessages.RoomInfo
 import org.riskala.view.messages.ToClientMessages
@@ -33,20 +33,24 @@ object PlayerRoomBehavior {
           val wrapped = wrappedOpt.get
           wrapped.classType match {
             case "ReadyMessage" =>
-              context.log.info("PlayerLobbyActor received ReadyMessage")
+              context.log.info("PlayerRoomActor received ReadyMessage")
               room ! Ready(username, context.self)
               nextBehavior()
             case "LeaveMessage" =>
-              context.log.info("PlayerLobbyActor received LeaveMessage")
+              context.log.info("PlayerRoomActor received LeaveMessage")
               room ! Leave(context.self)
               nextBehavior()
             case "LogoutMessage" =>
-              context.log.info("PlayerLobbyActor received LogoutMessage")
+              context.log.info("PlayerRoomActor received LogoutMessage")
               room ! Logout(context.self)
               //TODO: close socket
               Behaviors.stopped
+            case "UnReadyMessage" =>
+              context.log.info("PlayerRoomActor received UnReadyMessage")
+              room ! UnReady(username, context.self)
+              nextBehavior()
             case _ =>
-              context.log.info("PlayerLobbyActor received an unhandled message, IGNORED")
+              context.log.info("PlayerRoomActor received an unhandled message, IGNORED")
               nextBehavior()
           }
         } else {
