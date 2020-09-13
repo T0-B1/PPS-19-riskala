@@ -78,6 +78,10 @@
           //this.$router.push('/room')
         }
       },
+      goToRoom(newRoom){
+        this.$store.commit('changeRoomInfo', newRoom)
+        this.$router.push('/room')
+      },
       notifyError(error) {
         console.log(error)
       },
