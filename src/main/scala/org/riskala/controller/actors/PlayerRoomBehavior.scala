@@ -35,8 +35,8 @@ object PlayerRoomBehavior {
         nextBehavior()
 
       case LobbyReferent(lobby) =>
-        //TODO
-        nextBehavior()
+        context.log.info(s"PlayerActor of $username received LobbyReferent")
+        PlayerLobbyBehavior(username,lobby,socket)
       case GameReferent(game) =>
         context.log.info(s"PlayerActor of $username received GameReferent")
         PlayerGameBehavior(username,game,socket)
