@@ -16,6 +16,7 @@ const store = new Vuex.Store({
   state: {
     websocket: null,
     isLogged: false,
+    roomInfo: '',
     http: Axios.create({
       timeout: 10000,
       headers: { token: 'InvalidToken' },
@@ -46,7 +47,10 @@ const store = new Vuex.Store({
       Window.websocket = newWebsocket;
     },
     changeHandler(state, newHandler) {
-      state.websocket.onmessage = newHandler
+      state.websocket.onmessage = newHandler;
+    },
+    changeRoomInfo(state, newRoom){
+      state.roomInfo = newRoom;
     }
   }
 });

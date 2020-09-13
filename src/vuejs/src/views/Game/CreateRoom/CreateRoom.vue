@@ -88,10 +88,13 @@ export default {
       this.error = error
       this.$bvModal.show('modal-error')
     },
+    goToRoom(newRoom){
+      this.$store.commit('changeRoomInfo', newRoom)
+      this.$router.push('/room')
+    }
     createRoom() {
       this.checkForm();
       if(this.passed) {
-        
         console.log("createRoom inside")
         this.$store.state.websocket.send(
           ClientCreateRoom.getCreateMsgWrapped(this.nomePartita, this.numeroGiocatori, this.selectedScenario))
