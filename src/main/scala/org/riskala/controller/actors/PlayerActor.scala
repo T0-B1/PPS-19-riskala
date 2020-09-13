@@ -17,12 +17,14 @@ object PlayerActor {
 
   private def discoverLobbyManager(username: String, socket: actor.ActorRef): Behavior[PlayerMessage] =
     Behaviors.setup { context =>
+      context.log.info("PlayerActor looking for Lobby")
       context.system.receptionist ! Receptionist.Find(lobbyServiceKey, context.messageAdapter[Receptionist.Listing](AdaptedListing))
 
       Behaviors.receiveMessage {
         case AdaptedListing(lobbyServiceKey.Listing(listings)) =>
           listings.headOption match {
             case Some(lobbyManager) =>
+              context.log.info("PlayerActor found Lobby")
               PlayerLobbyBehavior(username, lobbyManager, socket)
             case None => {
               context.log.error("Lobby manager not found")

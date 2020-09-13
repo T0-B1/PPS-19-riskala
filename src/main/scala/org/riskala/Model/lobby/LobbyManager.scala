@@ -9,9 +9,8 @@ import org.riskala.model.game.GameManager
 import org.riskala.model.game.GameMessages.JoinGame
 import org.riskala.model.lobby.LobbyMessages._
 import org.riskala.model.room.RoomManager
-import org.riskala.model.room.RoomMessages.{Join, RoomBasicInfo}
-
-import scala.collection.immutable.{HashMap, HashSet}
+import org.riskala.model.room.RoomMessages.Join
+import org.riskala.view.messages.ToClientMessages.{LobbyInfo, RoomBasicInfo, RoomNameInfo}
 
 object LobbyManager {
 
@@ -22,6 +21,7 @@ object LobbyManager {
   private def setupLobbyManager(): Behavior[LobbyMessage] = {
     Behaviors.setup { context =>
       context.system.receptionist ! Receptionist.register(lobbyServiceKey, context.self)
+      context.log.info("SetupLobbyManager")
       lobbyManager(Set.empty,Map.empty,Map.empty,Map.empty)
     }
   }
@@ -42,10 +42,10 @@ object LobbyManager {
                   nextGames: Map[String, ActorRef[GameMessage]] = games,
                   nextTerminatedGames: Map[String, (ActorRef[GameMessage], Boolean)] = terminatedGames
                  ): PlayerMessage = {
-        val roomList: List[RoomNameInfo] = nextRooms.map(kv => RoomNameInfo(kv._1,
-          kv._2._2.actualNumberOfPlayer + "/" + kv._2._2.maxNumberOfPlayer)).toList
-        val gameList: List[String] = nextGames.keys.toList
-        val terminatedGameList: List[String] = nextTerminatedGames.keys.toList
+        val roomList: Set[RoomNameInfo] = nextRooms.map(kv => RoomNameInfo(kv._1,
+          kv._2._2.actualNumberOfPlayer + "/" + kv._2._2.maxNumberOfPlayer)).toSet
+        val gameList: Set[String] = nextGames.keys.toSet
+        val terminatedGameList: Set[String] = nextTerminatedGames.keys.toSet
         LobbyInfoMessage(LobbyInfo(roomList, gameList, terminatedGameList))
       }
 
@@ -57,6 +57,8 @@ object LobbyManager {
       message match {
         case Subscribe(subscriber) =>
           subscriber ! getInfo()
+          context.log.info(s"Subscribe from $subscriber")
+          println(getInfo())
           nextBehavior(nextSubscribers = subscribers + subscriber)
 
         case CreateRoom(creator, roomInfo) =>

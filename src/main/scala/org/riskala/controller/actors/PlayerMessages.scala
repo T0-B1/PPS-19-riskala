@@ -2,20 +2,19 @@ package org.riskala.controller.actors
 
 import akka.actor
 import akka.actor.typed.ActorRef
-import org.riskala.model.lobby.LobbyMessages.LobbyInfo
-import org.riskala.model.room.RoomMessages.RoomInfo
-import argonaut.Argonaut._
 import org.riskala.model.ModelMessages.{GameMessage, LobbyMessage, RoomMessage}
+import org.riskala.view.messages.ToClientMessages.{LobbyInfo, RoomInfo}
 
 object PlayerMessages {
 
   trait PlayerMessage
-
+/*
   final case class WrappedMessage(classType: String, payload: String) extends PlayerMessage
   object WrappedMessage {
     implicit def WrappedCodecJson =
       casecodec2(WrappedMessage.apply,WrappedMessage.unapply)("classType","payload")
   }
+*/
 
   final case class SocketMessage(payload: String) extends PlayerMessage
 
@@ -33,7 +32,9 @@ object PlayerMessages {
 
   final case class GameInfoMessage() extends PlayerMessage
 
-  sealed trait FromClient
+  final case class ErrorMessage(error: String) extends PlayerMessage
+
+  /*sealed trait FromClient
 
   final case class JoinMessage(name: String) extends FromClient
   object JoinMessage {
@@ -70,11 +71,7 @@ object PlayerMessages {
   final case class EndTurnMessage() extends FromClient
 
   final case class LogoutMessage() extends FromClient
+  */
 
-  final case class ErrorMessage(error: String) extends PlayerMessage
-  object ErrorMessage {
-    implicit def ErrorCodecJson =
-      casecodec1(ErrorMessage.apply,ErrorMessage.unapply)("error")
-  }
 
 }

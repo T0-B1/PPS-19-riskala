@@ -3,7 +3,7 @@ package org.riskala.controller.actors
 import akka.actor
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}
-import org.riskala.controller.actors.PlayerMessages.{ActionMessage, ErrorMessage, GameInfoMessage, LeaveMessage, LobbyReferent, LogoutMessage, PlayerMessage, SocketMessage}
+import org.riskala.controller.actors.PlayerMessages.{ErrorMessage, GameInfoMessage, LobbyReferent, PlayerMessage, SocketMessage}
 import org.riskala.model.ModelMessages.GameMessage
 
 object PlayerGameBehavior {
