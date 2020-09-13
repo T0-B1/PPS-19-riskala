@@ -31,10 +31,14 @@ object RoomManager {
     Behaviors.receive { (context, message) =>
 
       val lensBasicInfo: Lens[RoomInfo,RoomBasicInfo] = GenLens[RoomInfo](_.basicInfo)
+      val lensActualPlayers: Lens[RoomInfo,Set[String]] = GenLens[RoomInfo](_.players)
       val lensActualNumber: Lens[RoomBasicInfo, Int] = GenLens[RoomBasicInfo](_.actualNumberOfPlayer)
 
-      def decreaseActualPlayer(ri:RoomInfo):RoomInfo = (lensBasicInfo composeLens lensActualNumber).modify(_ - 1)(ri)
-      def increaseActualPlayer(ri:RoomInfo):RoomInfo = (lensBasicInfo composeLens lensActualNumber).modify(_ + 1)(ri)
+      def decreaseActualPlayer(ri:RoomInfo,re:Set[String]):RoomInfo =
+        readyUpdater((lensBasicInfo composeLens lensActualNumber).modify(_ - 1)(ri),re)
+      def increaseActualPlayer(ri:RoomInfo,re:Set[String]):RoomInfo =
+        readyUpdater((lensBasicInfo composeLens lensActualNumber).modify(_ + 1)(ri),re)
+      def readyUpdater(ri:RoomInfo,re:Set[String]):RoomInfo = lensActualPlayers.modify(_ => re)(ri)
 
       def notifyUpdateRoomInfo(newSubscribers: Set[ActorRef[PlayerMessage]],
                                newReady: Map[String,ActorRef[PlayerMessage]],
@@ -72,7 +76,7 @@ object RoomManager {
           var newRoomInfo = roomInfo
           if(readyPlayerMap.toList.exists(kv => kv._2 == actor)){
             newReady = readyPlayerMap.filter(kv => kv._2 != actor)
-            newRoomInfo = decreaseActualPlayer(roomInfo)
+            newRoomInfo = decreaseActualPlayer(roomInfo,newReady.keySet)
             notifyUpdateRoomInfo(subscribersRoom, newReady, newRoomInfo)
           } else {
             newSubscribers = subscribersRoom - actor
@@ -89,17 +93,17 @@ object RoomManager {
         case UnReady(playerName, actor) =>
           context.log.info("Room received UNREADY message")
           val newReady = readyPlayerMap - playerName
-          val newRoomInfo = decreaseActualPlayer(roomInfo)
+          val newRoomInfo = decreaseActualPlayer(roomInfo,newReady.keySet)
           val newSubscriber = subscribersRoom + actor
           notifyUpdateRoomInfo(newSubscriber, newReady, newRoomInfo)
           updateBehavior(updatedSub = newSubscriber, updatedReady = newReady, updatedRoomInfo = newRoomInfo)
 
         case Ready(playerName, actor) =>
           context.log.info("Room received READY message")
-          val newRoomInfo = increaseActualPlayer(roomInfo)
-          context.log.info("Updated newRoomInfo - "+ newRoomInfo)
           val newSubscriber = subscribersRoom - actor
           val newReady = readyPlayerMap + (playerName -> actor)
+          val newRoomInfo = increaseActualPlayer(roomInfo,newReady.keySet)
+          context.log.info("Updated newRoomInfo - "+ newRoomInfo)
           if (newReady.size == newRoomInfo.basicInfo.maxNumberOfPlayer) {
             lobby ! StartGame(newRoomInfo, newReady, newSubscriber)
             context.log.info("Everybody into the room are ready. Start game and Room behavior stopped")
@@ -116,7 +120,7 @@ object RoomManager {
           var newRoomInfo = roomInfo
           if(readyPlayerMap.toList.exists(kv => kv._2 == actor)){
             newReady = readyPlayerMap.filter(kv => kv._2 != actor)
-            newRoomInfo = decreaseActualPlayer(roomInfo)
+            newRoomInfo = decreaseActualPlayer(roomInfo,newReady.keySet)
             notifyUpdateRoomInfo(newSubscribers, newReady, newRoomInfo)
           } else {
             newSubscribers = subscribersRoom - actor

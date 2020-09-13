@@ -49,7 +49,7 @@ object PlayerLobbyBehavior {
                 context.log.info("PlayerLobbyActor received CreateMessage")
                 Parser.retrieveMessage(wrapped.payload, CreateMessage.CreateCodecJson.Decoder)
                   .foreach(r =>
-                    lobby ! CreateRoom(context.self, RoomInfo(RoomBasicInfo(r.name, 0, r.maxPlayer), r.scenario)))
+                    lobby ! CreateRoom(context.self, RoomInfo(RoomBasicInfo(r.name, 0, r.maxPlayer), Set.empty, r.scenario)))
                 nextBehavior()
               case "LogoutMessage" =>
                 context.log.info("PlayerLobbyActor received LogoutMessage")
