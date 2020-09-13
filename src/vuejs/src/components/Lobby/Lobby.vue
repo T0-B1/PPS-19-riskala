@@ -9,11 +9,11 @@
       </b-tab>
       <b-tab title="Games">
         <h1>Games</h1>
-        <b-table striped hover :items="itemsGame" @row-clicked="myRowClickHandler"></b-table>
+        <b-table striped hover :items="itemsGame" @row-clicked="myRowClickHandlerGame"></b-table>
       </b-tab>
       <b-tab title="Terminated Games">
         <h1>Terminated Games</h1>
-        <b-table striped hover :items="itemsTerminated" @row-clicked="myRowClickHandler"></b-table>
+        <b-table striped hover :items="itemsTerminated" @row-clicked="myRowClickHandlerTerminated"></b-table>
       </b-tab>
     </b-tabs>
   </div>
@@ -74,8 +74,8 @@
       },
       joinRoom() {
         if(this.join !== ''){
+          console.log("join room " + this.join)
           this.$store.state.websocket.send(ClientLobby.getJoinMsgWrapped(this.join))
-          //this.$router.push('/room')
         }
       },
       goToRoom(newRoom){
@@ -86,7 +86,31 @@
         console.log(error)
       },
       myRowClickHandler(row) {
-        this.join = row.Nome_Partita
+        this.join = row.Room_Name
+        this.disabled=false
+        document.getElementById("joinBtn").style.borderColor= "red"
+        document.getElementById("joinBtn").style.color= "red"
+        document.getElementById('joinBtn').onmouseover = function() {
+          document.getElementById('joinBtn').style.backgroundColor='lightpink';
+        }
+        document.getElementById('joinBtn').onmouseleave = function() {
+          document.getElementById('joinBtn').style.backgroundColor='white';
+        }
+      },
+      myRowClickHandlerGame(row) {
+        this.join = row.Game_Name
+        this.disabled=false
+        document.getElementById("joinBtn").style.borderColor= "red"
+        document.getElementById("joinBtn").style.color= "red"
+        document.getElementById('joinBtn').onmouseover = function() {
+          document.getElementById('joinBtn').style.backgroundColor='lightpink';
+        }
+        document.getElementById('joinBtn').onmouseleave = function() {
+          document.getElementById('joinBtn').style.backgroundColor='white';
+        }
+      },
+      myRowClickHandlerTerminated(row) {
+        this.join = row.Terminated_Game_Name
         this.disabled=false
         document.getElementById("joinBtn").style.borderColor= "red"
         document.getElementById("joinBtn").style.color= "red"

@@ -28,8 +28,14 @@ object ClientLobby {
           Parser.retrieveMessage(wrappedMsg.payload, LobbyInfo.LobbyInfoCodecJson.Decoder).get
         println("Ended parser retrieve message")
         lobbyFacade.cleanLobby()
+        if(lobbyInfoMsg.rooms.isEmpty)
+          lobbyFacade.addRoom("","")
         lobbyInfoMsg.rooms.foreach(r=>lobbyFacade.addRoom(r.name,r.players))
+        if(lobbyInfoMsg.games.isEmpty)
+          lobbyFacade.addGame("")
         lobbyInfoMsg.games.foreach(g=>lobbyFacade.addGame(g))
+        if(lobbyInfoMsg.terminatedGames.isEmpty)
+          lobbyFacade.addTerminated("")
         lobbyInfoMsg.terminatedGames.foreach(t=>lobbyFacade.addTerminated(t))
       case "ErrorMessage" =>
         val errorMsg = Parser.retrieveMessage(wrappedMsg.payload, ErrorMessage.ErrorCodecJson.Decoder).get

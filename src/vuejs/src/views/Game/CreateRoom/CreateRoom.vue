@@ -31,7 +31,8 @@
           </div>
           <hr class="divider"/>
           <div>
-          <b-button variant="outline-primary" @click="createRoom">Create Game</b-button>
+            <b-button variant="outline-primary" @click="createRoom">Create Game</b-button>
+            <b-button variant="outline-danger" @click="cancel">Cancel</b-button>
           </div>
         </b-card>
       </div>
@@ -82,6 +83,9 @@ export default {
         this.passed = false
         this.$bvModal.show('modal-error')
       }
+    },
+    cancel(){
+      this.$router.push('/')
     },
     notifyCreateError(error) {
       console.log("inside notifyCreateError")
