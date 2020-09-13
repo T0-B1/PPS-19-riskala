@@ -10,6 +10,7 @@ import org.riskala.model.lobby.LobbyMessages.{CreateRoom, JoinTo, Subscribe}
 import org.riskala.utils.Parser
 import org.riskala.view.messages.FromClientMessages.{CreateMessage, JoinMessage, LogoutMessage}
 import org.riskala.view.messages.ToClientMessages.{LobbyInfo, RoomBasicInfo, RoomInfo}
+import org.riskala.view.messages.ToClientMessages
 
 object PlayerLobbyBehavior {
 
@@ -89,11 +90,12 @@ object PlayerLobbyBehavior {
           context.log.info(s"PlayerActor of $username received LobbyInfoMessage")
           socket ! TextMessage(Parser.wrap("LobbyInfo",lobbyInfo,LobbyInfo.LobbyInfoCodecJson.Encoder))
           nextBehavior()
-        case errorMessage: ErrorMessage =>
+        case errorMessage: PlayerMessages.ErrorMessage =>
           context.log.info(s"PlayerActor of $username received ErrorMessage")
-          import org.riskala.view.messages.ToClientMessages.ErrorMessage
-          val clientError = ErrorMessage(errorMessage.error)
-          socket ! TextMessage(Parser.wrap("ErrorMessage",clientError, ErrorMessage.ErrorCodecJson.Encoder))
+          val clientError = ToClientMessages.ErrorMessage(errorMessage.error)
+          socket ! TextMessage(Parser.wrap("ErrorMessage",
+            clientError, 
+            ToClientMessages.ErrorMessage.ErrorCodecJson.Encoder))
           nextBehavior()
         case RegisterSocket(newSocketActor) =>
           context.log.info("registering new socket")
