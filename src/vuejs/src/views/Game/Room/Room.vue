@@ -4,7 +4,7 @@
       <div class="subcontainer">
         <b-card
           class="card"
-          title="Room">
+          :title="roomName">
           <hr class="divider"/>
           <div class="infoPlay">
             <table class="table">
@@ -29,9 +29,7 @@
           <hr class="divider"/>
           <div id="svgMapContainer">
           </div>
-          <router-link to='/'>
-            <b-button id="joinBtn" variant="outline-danger">Leave room</b-button>
-          </router-link>
+          <b-button id="joinBtn" variant="outline-danger" @click="leaveRoom">Leave room</b-button>
         </b-card>
       </div>    
   </div>
@@ -47,12 +45,23 @@ export default {
      titleTable: [
        {prima_colonna: "Name of Player", seconda_colonna: "Color"}
      ],
+     roomName: 'Room',
      ready:false,
      players: []
    }
   },
   mounted() {
-    this.loadSvg()
+    var vue = this
+    var newHandler = function(evt) {
+      console.log('ROOM - Receive message: ' + evt.data);
+      ClientRoom.handleRoomMessage(evt.data, vue)
+    }
+    this.$store.commit('changeHandler', newHandler)
+
+    this.loadSvg();
+    if(this.$store.state.roomInfo !== ''){
+      ClientRoom.setupRoom(this.$store.state.roomInfo, this)
+    }
   },
   methods: {
     getRandomColor() {
@@ -69,6 +78,9 @@ export default {
     clearPlayer(){
       this.players.splice(0)
     },
+    setName(roomName){
+      this.roomName = roomName
+    },
     bind(){
       Array.prototype.forEach.call( document.getElementsByTagName("path"), function(el) {
         el.onclick = function(){ alert(el.id); };
@@ -82,12 +94,16 @@ export default {
     },
     readyClick() {
       this.ready=true
-      this.$store.state.websocket.send(ClientRppm.getReadyMsgWrapped())
-      //this.$router.push('/game')
+      this.$store.state.websocket.send(ClientRoom.getReadyMsgWrapped())
     },
     unready(){
       this.ready=false
-      this.$store.state.websocket.send(ClientRppm.getUnReadyMsgWrapped())
+      this.$store.state.websocket.send(ClientRoom.getUnReadyMsgWrapped())
+    },
+    leaveRoom(){
+      this.$store.state.websocket.send(ClientRoom.getLeaveMsgWrapped())
+      this.$router.push('/')
+      this.$store.state.roomInfo = ''
     }
   }
 }
