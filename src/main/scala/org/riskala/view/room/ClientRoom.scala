@@ -1,12 +1,25 @@
 package org.riskala.view.room
 
+import argonaut.Argonaut._
 import org.riskala.utils.Parser
+import org.riskala.view.messages.FromClientMessages.ReadyMessage
 import org.riskala.view.messages.ToClientMessages.{ErrorMessage, RoomInfo}
+import org.riskala.view.messages.WrappedMessage
 
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 
 @JSExportTopLevel("ClientRoom")
 object ClientRoom {
+
+  @JSExport
+  def getReadyMsgWrapped(): String = {
+    WrappedMessage("ReadyMessage", "").asJson.pretty(nospace)
+  }
+
+  @JSExport
+  def getUnReadyMsgWrapped(): String = {
+    WrappedMessage("UnReadyMessage", "").asJson.pretty(nospace)
+  }
 
   @JSExport
   def handleRoomMessage(message: String, roomFacade: RoomFacade): Unit = {
@@ -19,7 +32,8 @@ object ClientRoom {
         val roomInfoMsg =
           Parser.retrieveMessage(wrappedMsg.payload, RoomInfo.RoomInfoCodecJson.Decoder).get
         println("Ended parser retrieve message")
-        roomInfoMsg.playersName
+        roomFacade.clearPlayer()
+        roomInfoMsg.players.foreach(player=>roomFacade.addPlayers(player))
       }
       case "ErrorMessage" => {
         println("received error message")
