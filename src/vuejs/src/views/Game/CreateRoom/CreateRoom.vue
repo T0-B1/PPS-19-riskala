@@ -30,9 +30,9 @@
             </div>-->
           </div>
           <hr class="divider"/>
-          <div>
-            <b-button variant="outline-primary" @click="createRoom">Create Game</b-button>
+          <div class="buttons_div">
             <b-button variant="outline-danger" @click="cancel">Cancel</b-button>
+            <b-button variant="outline-primary" @click="createRoom">Create Game</b-button>
           </div>
         </b-card>
       </div>
