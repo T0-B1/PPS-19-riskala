@@ -61,9 +61,13 @@ task provideSourcesToScalajs(type: Copy) {
     //"org/riskala/model/lobby/**/*",
     //"org/riskala/model/room/**/*"]
 
-    def scalaJsClasses = ["org/riskala/model/*.scala"]
+    def scalaJsClasses = ["org/riskala/model/*.scala",
+                          "org/riskala/view/lobby/*.scala",
+                          "org/riskala/view/messages/*.scala",
+                          "org/riskala/utils/Parser.scala"]
     def scalaJsIgnore = ["org/riskala/model/ModelMessages.scala"]
-    from "$projectDir/src/main/scala/" 
+    delete "$projectDir/src/scalajs/src"
+    from "$projectDir/src/main/scala/"
     include scalaJsClasses 
     exclude scalaJsIgnore
     into "$projectDir/src/scalajs/src/main/scala/"
