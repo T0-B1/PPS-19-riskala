@@ -94,7 +94,7 @@ object PlayerLobbyBehavior {
           context.log.info(s"PlayerActor of $username received ErrorMessage")
           val clientError = ToClientMessages.ErrorMessage(errorMessage.error)
           socket ! TextMessage(Parser.wrap("ErrorMessage",
-            clientError, 
+            clientError,
             ToClientMessages.ErrorMessage.ErrorCodecJson.Encoder))
           nextBehavior()
         case RegisterSocket(newSocketActor) =>

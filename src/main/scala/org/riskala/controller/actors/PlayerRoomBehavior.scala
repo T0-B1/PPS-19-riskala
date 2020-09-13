@@ -38,8 +38,8 @@ object PlayerRoomBehavior {
         //TODO
         nextBehavior()
       case GameReferent(game) =>
-        //TODO
-        nextBehavior()
+        context.log.info(s"PlayerActor of $username received GameReferent")
+        PlayerGameBehavior(username,game,socket)
       //case ReadyMessage() => nextBehavior()
       //case LeaveMessage() => nextBehavior()
       //case LogoutMessage() => nextBehavior()
