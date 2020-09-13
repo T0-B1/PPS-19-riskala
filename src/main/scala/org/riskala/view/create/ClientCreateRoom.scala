@@ -18,11 +18,12 @@ object ClientCreateRoom {
 
   @JSExport
   def handleCreateMessage(message: String, createRoomFacade: CreateRoomFacade): Unit = {
-    println(s"inside handleLobby. Message = $message")
+    println(s"inside handleCreate. Message = $message")
     val wrappedMsg = Parser.retrieveWrapped(message).get
     println(s"wrappedMessage = $wrappedMsg")
     wrappedMsg.classType match {
       case "ErrorMessage" => {
+        println("received error message")
         val errorMsg = Parser.retrieveMessage(wrappedMsg.payload, ErrorMessage.ErrorCodecJson.Decoder).get
         createRoomFacade.notifyCreateError(errorMsg.error)
       }
