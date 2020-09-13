@@ -58,6 +58,7 @@ object RoomManager {
 
       message match {
         case Join(actor) =>
+          actor ! RoomReferent(context.self)
           context.log.info("Room received JOIN message")
           val newSubscriber = subscribersRoom + actor
           context.log.info("Number of subscribers after subscriprion into the room "+newSubscriber.size)

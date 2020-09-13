@@ -15,6 +15,8 @@ object FromClientMessages {
 
   final case class ReadyMessage()
 
+  final case class UnReadyMessage()
+
   final case class CreateMessage(name: String, maxPlayer: Int, scenario: String)
   object CreateMessage {
     implicit def CreateCodecJson =
