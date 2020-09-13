@@ -1,7 +1,7 @@
 package org.riskala.view.lobby
 
 import org.riskala.utils.Parser
-import org.riskala.view.messages.ToClientMessages.{ErrorMessage, LobbyInfo, RoomNameInfo}
+import org.riskala.view.messages.ToClientMessages.{ErrorMessage, LobbyInfo, RoomInfo, RoomNameInfo}
 import argonaut.Argonaut._
 import org.riskala.view.messages.FromClientMessages.JoinMessage
 import org.riskala.view.messages.WrappedMessage
@@ -22,7 +22,7 @@ object ClientLobby {
     val wrappedMsg = Parser.retrieveWrapped(message).get
     println(s"wrappedMessage = $wrappedMsg")
     wrappedMsg.classType match {
-      case "LobbyInfo" => {
+      case "LobbyInfo" =>
         println("case lobbyInfo inside handleLobby")
         val lobbyInfoMsg =
           Parser.retrieveMessage(wrappedMsg.payload, LobbyInfo.LobbyInfoCodecJson.Decoder).get
@@ -31,11 +31,11 @@ object ClientLobby {
         lobbyInfoMsg.rooms.foreach(r=>lobbyFacade.addRoom(r.name,r.players))
         lobbyInfoMsg.games.foreach(g=>lobbyFacade.addGame(g))
         lobbyInfoMsg.terminatedGames.foreach(t=>lobbyFacade.addTerminated(t))
-      }
-      case "ErrorMessage" => {
+      case "ErrorMessage" =>
         val errorMsg = Parser.retrieveMessage(wrappedMsg.payload, ErrorMessage.ErrorCodecJson.Decoder).get
         lobbyFacade.notifyError(errorMsg.error)
-      }
+      case "RoomInfo" =>
+        lobbyFacade.goToRoom(wrappedMsg.payload)
       case unhandled => println(s"Ignored message: $unhandled")
     }
   }
