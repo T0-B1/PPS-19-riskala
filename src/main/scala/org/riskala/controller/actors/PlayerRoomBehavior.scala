@@ -5,7 +5,8 @@ import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.http.scaladsl.model.ws.TextMessage
 import org.riskala.controller.actors.PlayerMessages.{ErrorMessage, GameReferent, LobbyReferent, PlayerMessage, RoomInfoMessage, SocketMessage}
-import org.riskala.model.ModelMessages.RoomMessage
+import org.riskala.model.ModelMessages.{Logout, RoomMessage}
+import org.riskala.model.room.RoomMessages.{Leave, Ready}
 import org.riskala.utils.Parser
 import org.riskala.view.messages.ToClientMessages.RoomInfo
 import org.riskala.view.messages.ToClientMessages
@@ -26,14 +27,36 @@ object PlayerRoomBehavior {
 
     message match {
       case SocketMessage(payload) =>
-        //TODO
-        nextBehavior()
-
+        context.log.info(s"PlayerActor of $username received socket payload: $payload")
+        val wrappedOpt = Parser.retrieveWrapped(payload)
+        if(wrappedOpt.isDefined) {
+          val wrapped = wrappedOpt.get
+          wrapped.classType match {
+            case "ReadyMessage" =>
+              context.log.info("PlayerLobbyActor received ReadyMessage")
+              room ! Ready(username, context.self)
+              nextBehavior()
+            case "LeaveMessage" =>
+              context.log.info("PlayerLobbyActor received LeaveMessage")
+              room ! Leave(context.self)
+              nextBehavior()
+            case "LogoutMessage" =>
+              context.log.info("PlayerLobbyActor received LogoutMessage")
+              room ! Logout(context.self)
+              //TODO: close socket
+              Behaviors.stopped
+            case _ =>
+              context.log.info("PlayerLobbyActor received an unhandled message, IGNORED")
+              nextBehavior()
+          }
+        } else {
+          context.log.info("PlayerLobbyActor failed to retrieve message, IGNORED")
+          nextBehavior()
+        }
       case RoomInfoMessage(roomInfo) =>
         context.log.info(s"PlayerActor of $username received RoomInfoMessage")
         socket ! TextMessage(Parser.wrap("RoomInfo",roomInfo,RoomInfo.RoomInfoCodecJson.Encoder))
         nextBehavior()
-
       case LobbyReferent(lobby) =>
         context.log.info(s"PlayerActor of $username received LobbyReferent")
         PlayerLobbyBehavior(username,lobby,socket)
