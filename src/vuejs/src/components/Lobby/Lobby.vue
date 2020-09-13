@@ -3,23 +3,23 @@
   <div class="subcontainer">
     <h1> Lobby </h1>
     <b-tabs content-class="mt-3">
-      <b-tab title="Stanze" active>
-        <h1>Stanze in corso </h1>
+      <b-tab title="Rooms" active>
+        <h1>Room existing</h1>
         <b-table striped hover :items="itemsRoom" @row-clicked="myRowClickHandler"></b-table>
       </b-tab>
-      <b-tab title="Partite">
-        <h1>Partite</h1>
+      <b-tab title="Games">
+        <h1>Games</h1>
         <b-table striped hover :items="itemsGame" @row-clicked="myRowClickHandler"></b-table>
       </b-tab>
-      <b-tab title="Partite Terminate">
-        <h1>Partite Terminate</h1>
+      <b-tab title="Terminated Games">
+        <h1>Terminated Games</h1>
         <b-table striped hover :items="itemsTerminated" @row-clicked="myRowClickHandler"></b-table>
       </b-tab>
     </b-tabs>
   </div>
   <hr class="divider"/>
   <div class="buttons_div">
-    <b-button variant="outline-primary" @click="createRoom">Crea stanza</b-button>
+    <b-button variant="outline-primary" @click="createRoom">Create Room</b-button>
     <b-button id="joinBtn" variant="outline-primary" v-bind:disabled="disabled" @click="joinRoom">Join <b>{{this.join}}</b></b-button>
     <!--<b-button variant="outline-primary">Carica partita</b-button>-->
   </div>
@@ -32,9 +32,9 @@
       return {
         disabled:true,
         join: '',
-        itemsRoom: [{Nome_Stanza: '', Giocatori: ''}],
-        itemsGame: [{Nome_Partita: ''}],
-        itemsTerminated: [{Partita_Terminata: ''}]
+        itemsRoom: [{Room_Name: '', Players: ''}],
+        itemsGame: [{Game_Name: ''}],
+        itemsTerminated: [{Terminated_Game_Name: ''}]
       }
     },
     mounted() {
@@ -60,13 +60,13 @@
         this.itemsTerminated.splice(0)
       },
       addRoom(name,player) {
-        this.itemsRoom.push({Nome_Stanza: name, Giocatori:player})
+        this.itemsRoom.push({Room_Name: name, Players:player})
       },
       addGame(name) {
-        this.itemsGame.push({Nome_Partita: name})
+        this.itemsGame.push({Game_Name: name})
       },
       addTerminated(name) {
-        this.itemsTerminated.push({Partita_Terminata: name})
+        this.itemsTerminated.push({Terminated_Game_Name: name})
       },
       createRoom() {
         console.log('LOBBY - Call create_room')

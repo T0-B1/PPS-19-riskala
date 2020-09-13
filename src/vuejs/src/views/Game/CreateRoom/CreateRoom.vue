@@ -3,20 +3,24 @@
       <div class="subcontainer">
         <b-card
           class="card"
-          title="Crea partita">
+          title="Create Room">
           <div class="formInput">
-            <h5 class="title">Nome Stanza</h5>
-            <input type="text" v-model="nomePartita" class="form-control" placeholder="Nome della partita" required>
+            <h5 class="title">Room Name</h5>
+            <input type="text" v-model="nomePartita" class="form-control" placeholder="Room Name" required>
           </div>
           <hr class="divider"/>
           <div class="infoPlay">
             <div>
-              <h5>Numero giocatori</h5>
-              <input type="number" v-model="numeroGiocatori" class="form-control" placeholder="Nome della partita" required>
+              <h5>Number of players</h5>
+              <input type="number" v-model="numeroGiocatori" class="form-control" placeholder="Number of players" required>
             </div>
             <div>
-              <h5>Seleziona scenario</h5>
-              <b-form-select v-model="selectedScenario" :options="options"></b-form-select>
+              <h5>Select scenario</h5>
+              <b-form-select v-model="selectedScenario" :options="options">
+                <template v-slot:first>
+                  <b-form-select-option :value="null" disabled>Select scenario</b-form-select-option>
+                </template>
+              </b-form-select>
             </div>
             <!--<div>
               <h5>Imposta le tue regole</h5>
@@ -27,7 +31,7 @@
           </div>
           <hr class="divider"/>
           <div>
-          <b-button variant="outline-primary" @click="createGame">Crea Partita</b-button>
+          <b-button variant="outline-primary" @click="createRoom">Create Game</b-button>
           </div>
         </b-card>
       </div>
@@ -44,36 +48,54 @@ export default {
     return {
       nomePartita: '',
       numeroGiocatori: 4,
-      selectedScenario: '',
+      selectedScenario: null,
       error: '',
       passed: false,
-      options: [{value: 'Europa', text: 'Europa'}],
+      options: [{value: 'Europe', text: 'Europe'}],
     }
+  },
+  mounted() {
+    var vue = this
+    var newHandler = function(evt) {
+      console.log('CREATEROOM - Receive message: ' + evt.data);
+      ClientCreateRoom.handleCreateMessage(evt.data, vue)
+    }
+    this.$store.commit('changeHandler', newHandler)
   },
   methods: {
     checkForm(){
-      if(this.nomePartita !== '' && this.numeroGiocatori != 0 && this.selectedScenario !== '') {
+      if(this.nomePartita !== '' && this.numeroGiocatori > 1 && this.selectedScenario !== '') {
         this.$bvModal.hide('modal-error')
         this.passed = true
       } else {
-          if(this.numeroGiocatori == 0) {
-            this.error = 'Numero di giocatori non può essere 0.'
+          if(this.numeroGiocatori < 2) {
+            this.error = 'Number of players cannot be minor then 2.'
           } else {
               if(!this.nomePartita) {
-                this.error = 'Devi inserire il nome della partita.'
+                this.error = 'Room name cannot be empty.'
               } else {
                 if(!this.selectedScenario) {
-                  this.error= 'Devi selezionare lo scenario su cui giocare.'
+                  this.error= 'Scenarion cannot be empty'
                 }
               }
           }
-          this.passed = false
+        this.passed = false
         this.$bvModal.show('modal-error')
       }
     },
-    createGame() {
+    notifyCreateError(error) {
+      console.log("inside notifyCreateError")
+      this.error = error
+      this.$bvModal.show('modal-error')
+    },
+    goToRoom(newRoom){
+      this.$store.commit('changeRoomInfo', newRoom)
+      this.$router.push('/room')
+    }
+    createRoom() {
       this.checkForm();
       if(this.passed) {
+        console.log("createRoom inside")
         this.$store.state.websocket.send(
           ClientCreateRoom.getCreateMsgWrapped(this.nomePartita, this.numeroGiocatori, this.selectedScenario))
         //this.$router.push('/room')
