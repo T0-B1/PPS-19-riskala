@@ -4,7 +4,7 @@
     <h1> Lobby </h1>
     <b-tabs content-class="mt-3">
       <b-tab title="Rooms" active>
-        <h1>Room existing</h1>
+        <h1>Rooms</h1>
         <b-table striped hover :items="itemsRoom" @row-clicked="myRowClickHandler"></b-table>
       </b-tab>
       <b-tab title="Games">

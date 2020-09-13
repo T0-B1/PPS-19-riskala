@@ -98,7 +98,6 @@ export default {
         console.log("createRoom inside")
         this.$store.state.websocket.send(
           ClientCreateRoom.getCreateMsgWrapped(this.nomePartita, this.numeroGiocatori, this.selectedScenario))
-        //this.$router.push('/room')
       }      
     }
   }
