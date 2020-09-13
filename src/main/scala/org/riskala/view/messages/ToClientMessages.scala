@@ -24,10 +24,10 @@ object ToClientMessages {
    * @param basicInfo               Object containing basic information of a room
    * @param scenario                Name of the game map
    * */
-  case class RoomInfo(basicInfo: RoomBasicInfo, scenario: String)
+  case class RoomInfo(basicInfo: RoomBasicInfo, players: Set[String], scenario: String)
   object RoomInfo {
     implicit def RoomInfoCodecJson =
-      casecodec2(RoomInfo.apply,RoomInfo.unapply)("basicInfo","scenario")
+      casecodec3(RoomInfo.apply,RoomInfo.unapply)("basicInfo","players","scenario")
   }
 
   case class RoomNameInfo(name: String, players: String)
