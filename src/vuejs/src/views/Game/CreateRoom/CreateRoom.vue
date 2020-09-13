@@ -91,7 +91,7 @@ export default {
     goToRoom(newRoom){
       this.$store.commit('changeRoomInfo', newRoom)
       this.$router.push('/room')
-    }
+    },
     createRoom() {
       this.checkForm();
       if(this.passed) {

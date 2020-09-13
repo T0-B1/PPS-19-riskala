@@ -22,11 +22,14 @@ object ClientCreateRoom {
     val wrappedMsg = Parser.retrieveWrapped(message).get
     println(s"wrappedMessage = $wrappedMsg")
     wrappedMsg.classType match {
-      case "ErrorMessage" => {
+      case "RoomInfo" =>
+        createRoomFacade.goToRoom(wrappedMsg.payload)
+
+      case "ErrorMessage" =>
         println("received error message")
         val errorMsg = Parser.retrieveMessage(wrappedMsg.payload, ErrorMessage.ErrorCodecJson.Decoder).get
         createRoomFacade.notifyCreateError(errorMsg.error)
-      }
+        
       case unhandled => println(s"Ignored message: $unhandled")
     }
   }
