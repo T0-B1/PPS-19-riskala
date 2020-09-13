@@ -7,4 +7,5 @@ import scala.scalajs.js.annotation.JSGlobal
 @JSGlobal
 class CreateRoomFacade extends js.Object {
   def notifyCreateError(error: String): Unit = js.native
+  def goToRoom(roomInfo: String): Unit = js.native
 }
