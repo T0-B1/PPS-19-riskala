@@ -64,6 +64,7 @@ task provideSourcesToScalajs(type: Copy) {
     def scalaJsClasses = ["org/riskala/model/*.scala",
                           "org/riskala/view/lobby/*.scala",
                           "org/riskala/view/create/*.scala",
+                          "org/riskala/view/room/*.scala",
                           "org/riskala/view/messages/*.scala",
                           "org/riskala/utils/Parser.scala"]
     def scalaJsIgnore = ["org/riskala/model/ModelMessages.scala"]
