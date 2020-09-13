@@ -56,6 +56,7 @@ object LobbyManager {
 
       message match {
         case Subscribe(subscriber) =>
+          subscriber ! LobbyReferent(context.self)
           subscriber ! getInfo()
           context.log.info(s"Subscribe from $subscriber")
           println(getInfo())
