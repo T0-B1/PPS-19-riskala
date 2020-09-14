@@ -1,0 +1,28 @@
+﻿Product Backlog Item,Sprint Task,Volunteer,Initial estimate of Effort,Remaining Effort
+Creazione interfaccia,,,,
+,Definizione protocollo di interazione con l'utente,Andrea,10,0
+,Prototipo Player Actor,Andrea,10,0
+,Comunicazione PlayerActor-Frontend,Alessandro,40,
+,Test middleware,Alessandro,15,0
+,Bugfix websockets,Alessandro,20,0
+Gestione account,,,,
+,Test autenticazione,Alessandro,10,
+Gestione lobby,,,,
+,Implementazione Lobby manager,Andrea,10,0
+,Creazione stanza,Andrea,10,0
+,Join stanza,Andrea,10,0
+,Enumerazione stanze,Andrea,10,0
+,Definizione protocollo relativo alla lobby,Andrea,15,0
+,Test Lobby,Andrea,15,0
+,Test Integrazione Lobby/Room,Andrea,10,0
+Gestione stanze,,,,
+,Implementazione Room manager,Alessia,30,0
+,Definizione protocollo relativo alle stanze,Alessia,15,0
+,Aggiunta/rimozione utenti da stanza,Alessia,10,
+,Test Room Manager,Alessia,15,0
+,Test Integrazione Lobby/Room,Alessia,10,0
+Gestione partita,,,,
+,Definizione protocollo relativo alla partita,Alessia,10,0
+,Prototipo Game Manager,Alessia,10,0
+CI/CD,,,,
+,Gestione cross-compilation in scala.js,Alessandro,15,0
