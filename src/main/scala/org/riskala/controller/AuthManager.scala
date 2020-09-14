@@ -3,15 +3,18 @@ package org.riskala.controller
 import java.io.InputStream
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
-import org.riskala.Model.Account
-import spray.json.{DefaultJsonProtocol, RootJsonFormat}
+import org.riskala.model.Account
+import spray.json.{DefaultJsonProtocol, JsString, JsonParser, RootJsonFormat}
 
 import scala.collection.immutable.HashMap
-import pdi.jwt.{Jwt, JwtAlgorithm}
+import pdi.jwt.{Jwt, JwtAlgorithm, JwtBase64, JwtOptions}
 import argonaut.Argonaut._
+
+import scala.util.{Success, Try}
 
 case class Login(username: String, password: String)
 case class Register(username: String, password: String, email: String)
+
 object LoginJsonSupport extends DefaultJsonProtocol with SprayJsonSupport {
   implicit val LoginFormats: RootJsonFormat[Login] = jsonFormat2(Login)
   implicit val RegisterFormats: RootJsonFormat[Register] = jsonFormat3(Register)
@@ -44,12 +47,24 @@ object AuthManager {
     import LoginJsonSupport._
     import spray.json._
     val claim = l.toJson.prettyPrint
-    println(claim)
     Jwt.encode(claim, secretKey, jwtAlgorithm)
   }
 
   def checkToken(token: String): Boolean = {
     Jwt.isValid(token, secretKey, Seq(jwtAlgorithm))
+  }
+
+  def getUser(token: String): Option[String] = {
+    Jwt.decodeRawAll(token, secretKey, Seq(jwtAlgorithm)) match {
+      case Success(tuple) => tuple match {
+        case (header, claim, signature) =>
+            Try(JsonParser(claim).convertTo[Login](LoginJsonSupport.LoginFormats)) match {
+              case Success(login) => Some(login.username)
+              case _ => None
+            }
+      }
+      case _ => None
+    }
   }
 }
 

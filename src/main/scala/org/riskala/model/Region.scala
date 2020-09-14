@@ -1,13 +1,17 @@
-package org.riskala.Model
+package org.riskala.model
 
-import org.riskala.Model.State.State
+import org.riskala.model.State.State
 import argonaut.Argonaut._
+
+import scala.scalajs.js.annotation.{JSExportAll, JSExportTopLevel}
 
 /** Region structure
  *
  * @param states       list of states
  * @param bonus        bonus
  */
+@JSExportTopLevel("Region")
+@JSExportAll
 case class Region(states: List[State], bonus: Int) {
 
   /**

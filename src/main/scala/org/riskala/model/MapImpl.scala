@@ -1,7 +1,9 @@
-package org.riskala.Model
+package org.riskala.model
 
-import org.riskala.Model.State.State
+import org.riskala.model.State.State
 import argonaut.Argonaut._
+
+import scala.scalajs.js.annotation.{JSExportAll, JSExportTopLevel}
 
 /** Map structure
  *
@@ -10,6 +12,8 @@ import argonaut.Argonaut._
  * @param states         list of state
  * @param bridges        list of bridges between states
  */
+@JSExportTopLevel("MapImpl")
+@JSExportAll
 case class MapImpl(override val name:String,
                    override val regions: List[Region],
                    override val states: List[State],
