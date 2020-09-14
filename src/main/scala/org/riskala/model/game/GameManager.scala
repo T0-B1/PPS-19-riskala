@@ -5,7 +5,7 @@ import akka.actor.typed.scaladsl.Behaviors
 import org.riskala.controller.actors.PlayerMessages.PlayerMessage
 import org.riskala.model.ModelMessages.GameMessage
 import org.riskala.model.game.GameMessages._
-import org.riskala.model.room.RoomMessages.RoomInfo
+import org.riskala.view.messages.ToClientMessages.RoomInfo
 
 import scala.collection.immutable.{HashMap, HashSet}
 
@@ -24,7 +24,7 @@ object GameManager {
                        nextPlayers: HashMap[String,ActorRef[PlayerMessage]] = newPlayers
                       ): Behavior[GameMessage] = gameManager(nextRoomInfo, nextSubscribers,nextPlayers)
       message match {
-        case Join() =>
+        case JoinGame(actor) =>
           context.log.info("Join")
           nextBehavior()
 
