@@ -1,5 +1,7 @@
 package org.riskala.model.game
 
+import akka.actor.typed.ActorRef
+import org.riskala.controller.actors.PlayerMessages.PlayerMessage
 import org.riskala.model.ModelMessages.GameMessage
 
 import scala.collection.immutable.Queue
@@ -11,7 +13,7 @@ object GameMessages {
   /**
    * Message sent when an actor wants to join this game
    * */
-  case class Join() extends GameMessage
+    case class JoinGame(actor: ActorRef[PlayerMessage]) extends GameMessage
 
   /**
    * Message sent when an actor wants to leave this game

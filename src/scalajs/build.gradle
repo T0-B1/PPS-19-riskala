@@ -1,0 +1,53 @@
+import org.scalajs.jsenv.nodejs.*
+import com.github.gtache.Scalajsld$
+
+group 'com.github.gtache'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'scalajs-plugin'
+apply plugin: 'scala'
+
+sourceCompatibility = 1.8
+
+buildscript {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.github.gtache:scalajs-plugin:sjs0.6_2.12_0.3.0'
+    }
+}
+
+repositories {
+    mavenCentral()
+    jcenter()
+}
+
+dependencies {
+    implementation(
+        [group: "io.argonaut", name: "argonaut_sjs0.6_2.12", version: "6.2"],
+        [group: "com.lihaoyi", name: "scalatags_sjs0.6_2.12", version: "0.6.3"]
+    )
+}
+
+task renameArtifacts(type: Copy) {
+    from 'build/js' 
+    include 'scala*.js'
+    into 'build/js'
+    rename { _ -> "scala.js" }
+}
+
+task scalaJs(dependsOn: [
+    FastOptJS,
+    renameArtifacts
+])
+
+compileJava.dependsOn(clean)
+renameArtifacts.mustRunAfter(FastOptJS)
+
+ext {    
+    // Build not consistent without this workaround
+    o="build/js/scala" + System.currentTimeMillis() + ".js"
+}
+

@@ -12,10 +12,11 @@ Vue.use(Vuex);
 
 Vue.config.productionTip = false
 
-
 const store = new Vuex.Store({
   state: {
+    websocket: null,
     isLogged: false,
+    roomInfo: '',
     http: Axios.create({
       timeout: 10000,
       headers: { token: 'InvalidToken' },
@@ -39,6 +40,17 @@ const store = new Vuex.Store({
         timeout: 10000,
         headers: { token: 'InvalidToken' },
       })
+    },
+    openWebsocket(state, newWebsocket) {
+      state.websocket = newWebsocket;
+      // For debug purposes
+      Window.websocket = newWebsocket;
+    },
+    changeHandler(state, newHandler) {
+      state.websocket.onmessage = newHandler;
+    },
+    changeRoomInfo(state, newRoom){
+      state.roomInfo = newRoom;
     }
   }
 });

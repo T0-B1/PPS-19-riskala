@@ -2,28 +2,35 @@ package org.riskala.controller.actors
 
 import akka.actor
 import akka.actor.typed.{ActorRef, Behavior}
+import akka.actor.typed.receptionist.Receptionist
 import akka.actor.typed.scaladsl.Behaviors
-import akka.http.scaladsl.model.ws.{Message, TextMessage}
-import org.riskala.controller.actors.PlayerMessages._
+import org.riskala.controller.actors.PlayerMessages.PlayerMessage
+import org.riskala.model.lobby.LobbyManager._
 
 object PlayerActor {
 
+  private final case class AdaptedListing(listing: Receptionist.Listing) extends PlayerMessage
+
   def apply(username: String, socket: actor.ActorRef): Behavior[PlayerMessage] = {
-    playerActor(username, socket)
+    discoverLobbyManager(username, socket)
   }
 
-  private def playerActor(username: String, socket: actor.ActorRef): Behavior[PlayerMessage] =
-    Behaviors.receive { (context, message) =>
-      message match {
-        case SocketMessage(payload) => {
-          context.log.info(s"PlayerActor of $username received socket payload: $payload")
-          socket ! TextMessage(s"PlayerActor of $username echoing: $payload")
-          Behaviors.same
-        }
-        case RegisterSocket(newSocketActor) => {
-          context.log.info("registering new socket")
-          playerActor(username, newSocketActor)
-        }
+  private def discoverLobbyManager(username: String, socket: actor.ActorRef): Behavior[PlayerMessage] =
+    Behaviors.setup { context =>
+      context.log.info("PlayerActor looking for Lobby")
+      context.system.receptionist ! Receptionist.Find(lobbyServiceKey, context.messageAdapter[Receptionist.Listing](AdaptedListing))
+
+      Behaviors.receiveMessage {
+        case AdaptedListing(lobbyServiceKey.Listing(listings)) =>
+          listings.headOption match {
+            case Some(lobbyManager) =>
+              context.log.info("PlayerActor found Lobby")
+              PlayerLobbyBehavior(username, lobbyManager, socket)
+            case None => {
+              context.log.error("Lobby manager not found")
+              Behaviors.same
+            }
+          }
       }
     }
 
