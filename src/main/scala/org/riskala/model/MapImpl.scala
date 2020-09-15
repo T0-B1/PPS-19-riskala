@@ -41,7 +41,7 @@ case class MapImpl(override val name:String,
    * @return true if state1 and state2 are neighbors
    */
   override def areNeighbor(state1: State, state2: State): Boolean =
-    bridges.contains(Bridge(state1,state2,false))
+    bridges.exists(_ == Bridge(state1, state2, false))
 }
 object MapImpl {
   implicit def MapCodecJson =
