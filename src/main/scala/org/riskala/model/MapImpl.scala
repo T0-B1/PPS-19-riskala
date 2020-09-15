@@ -15,9 +15,9 @@ import scala.scalajs.js.annotation.{JSExportAll, JSExportTopLevel}
 @JSExportTopLevel("MapImpl")
 @JSExportAll
 case class MapImpl(override val name:String,
-                   override val regions: List[Region],
-                   override val states: List[State],
-                   override val bridges: List[Bridge]) extends Map {
+                   override val regions: Set[Region],
+                   override val states: Set[State],
+                   override val bridges: Set[Bridge]) extends Map {
 
   /*override def neighbor(state: State): List[State] = {
     bridges.filter(x => x.state1 == state || x.state2 == state)
@@ -30,7 +30,7 @@ case class MapImpl(override val name:String,
    * @param state the state of wich we need to know his neighbors
    * @return a list of state that are neighbor with our state
    */
-  override def getNeighbors(state: State): List[State] = bridges collect {
+  override def getNeighbors(state: State): Set[State] = bridges collect {
     case Bridge(s1,s2,_) if s1 == state => s2
     case Bridge(s1,s2,_) if s2 == state => s1
   }

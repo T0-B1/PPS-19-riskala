@@ -7,11 +7,11 @@ import org.scalatestplus.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
 class RegionTest extends AnyWordSpec {
-  var listState: List[State] = List("Italy","France","Germany")
+  var listState: Set[State] = Set("Italy","France","Germany")
 
   "Region" should {
     "initially be empty" in {
-      assert(Region(List.empty, 2).states.isEmpty)
+      assert(Region(Set.empty, 2).states.isEmpty)
     }
 
     "after adding regions, have size different to 0" in {

@@ -18,5 +18,5 @@ object Objectives {
         Objective(map.states,"Conquer all states")//TODO replace with some regions
     }
   }
-  
+
 }

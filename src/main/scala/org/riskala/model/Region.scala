@@ -12,7 +12,7 @@ import scala.scalajs.js.annotation.{JSExportAll, JSExportTopLevel}
  */
 @JSExportTopLevel("Region")
 @JSExportAll
-case class Region(states: List[State], bonus: Int) {
+case class Region(states: Set[State], bonus: Int) {
 
   /**
    * check if the region contains the given state
