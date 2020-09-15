@@ -2,11 +2,12 @@ package org.riskala.model
 
 import argonaut.Argonaut.casecodec1
 
-import scala.scalajs.js.annotation.{JSExportAll, JSExportTopLevel}
+import scala.scalajs.js.annotation.{JSExport, JSExportAll, JSExportTopLevel}
 
 /**
  * Structure of Cards
  * */
+@JSExportTopLevel("Cards")
 object Cards {
 
   sealed trait Card { val bonus: Int }
@@ -14,6 +15,7 @@ object Cards {
   /**
    * Infantry card data type
    * */
+  @JSExport
   final case class Infantry(override val bonus:Int = 3) extends Card
   object Infantry{
     implicit def InfantryCodecJson =
@@ -23,6 +25,7 @@ object Cards {
   /**
    * Cavalry card data type
    * */
+  @JSExport
   final case class Cavalry(override val bonus:Int = 5 ) extends Card
   object Cavalry{
     implicit def CavalryCodecJson =
@@ -32,6 +35,7 @@ object Cards {
   /**
    * Artillery card data type
    * */
+  @JSExport
   final case class Artillery(override val bonus:Int = 7) extends Card
   object Artillery{
     implicit def ArtilleryCodecJson =
