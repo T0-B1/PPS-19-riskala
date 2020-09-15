@@ -14,7 +14,7 @@ object Cards {
   /**
    * Infantry card data type
    * */
-  final case class Infantry() extends Card { val bonus:Int = 3 }
+  final case class Infantry(override val bonus:Int = 3) extends Card
   object Infantry{
     implicit def InfantryCodecJson =
       casecodec1(Infantry.apply,Infantry.unapply)("bonus")
@@ -23,7 +23,7 @@ object Cards {
   /**
    * Cavalry card data type
    * */
-  final case class Cavalry() extends Card { val bonus:Int = 5 }
+  final case class Cavalry(override val bonus:Int = 5 ) extends Card
   object Cavalry{
     implicit def CavalryCodecJson =
       casecodec1(Cavalry.apply,Cavalry.unapply)("bonus")
@@ -32,7 +32,7 @@ object Cards {
   /**
    * Artillery card data type
    * */
-  final case class Artillery() extends Card { val bonus:Int = 7 }
+  final case class Artillery(override val bonus:Int = 7) extends Card
   object Artillery{
     implicit def ArtilleryCodecJson =
       casecodec1(Artillery.apply,Artillery.unapply)("bonus")
