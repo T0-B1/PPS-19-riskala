@@ -1,6 +1,5 @@
 <template>
   <div class="container">
-    
       <div class="subcontainer">
         <b-card
           class="card"
@@ -36,9 +35,7 @@
 </template>
 
 <script>
-//con mounted chiamo API se num max giocatori
 import * as d3 from 'd3'
-//import seedRandom from 'seedrandom'
 var seedRandom = require('seedrandom')
 export default {
   data(){
@@ -54,7 +51,6 @@ export default {
    }
   },
   mounted() {
-    //this.myRng = new Math.seedrandom(this.roomName)
     this.myRng = seedRandom(this.roomName)
     console.log(this.myRng())
     var vue = this

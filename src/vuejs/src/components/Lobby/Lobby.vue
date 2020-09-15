@@ -21,7 +21,6 @@
   <div class="buttons_div">
     <b-button variant="outline-primary" @click="createRoom">Create Room</b-button>
     <b-button id="joinBtn" variant="outline-primary" v-bind:disabled="disabled" @click="joinRoom">Join <b>{{this.join}}</b></b-button>
-    <!--<b-button variant="outline-primary">Carica partita</b-button>-->
   </div>
 </div>
 </template>

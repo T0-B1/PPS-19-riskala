@@ -6,7 +6,6 @@ import Vuex from 'vuex';
 import './custom.sass'
 import BootstrapVue from 'bootstrap-vue'
 
-// Install BootstrapVue
 Vue.use(BootstrapVue)
 Vue.use(Vuex);
 
