@@ -4,7 +4,7 @@ import org.riskala.model.State.State
 
 object Objectives {
 
-  final case class Objective(states: Seq[State], info: String)
+  final case class Objective(states: Set[State], info: String)
 
   def generateRandomObjective(map: Map, numberOfPlayer: Int): Objective = {
     numberOfPlayer match {
