@@ -13,4 +13,7 @@ object Objectives {
     override val info: String = "Conquer all the states"
   }
 
+  def generateObjective(map: Map): Objective = {
+    WholeMap(map.states)
+  }
 }
