@@ -47,12 +47,6 @@ object ToClientMessages {
       casecodec3(LobbyInfo.apply,LobbyInfo.unapply)("rooms","games","terminatedGames")
   }
 
-  /*final case class RoomInfoMessage(roomInfo: RoomInfo)
-
-  final case class LobbyInfoMessage(lobbyInfo: LobbyInfo)
-
-  final case class GameInfoMessage()*/
-
   final case class ErrorMessage(error: String)
   object ErrorMessage {
     implicit def ErrorCodecJson =
