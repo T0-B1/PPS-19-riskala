@@ -64,27 +64,6 @@ object PlayerLobbyBehavior {
             context.log.info("PlayerLobbyActor failed to retrieve message, IGNORED")
             nextBehavior()
           }
-          /*
-          val typed = Parser.unwrap(payload)
-          typed.classType match {
-            case _: Class[JoinMessage] =>
-              context.log.info("PlayerLobbyActor received JoinMessage")
-              Parser.retrieveMessage(typed.payload, JoinMessage.JoinCodecJson.Decoder)
-                .foreach(j => lobby ! JoinTo(context.self,j.name))
-              nextBehavior()
-            case _: Class[CreateMessage] =>
-              context.log.info("PlayerLobbyActor received CreateMessage")
-              Parser.retrieveMessage(typed.payload, CreateMessage.CreateCodecJson.Decoder)
-                .foreach(r =>
-                  lobby ! CreateRoom(context.self, RoomInfo(RoomBasicInfo(r.name,0,r.maxPlayer), r.scenario)))
-              nextBehavior()
-            case _: Class[LogoutMessage] =>
-              context.log.info("PlayerLobbyActor received LogoutMessage")
-              lobby ! Logout(context.self)
-              //TODO: close socket
-              Behaviors.stopped
-          }
-          */
 
         case LobbyInfoMessage(lobbyInfo) =>
           context.log.info(s"PlayerActor of $username received LobbyInfoMessage")
