@@ -1,6 +1,5 @@
 <template>
   <div class="container">
-    
       <div class="subcontainer">
         <b-card
           class="card"
@@ -36,8 +35,8 @@
 </template>
 
 <script>
-//con mounted chiamo API se num max giocatori
 import * as d3 from 'd3'
+var seedRandom = require('seedrandom')
 export default {
   data(){
    return {
@@ -46,11 +45,14 @@ export default {
        {prima_colonna: "Name of Player", seconda_colonna: "Color"}
      ],
      roomName: 'Room',
+     myRng: null,
      ready:false,
      players: []
    }
   },
   mounted() {
+    this.myRng = seedRandom(this.roomName)
+    console.log(this.myRng())
     var vue = this
     var newHandler = function(evt) {
       console.log('ROOM - Receive message: ' + evt.data);
@@ -64,16 +66,17 @@ export default {
     }
   },
   methods: {
-    getRandomColor() {
+    getRandomColor(name) {
+      var rng = seedRandom(name)
       var letters = '0123456789ABCDEF';
       var color = '#';
       for (var i = 0; i < 6; i++) {
-        color += letters[Math.floor(Math.random() * 16)];
+        color += letters[Math.floor(rng() * 16)];
       }
       return color;
     },
     addPlayers(name){
-      this.players.push({Name_Of_Player: name, color: this.getRandomColor()})
+      this.players.push({Name_Of_Player: name, color: this.getRandomColor(name)})
     },
     clearPlayer(){
       this.players.splice(0)
