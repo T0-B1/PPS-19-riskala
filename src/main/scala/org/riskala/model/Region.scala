@@ -7,15 +7,15 @@ import scala.scalajs.js.annotation.{JSExportAll, JSExportTopLevel}
 
 /** Region structure
  *
- * @param states       list of states
- * @param bonus        bonus
+ * @param states       list of states of the region
+ * @param bonus        bonus in terms of deployable troops
  */
 @JSExportTopLevel("Region")
 @JSExportAll
 case class Region(states: List[State], bonus: Int) {
 
   /**
-   * check if the region contains the given state
+   * Check if the region contains the given state
    *
    * @param state     the state to check
    * @return true if it contains state*/
