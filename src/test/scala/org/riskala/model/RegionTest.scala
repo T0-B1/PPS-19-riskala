@@ -11,15 +11,15 @@ class RegionTest extends AnyWordSpec {
 
   "Region" should {
     "initially be empty" in {
-      assert(Region(Set.empty, 2).states.isEmpty)
+      assert(Region("EmptyRegion", Set.empty, 2).states.isEmpty)
     }
 
     "after adding regions, have size different to 0" in {
-      assert(Region(listState, 2).states.nonEmpty)
+      assert(Region("NonEmptyRegion", listState, 2).states.nonEmpty)
     }
 
     "check if region belongs to state" in {
-      assert(Region(listState, 2).hasState("Italy"))
+      assert(Region("NonEmptyRegion", listState, 2).hasState("Italy"))
     }
   }
 }

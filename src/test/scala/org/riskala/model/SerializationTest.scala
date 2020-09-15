@@ -14,7 +14,7 @@ class SerializationTest extends AnyWordSpec{
   val ger: State = "Germany"
   val spa: State = "Spain"
   val states = Set(ita, fra, swi, ger, spa)
-  val regions = Set(Region(Set(ita,swi),4),Region(Set(spa,ger,fra),6))
+  val regions = Set(Region("NonEmptyRegion1",Set(ita,swi),4),Region("NonEmptyRegion2",Set(spa,ger,fra),6))
   val bridges = Set(Bridge(ita,fra,false),
     Bridge(ita,swi,false),
     Bridge(swi,fra,false),
