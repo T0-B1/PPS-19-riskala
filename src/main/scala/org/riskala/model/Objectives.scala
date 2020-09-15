@@ -10,12 +10,11 @@ object Objectives {
     numberOfPlayer match {
       case _ if numberOfPlayer < 4 => Objective(map.states,"Conquer all states")
       case _ =>
-        /*val rng = scala.util.Random
-        rng.nextInt(2) match {
-          case 0 => Objective(map.states)
-          case 1 => Objective(map.states)
-        }*/
-        Objective(map.states,"Conquer all states")//TODO replace with some regions
+        val range = math.ceil(map.regions.size.toDouble/3).toInt
+        val regions = util.Random.shuffle(map.regions).slice(0, range)
+        val states = regions.map(_.states).reduce(_++_)
+        val info = regions.map(_.name).reduce(_+" "+_)
+        Objective(states,s"Conquer states of regions $info")
     }
   }
 
