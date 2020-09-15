@@ -1,120 +1,145 @@
 <template>
   <div>
-    <div class="myContainer">
-      <div class="playTurnAndMap">
-        <div class="radioDiv">
-          <h5> Turno </h5>
-          <div v-for="(player,index) in players" :key="index" class="form-check">
-            <input type="radio" :id="player.id" :checked="player.checked">
-            <label :for="player.id">{{player.nome_giocatore}}</label>
+    <div class="wrapper">
+      <div> <span> Your objective: <b><i> OBIETTIVO </i></b></span> </div>
+      <div class="infoContainer">
+        <div class="leftContainer">
+          <div class="radioDiv">
+            <h5> Turn of: </h5>
+            <div v-for="(player,index) in players" :key="index" class="form-check">
+              <input type="radio" :id="player.id" :checked="player.checked">
+              <label :for="player.id">{{player.nome_giocatore}}</label>
+            </div>
+            <b-button variant="danger"> End Turn </b-button>
           </div>
-          <b-button variant="danger"> Fine turno </b-button>
+          <hr/>
+          <div class="buttonDiv" >
+            <button type="submit" style="border: 1px solid black; border-radius:10px; background: transparent">
+              <img src="@/assets/infantry.png" width="50" height="50" alt="submit" />
+            </button>
+            <span>10</span>
+            <button type="submit" style="border: 1px solid black; border-radius:10px; background: transparent">
+              <img src="@/assets/cavalry.png" width="50" height="50" alt="submit" />
+            </button>
+            <span>10</span>
+            <button type="submit" style="border: 1px solid black; border-radius:10px; background: transparent">
+              <img src="@/assets/artillery.png" width="50" height="50" alt="submit" />
+            </button>
+            <span>10</span>
+          </div>
         </div>
-        <div id="svgMapContainer"></div>
+        <div class="stateInfo">
+          <h4 id="idInfo"> Info </h4>
+          <div class="text">
+            <div>
+              <span>State: {{state}}</span>
+            </div>
+            <div>
+              <span> Owner:<b>{{proprietario}}&emsp;</b></span>
+            </div>
+            <div>
+              <span> N. Troops:<b>{{truppe}}</b>&emsp;</span>
+            </div>
+            <div>
+              <span> Region:<b>{{regione}}</b>&emsp;</span>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
-    <hr class="divider">
-    <div>
-      <h4> Info </h4>
-      <div class="containerInfo">
-        <div class="text">
-          <div>
-            <span> Stato:<b>{{stato}}&emsp;</b></span>
-            <span> Proprietario:<b>{{proprietario}}&emsp;</b></span>
-          </div>
-          <div>
-            <span> N. Truppe:<b>{{truppe}}</b>&emsp;</span>
-            <span> Regione:<b>{{regione}}</b>&emsp;</span>
-          </div>
-        </div>
-        <div class="buttons">
-          <div class="btns">
-            <b-button variant="outline-info" class="insideBtn"> Schiera truppe </b-button>
-            <b-button variant="outline-info" class="insideBtn"> Attacca </b-button>
-          </div>
-          <div class="btns">
-            <b-button variant="outline-info" class="insideBtn"> Sposta truppe </b-button>
-            <b-button variant="outline-info" class="insideBtn"> Gioca bonus </b-button>
-          </div>
-        </div>
-      </div>
+      <div id="svgMapContainer"></div>
+      
     </div>
   </div>
 </template>
 
 <script>
-//con mounted chiamo API se num max giocatori
 import * as d3 from 'd3'
 export default {
- data(){
-   return {
-     srcMap:'https://raw.githubusercontent.com/raddrick/risk-map-svg/master/risk.svg',
-     stato: 'Italia',
-     proprietario: 'Marto',
-     truppe: '5',
-     regione: 'Europa',
-     players: [
-       {nome_giocatore: "Giordo", id:"01",colore:'red', checked:true},
-       {nome_giocatore: "Ale", id:"02", colore:'blue', checked:false},
-       {nome_giocatore: "Marto", id:"03", colore:'yellow', checked:false}
-     ]
-   }
- },
- mounted() {
-   this.loadSvg()
- },
- methods: {
-  bind(){
-    Array.prototype.forEach.call( document.getElementsByTagName("path"), function(el) {
-      el.onclick = function(){ 
-        alert(el.id)
-        this.stato = el.id;
-        console.log(this.stato)
-        };
-    })
+  data(){
+    return {
+      srcMap:'https://raw.githubusercontent.com/raddrick/risk-map-svg/master/risk.svg',
+      players: [],
+      state: 'Select a state',
+      proprietario: 'Marto',
+      truppe: '5',
+      regione: 'Europa'
+    }
   },
-  loadSvg(){
-    d3.xml(this.srcMap)
-    .then(data => {
-      d3.select("#svgMapContainer").node().append(data.documentElement);
-      this.bind();
-    });
-    
+  mounted() {
+    this.loadSvg()
+    //this.addPlayers()
+  },
+  methods: {
+    bind(){
+      var vue = this
+      Array.prototype.forEach.call(document.getElementsByTagName("path"), function(el) {
+        el.onclick = function(){ 
+          //getStateInfo da scala
+          if(el.id === 'Move mouse over a country'){
+            document.getElementById(vue.state).setAttribute('fill', 'fill')
+            document.getElementById(vue.state).style.opacity = 1
+            vue.state = 'Select a state'            
+          } else{
+            if(vue.state !== 'Select a state'){
+              document.getElementById(vue.state).setAttribute('fill', 'fill')
+              document.getElementById(vue.state).style.opacity = 1
+            }
+            el.style.opacity = 0.7;
+            el.textContent = "aaa"
+            el.setAttribute('fill', 'gold')
+            el.setAttribute("font-size", "14")
+            vue.state = el.id;
+          }
+        };
+      })
+    },
+    addPlayers(players){
+      this.players.push({Name_Player: players.name})
+    },
+    loadSvg(){
+      var vue = this
+      var myD3 = d3;
+      myD3.xml(this.srcMap)
+      .then(data => {
+        var map = myD3.select("#svgMapContainer");
+        map.node().append(data.documentElement)
+        this.bind()
+      });
+    }
   }
- }
 }
 </script>
 
 <style lang="sass" scoped>
-.myContainer
-  max-width: 95%
-  padding-top: 40px
-  margin: 0 auto
-  .playTurnAndMap
-    .radioDiv
-      max-width: 20%
-      border: 1px solid black
-      padding: 2px
-      .form-check
-        text-align: justify
-    #svgMapContainer
-      margin-top: -11em
-.containerInfo
-  display: flex
-  justify-content: space-around
-  padding-bottom: 30px
-  .text
-    padding: 10px
-    max-width: 40%
-    line-height: 2em
-    letter-spacing: 2px
-  .buttons
+.wrapper
+  padding-top: 20px
+  .infoContainer
     display: flex
-    max-width: 60%
-    flex-direction: column
-    .btns
+    justify-content: space-between
+    height: fit-content
+    .leftContainer
       display: flex
-      justify-content: space-between
-      .insideBtn
-      margin: 5px 
+      flex-direction: column
+      max-width: 15%
+      width: 15%
+      .radioDiv
+        border: 1px black solid
+        flex-direction: column
+        width: fit-content
+        margin-left: .5%
+        padding: 1% 
+        .form-check
+          text-align: justify
+      .buttonDiv
+        display: flex
+        flex-direction: column
+        justify-content: space-around
+    .stateInfo
+      display: flex
+      flex-direction: column
+      border: 1px black solid
+      padding: 1%
+      width: 15%
+  #svgMapContainer
+    margin: -20% auto auto -5%
 </style>
