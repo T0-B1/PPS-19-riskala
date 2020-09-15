@@ -109,7 +109,6 @@ export default {
       mySocket.onmessage = function(evt) { onMessage(evt) };
       mySocket.onerror = function(evt) { onError(evt) };
       this.$store.commit('openWebsocket', mySocket)
-      //Window.socket = mySocket
 
       function onOpen(vue) {
         console.log("CONNECTED");

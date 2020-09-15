@@ -67,9 +67,6 @@ object PlayerRoomBehavior {
       case GameReferent(game) =>
         context.log.info(s"PlayerActor of $username received GameReferent")
         PlayerGameBehavior(username,game,socket)
-      //case ReadyMessage() => nextBehavior()
-      //case LeaveMessage() => nextBehavior()
-      //case LogoutMessage() => nextBehavior()
       case errorMessage: PlayerMessages.ErrorMessage =>
         context.log.info(s"PlayerActor of $username received ErrorMessage")
         val clientError = ToClientMessages.ErrorMessage(errorMessage.error)
