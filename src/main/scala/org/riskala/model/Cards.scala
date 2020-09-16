@@ -15,6 +15,9 @@ object Cards extends Enumeration {
   val Cavalry: Cards = Value(5, "Cavalry")
   val Artillery: Cards = Value(7, "Artillery")
 
+  /**
+   * Implicit method to get CodecJson
+  * */
   implicit def CardEnumCodecJson: CodecJson[Cards] = CodecJson({
     e: Cards => e.toString.asJson
   }, c => c.focus.string match {
@@ -22,6 +25,10 @@ object Cards extends Enumeration {
     case _ => DecodeResult.fail("Could not decode CardEnum",c.history)
   })
 
+  /**
+   * Method that generate a random Card
+   * @return a random generated Card
+   * */
   def generateCard(): Cards = {
     Cards.values.toSeq(rng.nextInt(Cards.values.size))
   }
