@@ -47,13 +47,16 @@
         </div>
       </div>
       <div id="svgMapContainer"></div>
-      
     </div>
   </div>
 </template>
 
 <script>
 import * as d3 from 'd3'
+
+const mapsContext = require.context('@/assets/maps/', true, /\.svg$/);
+const mapsExt = '.svg';
+
 export default {
   data(){
     return {
@@ -96,10 +99,13 @@ export default {
     addPlayers(players){
       this.players.push({Name_Player: players.name})
     },
+    getMapImage() {
+      return mapsContext(`./italy${mapsExt}`);
+    },
     loadSvg(){
       var vue = this
       var myD3 = d3;
-      myD3.xml(this.srcMap)
+      myD3.xml(this.getMapImage())
       .then(data => {
         var map = myD3.select("#svgMapContainer");
         map.node().append(data.documentElement)
