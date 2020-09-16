@@ -12,7 +12,7 @@
           <div class="infoPlay">
             <div>
               <h5>Number of players</h5>
-              <input type="number" v-model="numeroGiocatori" class="form-control" placeholder="Number of players" required>
+              <input type="number" v-model="numeroGiocatori" class="form-control" placeholder="Number of players" number required>
             </div>
             <div>
               <h5>Select scenario</h5>
@@ -65,7 +65,8 @@ export default {
   },
   methods: {
     checkForm(){
-      if(this.nomePartita !== '' && this.numeroGiocatori > 1 && this.selectedScenario !== '') {
+      this.numeroGiocatori = parseInt(this.numeroGiocatori)
+      if(this.nomePartita !== '' && this.numeroGiocatori > 1 && this.selectedScenario !== null) {
         this.$bvModal.hide('modal-error')
         this.passed = true
       } else {
@@ -75,7 +76,7 @@ export default {
               if(!this.nomePartita) {
                 this.error = 'Room name cannot be empty.'
               } else {
-                if(!this.selectedScenario) {
+                if(this.selectedScenario == null) {
                   this.error= 'Scenarion cannot be empty'
                 }
               }
@@ -88,7 +89,6 @@ export default {
       this.$router.push('/')
     },
     notifyCreateError(error) {
-      console.log("inside notifyCreateError")
       this.error = error
       this.$bvModal.show('modal-error')
     },
@@ -99,13 +99,11 @@ export default {
     createRoom() {
       this.checkForm();
       if(this.passed) {
-        console.log("createRoom inside")
         this.$store.state.websocket.send(
           ClientCreateRoom.getCreateMsgWrapped(this.nomePartita, this.numeroGiocatori, this.selectedScenario))
       }      
     }
   }
-
 }
 </script>
 
