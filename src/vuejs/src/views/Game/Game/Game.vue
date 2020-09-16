@@ -47,8 +47,6 @@
         </div>
       </div>
       <div id="svgMapContainer"></div>
-        <b-img class="map-img" :src='getMapImage()'>
-        </b-img>
     </div>
   </div>
 </template>
@@ -102,12 +100,12 @@ export default {
       this.players.push({Name_Player: players.name})
     },
     getMapImage() {
-      return imagesContext(`./italy${mapsExt}`);
+      return mapsContext(`./italy${mapsExt}`);
     },
     loadSvg(){
       var vue = this
       var myD3 = d3;
-      myD3.xml(this.srcMap)
+      myD3.xml(this.getMapImage())
       .then(data => {
         var map = myD3.select("#svgMapContainer");
         map.node().append(data.documentElement)
