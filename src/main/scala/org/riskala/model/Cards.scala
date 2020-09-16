@@ -1,48 +1,30 @@
 package org.riskala.model
 
-import argonaut.Argonaut.casecodec1
+import argonaut.Argonaut._
+import argonaut.{CodecJson, DecodeResult}
 
 /**
  * Structure of Cards
  * */
-object Cards {
+object Cards extends Enumeration {
 
-  sealed trait Card { val bonus: Int }
+  private val rng = scala.util.Random
 
-  /**
-   * Infantry card data type
-   * */
-  final case class Infantry(override val bonus:Int = 3) extends Card
-  object Infantry{
-    implicit def InfantryCodecJson =
-      casecodec1(Infantry.apply,Infantry.unapply)("bonus")
+  type Cards = Value
+  val Infantry: Cards = Value(3, "Infantry")
+  val Cavalry: Cards = Value(5, "Cavalry")
+  val Artillery: Cards = Value(7, "Artillery")
+
+  implicit def CardEnumCodecJson: CodecJson[Cards] = CodecJson({
+    e: Cards => e.toString.asJson
+  }, c => c.focus.string match {
+    case Some(n:String) if Cards.values.exists(_.toString==n) => DecodeResult.ok(Cards.withName(n))
+    case _ => DecodeResult.fail("Could not decode CardEnum",c.history)
+  })
+
+  def generateCard(): Cards = {
+    Cards.values.toSeq(rng.nextInt(Cards.values.size))
   }
 
-  /**
-   * Cavalry card data type
-   * */
-  final case class Cavalry(override val bonus:Int = 5 ) extends Card
-  object Cavalry{
-    implicit def CavalryCodecJson =
-      casecodec1(Cavalry.apply,Cavalry.unapply)("bonus")
-  }
-
-  /**
-   * Artillery card data type
-   * */
-  final case class Artillery(override val bonus:Int = 7) extends Card
-  object Artillery{
-    implicit def ArtilleryCodecJson =
-      casecodec1(Artillery.apply,Artillery.unapply)("bonus")
-  }
-
-  def generateCard(): Card = {
-    val rng = scala.util.Random
-    rng.nextInt(3) match {
-      case 0 => Infantry()
-      case 1 => Cavalry()
-      case 2 => Artillery()
-    }
-  }
 }
 
