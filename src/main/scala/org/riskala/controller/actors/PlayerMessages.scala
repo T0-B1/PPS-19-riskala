@@ -30,6 +30,10 @@ object PlayerMessages {
                                    playerStates: Set[PlayerState],
                                    personalInfo:GamePersonalInfo) extends PlayerMessage
 
+  final case class GameUpdateMessage(actualPlayer:String,
+                                     playerStates: Set[PlayerState],
+                                     personalInfo:GamePersonalInfo) extends PlayerMessage
+
   final case class ErrorMessage(error: String) extends PlayerMessage
 
 }
