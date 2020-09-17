@@ -5,33 +5,33 @@ import org.riskala.model.State.State
 
 sealed trait Event
 
-final case class Attack(from: State,
+final case class Battle(from: State,
                        to: State,
                        attacking: Int,
                        attackingPassed: Int,
                        defendingCasualties: Int)
                   extends Event
 
-final case class Move(from: State,
+final case class TroopsMoved(from: State,
                       to: State,
                       troops: Int)
                   extends Event
 
-final case class Deploy(to: State,
+final case class TroopsDeployed(to: State,
                         troops: Int)
                   extends Event
 
 // TODO use card
-final case class Draw(player: Player,
+final case class CardDrawn(player: Player,
                       card: Unit)
                   extends Event
 
 // TODO use card
-final case class RedeemBonus(player: Player,
+final case class BonusRedeemed(player: Player,
                         cardBonus: Unit)
                   extends Event
 
-final case class EndTurn(player: Player)
+final case class TurnEnded(player: Player)
                   extends Event
 
 
