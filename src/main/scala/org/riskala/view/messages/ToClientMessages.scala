@@ -3,7 +3,7 @@ package org.riskala.view.messages
 import argonaut.Argonaut._
 import org.riskala.model.Cards.Cards
 import org.riskala.model.Objectives.Objective
-import org.riskala.model.{Map, MapImpl, PlayerState}
+import org.riskala.model.{MapGeography, PlayerState}
 
 import scala.scalajs.js.annotation.JSExportAll
 
@@ -58,7 +58,7 @@ object ToClientMessages {
 
   case class GameFullInfo(players:Set[String],
                           actualPlayer:String,
-                          map:MapImpl,
+                          map:MapGeography,
                           playerStates: Set[PlayerState],
                           personalInfo:GamePersonalInfo)
   object GameFullInfo {
