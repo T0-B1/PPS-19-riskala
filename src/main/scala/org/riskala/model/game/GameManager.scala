@@ -2,11 +2,11 @@ package org.riskala.model.game
 
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.actor.typed.scaladsl.Behaviors
-import org.riskala.controller.actors.PlayerMessages.PlayerMessage
+import org.riskala.controller.actors.PlayerMessages.{GameInfoMessage, PlayerMessage}
 import org.riskala.model.ModelMessages.{GameMessage, LobbyMessage, Logout}
 import org.riskala.model.game.GameMessages._
 import org.riskala.model.lobby.LobbyMessages.Subscribe
-import org.riskala.view.messages.ToClientMessages.RoomInfo
+import org.riskala.view.messages.ToClientMessages.{GameFullInfo, RoomInfo}
 
 import scala.collection.immutable.{HashMap, HashSet}
 
@@ -41,7 +41,7 @@ object GameManager {
         case JoinGame(actor) =>
           context.log.info("Join")
           val newSubs = subscribers + actor
-          //actor ! GameFullInfo()
+          //actor ! GameInfoMessage(players)
           nextBehavior(updatedSub = newSubs)
 
         case Leave(actor) =>
