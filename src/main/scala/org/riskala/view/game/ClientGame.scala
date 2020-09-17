@@ -48,7 +48,7 @@ object ClientGame {
         gameFullInfo.players.foreach(pl => gameFacade.addPlayer(pl, gameFullInfo.actualPlayer == pl))
         gameFacade.cleanPlayerState()
         gameFullInfo.playerStates.foreach(ps => gameFacade.addPlayerState(ps))
-        
+        gameFacade.loadObjectives(gameFullInfo.personalInfo.objective.info)
       }
     }
   }
