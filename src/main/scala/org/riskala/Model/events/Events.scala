@@ -31,4 +31,7 @@ final case class RedeemBonus(player: Player,
                         cardBonus: Unit)
                   extends Event
 
+final case class EndTurn(player: Player)
+                  extends Event
+
 
