@@ -3,7 +3,7 @@ package org.riskala.model.game
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.actor.typed.scaladsl.Behaviors
 import org.riskala.controller.actors.PlayerMessages.PlayerMessage
-import org.riskala.model.ModelMessages.{GameMessage, LobbyMessage}
+import org.riskala.model.ModelMessages.{GameMessage, LobbyMessage, Logout}
 import org.riskala.model.game.GameMessages._
 import org.riskala.model.lobby.LobbyMessages.Subscribe
 import org.riskala.view.messages.ToClientMessages.RoomInfo
@@ -46,9 +46,8 @@ object GameManager {
 
         case Leave(actor) =>
           context.log.info("Leave")
-          var newSubscribers = subscribers - actor
           lobby ! Subscribe(actor)
-          nextBehavior(updatedSub = newSubscribers)
+          nextBehavior(updatedSub = subscribers - actor)
 
         case Deploy() =>
           context.log.info("Deploy")
@@ -69,6 +68,10 @@ object GameManager {
         case EndTurn() =>
           context.log.info("EndTurn")
           nextBehavior()
+
+        case Logout(actor) =>
+          context.log.info("Logout")
+          nextBehavior(updatedSub = subscribers - actor)
       }
     }
   }
