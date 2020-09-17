@@ -3,34 +3,51 @@ package org.riskala.model.game
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.actor.typed.scaladsl.Behaviors
 import org.riskala.controller.actors.PlayerMessages.PlayerMessage
-import org.riskala.model.ModelMessages.GameMessage
+import org.riskala.model.ModelMessages.{GameMessage, LobbyMessage, Logout}
 import org.riskala.model.game.GameMessages._
+import org.riskala.model.lobby.LobbyMessages.Subscribe
 import org.riskala.view.messages.ToClientMessages.RoomInfo
 
 import scala.collection.immutable.{HashMap, HashSet}
 
 object GameManager {
-  def apply(roomInfo: RoomInfo, subscribers: HashSet[ActorRef[PlayerMessage]],
-            players: HashMap[String,ActorRef[PlayerMessage]]): Behavior[GameMessage] =
-    gameManager(roomInfo, HashSet.empty, HashMap.empty)
+  def apply(gameName: String,
+            subscribers: Set[ActorRef[PlayerMessage]],
+            players: Set[String],
+            scenarioName: String,
+            lobby: ActorRef[LobbyMessage]): Behavior[GameMessage] =
+    Behaviors.setup { context =>
+      //TODO: event sourcing, scenario
+      gameManager("", Set.empty, Map.empty, "", lobby)
+    }
 
-  private def gameManager(newRoomInfo: RoomInfo,
-                           newSubscribers: HashSet[ActorRef[PlayerMessage]],
-                           newPlayers: HashMap[String,ActorRef[PlayerMessage]]): Behavior[GameMessage] =
+
+  private def gameManager(gameName: String,
+                          subscribers: Set[ActorRef[PlayerMessage]],
+                          players: Map[ActorRef[PlayerMessage], String],
+                          scenarioName: String,
+                          lobby: ActorRef[LobbyMessage]): Behavior[GameMessage] =
     Behaviors.receive { (context,message) => {
 
-      def nextBehavior(nextRoomInfo: RoomInfo = newRoomInfo,
-                       nextSubscribers: HashSet[ActorRef[PlayerMessage]] = newSubscribers,
-                       nextPlayers: HashMap[String,ActorRef[PlayerMessage]] = newPlayers
-                      ): Behavior[GameMessage] = gameManager(nextRoomInfo, nextSubscribers,nextPlayers)
+      def nextBehavior(updateName: String = gameName,
+                       updatedSub: Set[ActorRef[PlayerMessage]] = subscribers,
+                       updatedPlayers: Map[ActorRef[PlayerMessage], String] = players,
+                       updateScenario: String = scenarioName,
+                       updateLobby: ActorRef[LobbyMessage] = lobby
+                      ): Behavior[GameMessage] =
+        gameManager(updateName, updatedSub, updatedPlayers, updateScenario, updateLobby)
+
       message match {
         case JoinGame(actor) =>
           context.log.info("Join")
-          nextBehavior()
+          val newSubs = subscribers + actor
+          //actor ! GameFullInfo()
+          nextBehavior(updatedSub = newSubs)
 
-        case Leave() =>
+        case Leave(actor) =>
           context.log.info("Leave")
-          nextBehavior()
+          lobby ! Subscribe(actor)
+          nextBehavior(updatedSub = subscribers - actor)
 
         case Deploy() =>
           context.log.info("Deploy")
@@ -51,6 +68,10 @@ object GameManager {
         case EndTurn() =>
           context.log.info("EndTurn")
           nextBehavior()
+
+        case Logout(actor) =>
+          context.log.info("Logout")
+          nextBehavior(updatedSub = subscribers - actor)
       }
     }
   }
