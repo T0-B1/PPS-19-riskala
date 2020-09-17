@@ -1,7 +1,7 @@
 package org.riskala.view.game
 
 import argonaut.Argonaut.{ToJsonIdentity, nospace}
-import org.riskala.model.Cards.Cards
+import org.riskala.model.Cards._
 import org.riskala.utils.Parser
 import org.riskala.view.messages.FromClientMessages.{ActionMessage, RedeemBonusMessage}
 import org.riskala.view.messages.ToClientMessages.{ErrorMessage, GameFullInfo, LobbyInfo}
@@ -49,6 +49,11 @@ object ClientGame {
         gameFacade.cleanPlayerState()
         gameFullInfo.playerStates.foreach(ps => gameFacade.addPlayerState(ps))
         gameFacade.loadObjectives(gameFullInfo.personalInfo.objective.info)
+        val cardOccurrence = gameFullInfo.personalInfo.cards.groupBy(identity).mapValues(_.size)
+        gameFacade.setCardInfo(cardOccurrence.getOrElse(Infantry, 0),
+          cardOccurrence.getOrElse(Cavalry, 0),
+          cardOccurrence.getOrElse(Artillery, 0))
+
       }
     }
   }
