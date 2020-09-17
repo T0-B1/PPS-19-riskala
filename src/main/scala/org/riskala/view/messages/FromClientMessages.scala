@@ -1,6 +1,7 @@
 package org.riskala.view.messages
 
 import argonaut.Argonaut._
+import org.riskala.model.Cards.Cards
 
 import scala.scalajs.js.annotation.JSExportAll
 
@@ -27,15 +28,13 @@ object FromClientMessages {
 
   final case class ActionMessage(from: String,
                                  to: String,
-                                 attacking: Int,
-                                 defending: Int,
-                                 invading: Int)
+                                 troops: Int)
   object ActionMessage {
     implicit def ActionCodecJson =
-      casecodec5(ActionMessage.apply,ActionMessage.unapply)("from", "to", "attacking","defending","invading")
+      casecodec3(ActionMessage.apply,ActionMessage.unapply)("from", "to", "troops")
   }
 
-  final case class RedeemBonusMessage(cardType: String)
+  final case class RedeemBonusMessage(card: Cards)
   object RedeemBonusMessage {
     implicit def RedeemBonusCodecJson =
       casecodec1(RedeemBonusMessage.apply,RedeemBonusMessage.unapply)("cardType")
