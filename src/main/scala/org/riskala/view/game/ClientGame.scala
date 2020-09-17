@@ -46,6 +46,7 @@ object ClientGame {
           Parser.retrieveMessage(wrappedMsg.payload, GameFullInfo.GameFullInfoCodecJson.Decoder).get
         println("Ended parser retrieve message")
         gameFullInfo.players.foreach(pl => gameFacade.addPlayer(pl, gameFullInfo.actualPlayer == pl))
+        gameFacade.setMap(gameFullInfo.map)
         gameFacade.cleanPlayerState()
         gameFullInfo.playerStates.foreach(ps => gameFacade.addPlayerState(ps))
         gameFacade.loadObjectives(gameFullInfo.personalInfo.objective.info)
