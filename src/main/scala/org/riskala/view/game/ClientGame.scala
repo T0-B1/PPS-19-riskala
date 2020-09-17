@@ -4,7 +4,7 @@ import argonaut.Argonaut.{ToJsonIdentity, nospace}
 import org.riskala.model.Cards.Cards
 import org.riskala.utils.Parser
 import org.riskala.view.messages.FromClientMessages.{ActionMessage, RedeemBonusMessage}
-import org.riskala.view.messages.ToClientMessages.ErrorMessage
+import org.riskala.view.messages.ToClientMessages.{ErrorMessage, GameFullInfo, LobbyInfo}
 import org.riskala.view.messages.WrappedMessage
 
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
@@ -39,6 +39,13 @@ object ClientGame {
         val errorMsg =
           Parser.retrieveMessage(wrappedMsg.payload, ErrorMessage.ErrorCodecJson.Decoder).get
         gameFacade.notifyError(errorMsg.error)
+      }
+      case "GameFullInfo" => {
+        println("received game full info ")
+        val gameFullInfo =
+          Parser.retrieveMessage(wrappedMsg.payload, GameFullInfo.GameFullInfoCodecJson.Decoder).get
+        println("Ended parser retrieve message")
+        gameFullInfo.players.foreach(pl => gameFacade.addPlayer(pl, gameFullInfo.actualPlayer == pl))
       }
     }
   }
