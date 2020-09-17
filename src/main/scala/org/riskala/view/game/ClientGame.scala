@@ -1,7 +1,8 @@
 package org.riskala.view.game
 
 import argonaut.Argonaut.{ToJsonIdentity, nospace}
-import org.riskala.view.messages.FromClientMessages.ActionMessage
+import org.riskala.model.Cards.Cards
+import org.riskala.view.messages.FromClientMessages.{ActionMessage, RedeemBonusMessage}
 import org.riskala.view.messages.WrappedMessage
 
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
@@ -20,4 +21,9 @@ object ClientGame {
       ActionMessage(from, to, troops).asJson.pretty(nospace)).asJson.pretty(nospace)
   }
 
+  @JSExport
+  def getRedeemBonusMsgWrapped(cardType: Cards): String =  {
+    WrappedMessage("RedeemBonusMessage", RedeemBonusMessage(cardType).asJson.pretty(nospace)).asJson.pretty(nospace)
+  }
+  
 }
