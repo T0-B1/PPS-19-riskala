@@ -2,6 +2,7 @@ package org.riskala.view.game
 
 import argonaut.Argonaut.{ToJsonIdentity, nospace}
 import org.riskala.model.Cards.Cards
+import org.riskala.utils.Parser
 import org.riskala.view.messages.FromClientMessages.{ActionMessage, RedeemBonusMessage}
 import org.riskala.view.messages.WrappedMessage
 
@@ -27,7 +28,9 @@ object ClientGame {
   }
 
   @JSExport
-  def handleLobbyMessage(message: String, gameFacade: GameFacade): Unit = {
-
+  def handleGameMessage(message: String, gameFacade: GameFacade): Unit = {
+    println(s"inside handleGame. Message = $message")
+    val wrappedMsg = Parser.retrieveWrapped(message).get
+    println(s"wrappedMessage = $wrappedMsg")
   }
 }
