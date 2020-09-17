@@ -66,6 +66,12 @@ object ToClientMessages {
       casecodec5(GameFullInfo.apply,GameFullInfo.unapply)("players","actualPlayer","map","playerStates","personalInfo")
   }
 
+  case class GameUpdate(actualPlayer:String,playerStates: Set[PlayerState],personalInfo:GamePersonalInfo)
+  object GameUpdate {
+    implicit def GameUpdateCodecJson =
+      casecodec3(GameUpdate.apply,GameUpdate.unapply)("actualPlayer","playerState","personalInfo")
+  }
+
   final case class ErrorMessage(error: String)
   object ErrorMessage {
     implicit def ErrorCodecJson =
