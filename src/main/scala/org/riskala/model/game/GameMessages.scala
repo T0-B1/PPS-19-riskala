@@ -18,7 +18,7 @@ object GameMessages {
   /**
    * Message sent when an actor wants to leave this game
    * */
-  case class Leave() extends GameMessage
+  case class Leave(actor: ActorRef[PlayerMessage]) extends GameMessage
 
   /**
    * Message sent when an actor wants to deploy troops
