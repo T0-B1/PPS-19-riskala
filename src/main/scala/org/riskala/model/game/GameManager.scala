@@ -18,20 +18,20 @@ object GameManager {
             lobby: ActorRef[LobbyMessage]): Behavior[GameMessage] =
     Behaviors.setup { context =>
       //TODO: event sourcing, scenario
-      gameManager("", Set.empty, Map.empty, "", lobby)
+      gameManager("", Set.empty, Set.empty, "", lobby)
     }
 
 
   private def gameManager(gameName: String,
                           subscribers: Set[ActorRef[PlayerMessage]],
-                          players: Map[ActorRef[PlayerMessage], String],
+                          players: Set[String],
                           scenarioName: String,
                           lobby: ActorRef[LobbyMessage]): Behavior[GameMessage] =
     Behaviors.receive { (context,message) => {
 
       def nextBehavior(updateName: String = gameName,
                        updatedSub: Set[ActorRef[PlayerMessage]] = subscribers,
-                       updatedPlayers: Map[ActorRef[PlayerMessage], String] = players,
+                       updatedPlayers: Set[String] = players,
                        updateScenario: String = scenarioName,
                        updateLobby: ActorRef[LobbyMessage] = lobby
                       ): Behavior[GameMessage] =
