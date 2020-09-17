@@ -1,12 +1,16 @@
 package org.riskala.model
 
+import argonaut.Argonaut.casecodec2
+import argonaut.CodecJson
 import org.riskala.model.State.State
 
 object Objectives {
 
   final case class Objective(states: Set[State], info: String)
+  implicit def ObjectiveCodecJson: CodecJson[Objective] =
+    casecodec2(Objective.apply, Objective.unapply)("", "")
 
-  def generateRandomObjective(map: Map, numberOfPlayer: Int): Objective = {
+  def generateRandomObjective(map: MapGeography, numberOfPlayer: Int): Objective = {
     numberOfPlayer match {
       case _ if numberOfPlayer < 4 => Objective(map.states,"Conquer all states")
       case _ =>

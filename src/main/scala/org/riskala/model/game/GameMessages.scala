@@ -6,6 +6,9 @@ import org.riskala.model.ModelMessages.GameMessage
 
 import scala.collection.immutable.Queue
 
+/**
+ * Type of possible messages that GameManager can receive
+ * */
 object GameMessages {
 
   case class GameInfo(name: String, scenario: String, players: Queue[String])
@@ -13,12 +16,12 @@ object GameMessages {
   /**
    * Message sent when an actor wants to join this game
    * */
-    case class JoinGame(actor: ActorRef[PlayerMessage]) extends GameMessage
+  case class JoinGame(actor: ActorRef[PlayerMessage]) extends GameMessage
 
   /**
    * Message sent when an actor wants to leave this game
    * */
-  case class Leave() extends GameMessage
+  case class Leave(actor: ActorRef[PlayerMessage]) extends GameMessage
 
   /**
    * Message sent when an actor wants to deploy troops
