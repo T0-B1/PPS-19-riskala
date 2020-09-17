@@ -8,12 +8,12 @@ import jdk.nashorn.internal.runtime.ParserException
 import org.riskala.controller.actors.PlayerMessages._
 import org.riskala.model.ModelMessages.GameMessage
 import org.riskala.utils.Parser
+import org.riskala.view.messages.ToClientMessages.GameFullInfo
 
 object PlayerGameBehavior {
   def apply(username: String, game: ActorRef[GameMessage], socket: actor.ActorRef): Behavior[PlayerMessage] = {
     playerGameBehavior(username, game, socket)
   }
-
 
   private def playerGameBehavior(username: String,
                                  game: ActorRef[GameMessage],
@@ -25,14 +25,25 @@ object PlayerGameBehavior {
         playerGameBehavior(nextUsername,nextGame,nextSocket)
 
       message match {
-        case SocketMessage(payload) => nextBehavior()
+        case SocketMessage(payload) =>
+          context.log.info("SocketMessage")
+          nextBehavior()
         //case ActionMessage(from,to,attacking,defending,invading) => nextBehavior()
-        case GameInfoMessage(players, actualPlayer, map, playerState, personalInfo) => nextBehavior()
-        case GameUpdateMessage(actualPlayer, playerStates, personalInfo) => nextBehavior()
-        case LobbyReferent(lobby) => nextBehavior()
+        case GameInfoMessage(players, actualPlayer, map, playerState, personalInfo) =>
+          context.log.info("GameInfoMessage")
+          val tmp = GameFullInfo(players, actualPlayer, map, playerState, personalInfo)
+          nextBehavior()
+        case GameUpdateMessage(actualPlayer, playerStates, personalInfo) =>
+          context.log.info("GameUpdateMessage")
+          nextBehavior()
+        case LobbyReferent(lobby) =>
+          context.log.info("LobbyReferent")
+          nextBehavior()
         //case LeaveMessage() => nextBehavior()
         //case LogoutMessage() => nextBehavior()
-        case ErrorMessage(error) => nextBehavior()
+        case ErrorMessage(error) =>
+          context.log.info("ErrorMessage")
+          nextBehavior()
       }
     }
 }
