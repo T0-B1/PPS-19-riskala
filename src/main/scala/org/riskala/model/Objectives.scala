@@ -1,10 +1,14 @@
 package org.riskala.model
 
+import argonaut.Argonaut.casecodec2
+import argonaut.CodecJson
 import org.riskala.model.State.State
 
 object Objectives {
 
   final case class Objective(states: Set[State], info: String)
+  implicit def ObjectiveCodecJson: CodecJson[Objective] =
+    casecodec2(Objective.apply, Objective.unapply)("", "")
 
   def generateRandomObjective(map: Map, numberOfPlayer: Int): Objective = {
     numberOfPlayer match {

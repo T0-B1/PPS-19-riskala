@@ -1,6 +1,9 @@
 package org.riskala.view.messages
 
 import argonaut.Argonaut._
+import org.riskala.model.Cards.Cards
+import org.riskala.model.Objectives.Objective
+import org.riskala.model.{Map, MapImpl, PlayerState}
 
 import scala.scalajs.js.annotation.JSExportAll
 
@@ -45,6 +48,22 @@ object ToClientMessages {
   object LobbyInfo {
     implicit def LobbyInfoCodecJson =
       casecodec3(LobbyInfo.apply,LobbyInfo.unapply)("rooms","games","terminatedGames")
+  }
+
+  case class GamePersonalInfo(objective: Objective, cards: List[Cards])
+  object GamePersonalInfo {
+    implicit def GamePersonalInfoCodecJson =
+      casecodec2(GamePersonalInfo.apply, GamePersonalInfo.unapply)("objective", "cards")
+  }
+
+  case class GameFullInfo(players:Set[String],
+                          actualPlayer:String,
+                          map:MapImpl,
+                          playerStates: Set[PlayerState],
+                          personalInfo:GamePersonalInfo)
+  object GameFullInfo {
+    implicit def GameFullInfoCodecJson =
+      casecodec5(GameFullInfo.apply,GameFullInfo.unapply)("players","actualPlayer","map","playerStates","personalInfo")
   }
 
   final case class ErrorMessage(error: String)
