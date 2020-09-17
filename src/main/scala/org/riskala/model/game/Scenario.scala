@@ -1,7 +1,10 @@
 package org.riskala.model.game
 
-import org.riskala.model.{Bridge, MapImpl, Region}
+import java.io.PrintWriter
+
+import org.riskala.model.{Bridge, MapImpl, Player, Region}
 import org.riskala.model.State.State
+import argonaut.Argonaut._
 
 object Scenario extends App{
 
@@ -54,7 +57,6 @@ object Scenario extends App{
 
   val south: Region = Region("South", southernStates, 6)
 
-
   val islandStates: Set[State] = Set("Sardegna",
                                 "Sicilia")
 
@@ -100,5 +102,13 @@ object Scenario extends App{
                                 )
 
   val scenario = MapImpl(name, regions, states, bridges)
+
+  val jsonMap = scenario.asJson.pretty(spaces2)
+  println(jsonMap)
+
+  val deserializedMap: MapImpl = jsonMap.decodeOption[MapImpl].get
+  println(deserializedMap)
+
+  new PrintWriter("italy.rkl") { write(jsonMap); close }
 
 }
