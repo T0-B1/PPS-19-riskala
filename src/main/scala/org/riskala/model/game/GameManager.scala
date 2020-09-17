@@ -2,7 +2,7 @@ package org.riskala.model.game
 
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.actor.typed.scaladsl.Behaviors
-import org.riskala.controller.actors.PlayerMessages.{GameInfoMessage, PlayerMessage}
+import org.riskala.controller.actors.PlayerMessages.{GameInfoMessage, GameReferent, PlayerMessage}
 import org.riskala.model.ModelMessages.{GameMessage, LobbyMessage, Logout}
 import org.riskala.model.game.GameMessages._
 import org.riskala.model.lobby.LobbyMessages.Subscribe
@@ -17,8 +17,9 @@ object GameManager {
             scenarioName: String,
             lobby: ActorRef[LobbyMessage]): Behavior[GameMessage] =
     Behaviors.setup { context =>
+      subscribers.foreach(_ ! GameReferent(context.self))
       //TODO: event sourcing, scenario
-      gameManager("", Set.empty, Set.empty, "", lobby)
+      gameManager(gameName, subscribers, players, scenarioName, lobby)
     }
 
 
