@@ -13,7 +13,7 @@ class GameFacade extends js.Object {
   def cleanPlayerState(): Unit = js.native
   def addPlayerState(playerState: PlayerState): Unit = js.native
   def loadObjectives(objective: String): Unit = js.native
-  def loadCard(infantry: Int, cavalry: Int, artillery: Int): Unit = js.native
+  def setCardInfo(infantry: Int, cavalry: Int, artillery: Int): Unit = js.native
   def notifyError(error: String): Unit = js.native
 
 
