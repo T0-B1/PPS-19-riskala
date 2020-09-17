@@ -52,7 +52,6 @@ export default {
   },
   mounted() {
     this.myRng = seedRandom(this.roomName)
-    console.log(this.myRng())
     var vue = this
     var newHandler = function(evt) {
       console.log('ROOM - Receive message: ' + evt.data);
@@ -97,14 +96,14 @@ export default {
     },
     readyClick() {
       this.ready=true
-      this.$store.state.websocket.send(ClientRoom.getReadyMsgWrapped())
+      this.$store.state.websocket.send(ClientRoom.getMsgWrapped("ReadyMessage"))
     },
     unready(){
       this.ready=false
-      this.$store.state.websocket.send(ClientRoom.getUnReadyMsgWrapped())
+      this.$store.state.websocket.send(ClientRoom.getMsgWrapped("UnReadyMessage"))
     },
     leaveRoom(){
-      this.$store.state.websocket.send(ClientRoom.getLeaveMsgWrapped())
+      this.$store.state.websocket.send(ClientRoom.getMsgWrapped("LeaveMessage"))
       this.$router.push('/')
       this.$store.state.roomInfo = ''
     }
