@@ -50,23 +50,15 @@ object GameManager {
           lobby ! Subscribe(actor)
           nextBehavior(updatedSub = subscribers - actor)
 
-        case Deploy() =>
-          context.log.info("Deploy")
+        case Action(playerName, from, to, troops) =>
+          context.log.info("Action")
           nextBehavior()
 
-        case Attack() =>
-          context.log.info("Attack")
-          nextBehavior()
-
-        case Move() =>
-          context.log.info("Move")
-          nextBehavior()
-
-        case RedeemBonus() =>
+        case RedeemBonus(playerName, card) =>
           context.log.info("RedeemBonus")
           nextBehavior()
 
-        case EndTurn() =>
+        case EndTurn(playerName) =>
           context.log.info("EndTurn")
           nextBehavior()
 
