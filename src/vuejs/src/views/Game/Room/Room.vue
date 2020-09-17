@@ -26,9 +26,11 @@
             <b-button v-if="this.ready === true" class="readyBtn" variant="outline-primary"  v-on:click="unready">Unready</b-button>
           </div>
           <hr class="divider"/>
-          <div id="svgMapContainer">
+          <div class="preview">
+            <h3>Preview map game</h3> 
+            <img id="svgMapContainer" src="@/assets/maps/italy.svg" />
+            <b-button id="joinBtn" variant="outline-danger" @click="leaveRoom">Leave room</b-button>
           </div>
-          <b-button id="joinBtn" variant="outline-danger" @click="leaveRoom">Leave room</b-button>
         </b-card>
       </div>    
   </div>
@@ -37,10 +39,10 @@
 <script>
 import * as d3 from 'd3'
 var seedRandom = require('seedrandom')
+
 export default {
   data(){
    return {
-     srcMap:'https://raw.githubusercontent.com/raddrick/risk-map-svg/master/risk.svg',
      titleTable: [
        {prima_colonna: "Name of Player", seconda_colonna: "Color"}
      ],
@@ -59,7 +61,6 @@ export default {
     }
     this.$store.commit('changeHandler', newHandler)
 
-    this.loadSvg();
     if(this.$store.state.roomInfo !== ''){
       ClientRoom.setupRoom(this.$store.state.roomInfo, this)
     }
@@ -88,12 +89,6 @@ export default {
         el.onclick = function(){ alert(el.id); };
       })
     },
-    loadSvg(){
-      d3.xml(this.srcMap)
-      .then(data => {
-        d3.select("#svgMapContainer").node().append(data.documentElement);
-      }); 
-    },
     readyClick() {
       this.ready=true
       this.$store.state.websocket.send(ClientRoom.getMsgWrapped("ReadyMessage"))
@@ -114,6 +109,10 @@ export default {
 <style lang="sass">
 .readyBtn
   margin: 0 auto
-svg
-  width: 50%
+.preview
+  display: flex
+  flex-direction: column
+  #svgMapContainer, .joinBtn
+    max-width: 30%
+    margin: 0 auto
 </style>

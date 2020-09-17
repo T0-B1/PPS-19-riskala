@@ -182,7 +182,6 @@ export default {
         var myMap = map.node().append(data.documentElement);
         this.bind()
       });
-
     }
   }
 }
