@@ -2,9 +2,8 @@ package org.riskala.controller.actors
 
 import akka.actor
 import akka.actor.typed.ActorRef
-import akka.http.scaladsl.model.ws.Message
-import org.riskala.model.lobby.LobbyMessages.LobbyInfo
-import org.riskala.model.room.RoomMessages.RoomInfo
+import org.riskala.model.ModelMessages.{GameMessage, LobbyMessage, RoomMessage}
+import org.riskala.view.messages.ToClientMessages.{LobbyInfo, RoomInfo}
 
 object PlayerMessages {
 
@@ -14,16 +13,18 @@ object PlayerMessages {
 
   final case class RegisterSocket(socketActor: actor.ActorRef) extends PlayerMessage
 
+  final case class LobbyReferent(room: ActorRef[LobbyMessage]) extends PlayerMessage
+
+  final case class RoomReferent(room: ActorRef[RoomMessage]) extends PlayerMessage
+
+  final case class GameReferent(game: ActorRef[GameMessage]) extends PlayerMessage
+
   final case class RoomInfoMessage(roomInfo: RoomInfo) extends PlayerMessage
 
   final case class LobbyInfoMessage(lobbyInfo: LobbyInfo) extends PlayerMessage
 
   final case class GameInfoMessage() extends PlayerMessage
 
-  final case class RoomAlreadyExistsMessage() extends PlayerMessage
-
-  final case class RoomNotFoundMessage() extends PlayerMessage
-
-  final case class GameNotFoundMessage() extends PlayerMessage
+  final case class ErrorMessage(error: String) extends PlayerMessage
 
 }

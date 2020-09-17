@@ -3,21 +3,31 @@ package org.riskala.model.lobby
 import akka.actor.typed.ActorRef
 import org.riskala.controller.actors.PlayerMessages.PlayerMessage
 import org.riskala.model.ModelMessages._
-import org.riskala.model.room.RoomMessages.{RoomBasicInfo, RoomInfo}
+import org.riskala.view.messages.ToClientMessages.{RoomBasicInfo, RoomInfo}
 
-import scala.collection.immutable.HashMap
 
 /**
  * lobby messages
  */
 object LobbyMessages {
+/*
+  case class RoomNameInfo(name: String, players: String)
+  object RoomNameInfo {
+    implicit def RoomNameInfoCodecJson =
+      casecodec2(RoomNameInfo.apply,RoomNameInfo.unapply)("name","players")
+  }
 
-  /** Lobby's information
+  /** Information about lobby
    * @param rooms              The list of name of the rooms
    * @param games              The list of name of the games
    * @param terminatedGames    The list of name of the terminated games
    * */
-  case class LobbyInfo(rooms: List[String], games: List[String], terminatedGames: List[String])
+  case class LobbyInfo(rooms: List[RoomNameInfo], games: List[String], terminatedGames: List[String])
+  object LobbyInfo {
+    implicit def LobbyInfoCodecJson =
+      casecodec3(LobbyInfo.apply,LobbyInfo.unapply)("rooms","games","terminatedGames")
+  }
+*/
 
   /** Message sent to subscribe to the lobby
    * @param subscriber              The actor who wants to subscribe to the lobby
@@ -42,7 +52,7 @@ object LobbyMessages {
    * @param roomSubscribers   the list of subscribers actor ref who will spectate the game
    * */
   case class StartGame(info: RoomInfo,
-                       players: HashMap[String,ActorRef[PlayerMessage]],
+                       players: Map[String,ActorRef[PlayerMessage]],
                        roomSubscribers: Set[ActorRef[PlayerMessage]]) extends LobbyMessage
 
   /** Message sent when a game ends
@@ -55,7 +65,7 @@ object LobbyMessages {
    * @param name             The name of the game that ended
    * @param subscribers      List the game's players
    * */
-  case class GameClosed(name: String, subscribers: List[ActorRef[PlayerMessage]]) extends LobbyMessage
+  case class GameClosed(name: String, subscribers: Seq[ActorRef[PlayerMessage]]) extends LobbyMessage
 
   /** Message sent to update room information
    * @param info             Room information

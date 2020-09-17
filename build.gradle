@@ -5,7 +5,7 @@ plugins {
     id 'org.scoverage' version '4.0.2'
 }
 
-version '0.0.0'
+version '0.3.0'
 mainClassName = 'org.riskala.controller.Main'
 sourceCompatibility = 1.8
 
@@ -61,9 +61,13 @@ task provideSourcesToScalajs(type: Copy) {
     //"org/riskala/model/lobby/**/*",
     //"org/riskala/model/room/**/*"]
 
-    def scalaJsClasses = ["org/riskala/model/*.scala"]
-    def scalaJsIgnore = ["org/riskala/model/ModelMessages.scala"]
-    from "$projectDir/src/main/scala/" 
+    def scalaJsClasses = ["org/riskala/model/*.scala",
+                          "org/riskala/view/**/*.scala",
+                          "org/riskala/utils/Parser.scala"]
+    def scalaJsIgnore = ["org/riskala/model/ModelMessages.scala",
+                         "org/riskala/view/SocketActor.scala"]
+    delete "$projectDir/src/scalajs/src"
+    from "$projectDir/src/main/scala/"
     include scalaJsClasses 
     exclude scalaJsIgnore
     into "$projectDir/src/scalajs/src/main/scala/"

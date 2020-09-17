@@ -45,11 +45,11 @@
         </div>
       </b-form>
       <hr />
-      <span class="disabled">Non sei ancora registrato?</span>
+      <span class="disabled">Not registered?</span>
       <router-link to='registration' aria-label="registration"
         class="text-center buttonsDiv" style="text-decoration:none; margin-bottom:30px;">
         <b-button role="button" variant="outline-primary">
-          Registrati
+          Register
         </b-button>
       </router-link>
     </b-card>
@@ -68,6 +68,14 @@ export default {
       },
     };
   },
+  mounted(){
+    var token = localStorage.riskalaToken
+    if(token !== 'InvalidToken'){
+      this.$store.commit('login', { token: token, user: localStorage.riskalaUser });
+      this.openSocket(token)
+      this.$router.push('/')
+    }
+  },
   methods: {
     onSubmit(evt) {
       evt.preventDefault();
@@ -82,7 +90,6 @@ export default {
           this.openSocket(t)
         }).catch((error) => {
           this.$store.commit('logout');
-          this.$websocket.close();
           if (error.response) {
             if (error.response.status === 404) {
               console.log("Invalid credentials");
@@ -96,11 +103,12 @@ export default {
     openSocket(token){
       var vue = this
       var HOST = location.origin.replace(/^http/, 'ws')
-      this.$store.websocket = new WebSocket(HOST + "/websocket?token=" + token)
-      this.$store.websocket.onopen = function() { onOpen(vue) };
-      this.$store.websocket.onclose = function() { onClose() };
-      this.$store.websocket.onmessage = function(evt) { onMessage(evt) };
-      this.$store.websocket.onerror = function(evt) { onError(evt) };
+      var mySocket = new WebSocket(HOST + "/websocket?token=" + token)
+      mySocket.onopen = function() { onOpen(vue) };
+      mySocket.onclose = function() { onClose() };
+      mySocket.onmessage = function(evt) { onMessage(evt) };
+      mySocket.onerror = function(evt) { onError(evt) };
+      this.$store.commit('openWebsocket', mySocket)
 
       function onOpen(vue) {
         console.log("CONNECTED");

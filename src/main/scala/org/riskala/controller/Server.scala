@@ -1,6 +1,5 @@
 package org.riskala.controller
 
-//import akka.actor.ActorSystem
 import akka.actor.typed.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.Directives._

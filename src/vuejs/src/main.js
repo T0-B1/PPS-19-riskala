@@ -6,16 +6,16 @@ import Vuex from 'vuex';
 import './custom.sass'
 import BootstrapVue from 'bootstrap-vue'
 
-// Install BootstrapVue
 Vue.use(BootstrapVue)
 Vue.use(Vuex);
 
 Vue.config.productionTip = false
 
 const store = new Vuex.Store({
-  websocket: null,
   state: {
+    websocket: null,
     isLogged: false,
+    roomInfo: '',
     http: Axios.create({
       timeout: 10000,
       headers: { token: 'InvalidToken' },
@@ -39,6 +39,17 @@ const store = new Vuex.Store({
         timeout: 10000,
         headers: { token: 'InvalidToken' },
       })
+    },
+    openWebsocket(state, newWebsocket) {
+      state.websocket = newWebsocket;
+      // For debug purposes
+      Window.websocket = newWebsocket;
+    },
+    changeHandler(state, newHandler) {
+      state.websocket.onmessage = newHandler;
+    },
+    changeRoomInfo(state, newRoom){
+      state.roomInfo = newRoom;
     }
   }
 });
