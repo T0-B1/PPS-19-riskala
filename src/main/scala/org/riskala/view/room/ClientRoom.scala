@@ -12,19 +12,10 @@ import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 object ClientRoom {
 
   @JSExport
-  def getReadyMsgWrapped(): String = {
-    WrappedMessage("ReadyMessage", "").asJson.pretty(nospace)
+  def getReadyMsgWrapped(typeMsg: String): String = {
+    WrappedMessage(typeMsg, "").asJson.pretty(nospace)
   }
 
-  @JSExport
-  def getUnReadyMsgWrapped(): String = {
-    WrappedMessage("UnReadyMessage", "").asJson.pretty(nospace)
-  }
-
-  @JSExport
-  def getLeaveMsgWrapped(): String = {
-    WrappedMessage("LeaveMessage", "").asJson.pretty(nospace)
-  }
 
   @JSExport
   def setupRoom(roomInfo: String, roomFacade: RoomFacade): Unit = {
