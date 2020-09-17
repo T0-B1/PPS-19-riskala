@@ -14,6 +14,7 @@ class GameFacade extends js.Object {
   def addPlayerState(playerState: PlayerState): Unit = js.native
   def loadObjectives(objective: String): Unit = js.native
   def loadCard(infantry: Int, cavalry: Int, artillery: Int): Unit = js.native
+  def notifyError(error: String): Unit = js.native
 
 
   def updateInfo(playerTurn: String): Unit = js.native //Cosa devo prendere?
