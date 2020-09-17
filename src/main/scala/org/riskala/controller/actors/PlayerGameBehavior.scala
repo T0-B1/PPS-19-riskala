@@ -5,7 +5,7 @@ import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.http.javadsl.model.ws.TextMessage
 import jdk.nashorn.internal.runtime.ParserException
-import org.riskala.controller.actors.PlayerMessages.{ErrorMessage, GameInfoMessage, LobbyReferent, PlayerMessage, SocketMessage}
+import org.riskala.controller.actors.PlayerMessages._
 import org.riskala.model.ModelMessages.GameMessage
 import org.riskala.utils.Parser
 
@@ -28,6 +28,7 @@ object PlayerGameBehavior {
         case SocketMessage(payload) => nextBehavior()
         //case ActionMessage(from,to,attacking,defending,invading) => nextBehavior()
         case GameInfoMessage(players, actualPlayer, map, playerState, personalInfo) => nextBehavior()
+        case GameUpdateMessage(actualPlayer, playerStates, personalInfo) => nextBehavior()
         case LobbyReferent(lobby) => nextBehavior()
         //case LeaveMessage() => nextBehavior()
         //case LogoutMessage() => nextBehavior()
