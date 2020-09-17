@@ -35,13 +35,13 @@
               <span>State: <b><i>{{state}}</i></b></span>
             </div>
             <div>
-              <span> Owner:<b>{{proprietario}}&emsp;</b></span>
+              <span> Owner:<b>{{owner}}&emsp;</b></span>
             </div>
             <div>
-              <span> N. Troops:<b>{{truppe}}</b>&emsp;</span>
+              <span> N. Troops:<b>{{troops}}</b>&emsp;</span>
             </div>
             <div>
-              <span> Region:<b>{{regione}}</b>&emsp;</span>
+              <span> Region:<b>{{region}}</b>&emsp;</span>
             </div>
           </div>
           <div class="buttons">
@@ -73,25 +73,70 @@ export default {
     return {
       players: [],
       state: 'Select a state',
-      proprietario: 'Marto',
-      truppe: '5',
+      owner: 'Marto',
+      troops: '5',
       objective: '',
       infantryCards: Number,
       cavalryCards: Number,
       artilleryCards: Number,
-      regione: 'Europa',
+      region: 'Europa',
       infantryEnable: false,
       artilleryEnable: false,
-      cavalryEnable:false
+      cavalryEnable:false,
+      neighbors: [],
+      playerStates: [],
     }
   },
   mounted() {
-    this.loadSvg()
-    this.loadCardsInfo()
-    //this.addPlayers()
-    
+    this.myRng = seedRandom(this.roomName)
+    var vue = this
+    var newHandler = function(evt) {
+      console.log('GAME - Receive message: ' + evt.data);
+      ClientGame.handleGameMessage(evt.data, vue)
+    }
+    this.$store.commit('changeHandler', newHandler)
+
+    this.onLoad()
   },
   methods: {
+    onLoad(){
+      this.loadSvg()
+      this.loadCardsInfo()
+      this.addPlayers()
+      this.setMap()
+      this.addPlayerState()
+      this.loadObjective(),
+      this.setCardInfo()
+    },
+    addPlayer(player, myTurn){
+      console.log("addPlayer")
+      this.players.push({Name_Player: players, My_Turn: myTurn})
+      console.log(this.players)
+    },
+    setMap(map){
+      console.log("mappp")
+      console.log(map)
+    },
+    cleanPlayerState() {
+      console.log("cleanPlayerState")
+      this.playerStates.splice(0)
+    },
+    addPlayerState(playerState){
+      console.log("playerState " + playerState)
+      this.playerStates.push({playerState})
+      console.log(this.playerState)
+    },
+    loadObjective(obj) {
+      this.objective = obj
+    },
+    setCardInfo(infantry, cavalry, artillery){
+      this.infantryCards = infantry
+      this.cavalryCards = cavalry
+      this.artilleryCards = artillery
+    },
+    notifyError(error){
+      console.log("error " + error)
+    },
     getRandomColor(name) {
       var rng = seedRandom(name)
       var letters = '0123456789ABCDEF';
@@ -124,17 +169,6 @@ export default {
           vue.state = el.id;
         };
       })
-    },
-    loadObjective(obj) {
-      this.objective = obj
-    },
-    loadCardsInfo(){
-      this.infantryCards = 10
-      this.cavalryCards = 10
-      this.artilleryCards = 10
-    },
-    addPlayers(players){
-      this.players.push({Name_Player: players.name})
     },
     getMapImage() {
       return mapsContext(`./italy${mapsExt}`);
