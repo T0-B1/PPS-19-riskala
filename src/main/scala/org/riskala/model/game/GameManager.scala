@@ -46,7 +46,9 @@ object GameManager {
 
         case Leave(actor) =>
           context.log.info("Leave")
-          nextBehavior()
+          var newSubscribers = subscribers - actor
+          lobby ! Subscribe(actor)
+          nextBehavior(updatedSub = newSubscribers)
 
         case Deploy() =>
           context.log.info("Deploy")
