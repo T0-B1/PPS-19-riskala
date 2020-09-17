@@ -25,5 +25,9 @@ object ClientGame {
   def getRedeemBonusMsgWrapped(cardType: Cards): String =  {
     WrappedMessage("RedeemBonusMessage", RedeemBonusMessage(cardType).asJson.pretty(nospace)).asJson.pretty(nospace)
   }
-  
+
+  @JSExport
+  def handleLobbyMessage(message: String, gameFacade: GameFacade): Unit = {
+
+  }
 }
