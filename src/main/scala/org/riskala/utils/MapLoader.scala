@@ -6,6 +6,7 @@ import better.files.Resource
 
 object MapLoader {
 
+  // TODO handle exceptions
   def loadMap(mapName: String) : Option[Map] =  try{
       val jsonMap = Resource.getAsString(s"scenarios/$mapName.rkl")
       val deserializedMap: MapImpl = jsonMap.decodeOption[MapImpl].get
