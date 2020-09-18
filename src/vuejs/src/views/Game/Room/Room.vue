@@ -89,6 +89,10 @@ export default {
         el.onclick = function(){ alert(el.id); };
       })
     },
+    goToGame(newGame){
+      this.$store.commit('changeGameInfo', newGame)
+      this.$router.push('/game')
+    },
     readyClick() {
       this.ready=true
       this.$store.state.websocket.send(ClientRoom.getReadyMsgWrapped("ReadyMessage", this.getRandomColor(localStorage.riskalaUser)))
