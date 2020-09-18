@@ -36,19 +36,17 @@ object ClientRoom {
     val wrappedMsg = Parser.retrieveWrapped(message).get
     println(s"wrappedMessage = $wrappedMsg")
     wrappedMsg.classType match {
-      case "RoomInfo" => {
+      case "RoomInfo" =>
         println("case roomInfo inside handleLobby")
         val roomInfoMsg =
           Parser.retrieveMessage(wrappedMsg.payload, RoomInfo.RoomInfoCodecJson.Decoder).get
         println("Ended parser retrieve message")
         roomFacade.clearPlayer()
         roomInfoMsg.players.foreach(player=>roomFacade.addPlayers(player.nickname))
-      }
-      case "ErrorMessage" => {
+      case "ErrorMessage" =>
         println("received error message")
         val errorMsg = Parser.retrieveMessage(wrappedMsg.payload, ErrorMessage.ErrorCodecJson.Decoder).get
         roomFacade.notifyError(errorMsg.error)
-      }
       case "GameFullInfo" =>
         println("received GameFullInfo")
         roomFacade.goToGame(wrappedMsg.payload)
