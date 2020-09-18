@@ -62,10 +62,10 @@ object PlayerGameBehavior {
           socket ! TextMessage(Parser.wrap("GameUpdate",updateInfo,GameUpdate.GameUpdateCodecJson.Encoder))
           nextBehavior()
         case LobbyReferent(lobby) =>
-          context.log.info("LobbyReferent")
+          context.log.info(s"PlayerGameActor of $username received LobbyReferent")
           PlayerLobbyBehavior(username,lobby,socket)
         case errorMessage: PlayerMessages.ErrorMessage =>
-          context.log.info("ErrorMessage")
+          context.log.info(s"PlayerGameActor of $username received ErrorMessage: ${errorMessage.error}")
           val clientError = ToClientMessages.ErrorMessage(errorMessage.error)
           socket ! TextMessage(Parser.wrap("ErrorMessage",
             clientError,
