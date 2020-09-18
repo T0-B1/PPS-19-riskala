@@ -58,12 +58,13 @@ object ToClientMessages {
 
   case class GameFullInfo(players:Set[String],
                           actualPlayer:String,
+                          troopsToDeploy:Int,
                           map:MapGeography,
                           playerStates: Set[PlayerState],
                           personalInfo:GamePersonalInfo)
   object GameFullInfo {
     implicit def GameFullInfoCodecJson =
-      casecodec5(GameFullInfo.apply,GameFullInfo.unapply)("players","actualPlayer","map","playerStates","personalInfo")
+      casecodec6(GameFullInfo.apply,GameFullInfo.unapply)("players","actualPlayer","troopsToDeploy","map","playerStates","personalInfo")
   }
 
   case class GameUpdate(actualPlayer:String,playerStates: Set[PlayerState],personalInfo:GamePersonalInfo)

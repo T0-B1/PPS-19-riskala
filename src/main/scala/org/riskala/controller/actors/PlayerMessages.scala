@@ -26,6 +26,7 @@ object PlayerMessages {
 
   final case class GameInfoMessage(players:Set[String],
                                    actualPlayer:String,
+                                   troopsToDeploy:Int,
                                    map:MapGeography,
                                    playerStates: Set[PlayerState],
                                    personalInfo:GamePersonalInfo) extends PlayerMessage
