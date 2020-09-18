@@ -29,9 +29,9 @@ object PlayerGameBehavior {
           context.log.info("SocketMessage")
           nextBehavior()
         //case ActionMessage(from,to,attacking,defending,invading) => nextBehavior()
-        case GameInfoMessage(players, actualPlayer, map, playerState, personalInfo) =>
+        case GameInfoMessage(players, actualPlayer, troopsToDeploy, map, playerState, personalInfo) =>
           context.log.info("GameInfoMessage")
-          val tmp = GameFullInfo(players, actualPlayer, map, playerState, personalInfo)
+          val tmp = GameFullInfo(players, actualPlayer, troopsToDeploy, map, playerState, personalInfo)
           nextBehavior()
         case GameUpdateMessage(actualPlayer, playerStates, personalInfo) =>
           context.log.info("GameUpdateMessage")
