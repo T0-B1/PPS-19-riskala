@@ -1,9 +1,9 @@
-package org.riskala.modelToFix
+package org.riskala.model
 
 import scala.scalajs.js.annotation.JSExportAll
 import scala.scalajs.js.annotation.JSExportTopLevel
 import argonaut.Argonaut._
-import org.riskala.modelToFix.State.State
+import org.riskala.model.State.State
 
 /** Bridge implementation
  *

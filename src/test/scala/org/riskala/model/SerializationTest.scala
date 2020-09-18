@@ -1,9 +1,9 @@
-package org.riskala.modelToFix
+package org.riskala.model
 
 import org.scalatest.wordspec.AnyWordSpec
 import argonaut.Argonaut._
 import org.junit.runner.RunWith
-import org.riskala.modelToFix.State.State
+import org.riskala.model.State.State
 import org.scalatestplus.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])

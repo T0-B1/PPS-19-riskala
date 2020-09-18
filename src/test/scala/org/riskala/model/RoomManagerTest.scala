@@ -1,12 +1,12 @@
-package org.riskala.modelToFix
+package org.riskala.model
 
 import akka.actor.testkit.typed.scaladsl.{ActorTestKit, TestProbe}
 import akka.actor.typed.ActorRef
 import org.riskala.controller.actors.PlayerMessages.{PlayerMessage, RoomInfoMessage, RoomReferent}
-import org.riskala.modelToFix.room.RoomManager
-import org.riskala.modelToFix.room.RoomMessages._
-import org.riskala.modelToFix.ModelMessages._
-import org.riskala.modelToFix.lobby.LobbyMessages.{EmptyRoom, StartGame, Subscribe, UpdateRoomInfo}
+import org.riskala.model.room.RoomManager
+import org.riskala.model.room.RoomMessages._
+import org.riskala.model.ModelMessages._
+import org.riskala.model.lobby.LobbyMessages.{EmptyRoom, StartGame, Subscribe, UpdateRoomInfo}
 import org.riskala.view.messages.ToClientMessages.{RoomBasicInfo, RoomInfo}
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.wordspec.AnyWordSpec

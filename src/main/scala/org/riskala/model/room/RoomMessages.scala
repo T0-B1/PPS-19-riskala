@@ -1,9 +1,9 @@
-package org.riskala.modelToFix.room
+package org.riskala.model.room
 
 import akka.actor.typed.ActorRef
 import org.riskala.controller.actors.PlayerMessages.PlayerMessage
-import org.riskala.modelToFix.ModelMessages._
-import org.riskala.modelToFix.Player
+import org.riskala.model.ModelMessages._
+import org.riskala.model.Player
 
 /**
  * Room messages

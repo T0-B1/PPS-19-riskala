@@ -1,8 +1,8 @@
-package org.riskala.modelToFix
+package org.riskala.model
 
 import argonaut.Argonaut.casecodec2
 import argonaut.CodecJson
-import org.riskala.modelToFix.State.State
+import org.riskala.model.State.State
 
 object Objectives {
 

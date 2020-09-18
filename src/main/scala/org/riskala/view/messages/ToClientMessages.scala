@@ -1,9 +1,9 @@
 package org.riskala.view.messages
 
 import argonaut.Argonaut._
-import org.riskala.modelToFix.Cards.Cards
-import org.riskala.modelToFix.Objectives.Objective
-import org.riskala.modelToFix.{MapGeography, Player, PlayerState}
+import org.riskala.model.Cards.Cards
+import org.riskala.model.Objectives.Objective
+import org.riskala.model.{MapGeography, Player, PlayerState}
 
 import scala.scalajs.js.annotation.JSExportAll
 

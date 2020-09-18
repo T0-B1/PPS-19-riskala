@@ -6,8 +6,8 @@ import akka.actor.{ActorSystem, typed}
 import akka.testkit.{TestKit, TestProbe}
 import argonaut.Argonaut._
 import org.riskala.controller.actors.PlayerMessages.SocketMessage
-import org.riskala.modelToFix.lobby.LobbyManager
-import org.riskala.modelToFix.lobby.LobbyMessages.JoinTo
+import org.riskala.model.lobby.LobbyManager
+import org.riskala.model.lobby.LobbyMessages.JoinTo
 import org.riskala.view.messages.FromClientMessages.JoinMessage
 import org.riskala.view.messages.WrappedMessage
 import org.scalatest.BeforeAndAfterAll

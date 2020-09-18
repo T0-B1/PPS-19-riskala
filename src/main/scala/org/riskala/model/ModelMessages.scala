@@ -1,4 +1,4 @@
-package org.riskala.modelToFix
+package org.riskala.model
 
 import akka.actor.typed.ActorRef
 import org.riskala.controller.actors.PlayerMessages.PlayerMessage

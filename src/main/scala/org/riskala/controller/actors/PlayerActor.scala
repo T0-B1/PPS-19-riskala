@@ -5,7 +5,7 @@ import akka.actor.typed.{ActorRef, Behavior}
 import akka.actor.typed.receptionist.Receptionist
 import akka.actor.typed.scaladsl.Behaviors
 import org.riskala.controller.actors.PlayerMessages.PlayerMessage
-import org.riskala.modelToFix.lobby.LobbyManager._
+import org.riskala.model.lobby.LobbyManager._
 
 object PlayerActor {
 

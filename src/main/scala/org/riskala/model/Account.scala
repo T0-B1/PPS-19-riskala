@@ -1,4 +1,4 @@
-package org.riskala.modelToFix
+package org.riskala.model
 
 import argonaut.Argonaut._
 

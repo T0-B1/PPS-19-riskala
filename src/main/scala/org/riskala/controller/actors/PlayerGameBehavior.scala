@@ -6,7 +6,7 @@ import akka.actor.typed.{ActorRef, Behavior}
 import akka.http.javadsl.model.ws.TextMessage
 import jdk.nashorn.internal.runtime.ParserException
 import org.riskala.controller.actors.PlayerMessages._
-import org.riskala.modelToFix.ModelMessages.GameMessage
+import org.riskala.model.ModelMessages.GameMessage
 import org.riskala.utils.Parser
 import org.riskala.view.messages.ToClientMessages.GameFullInfo
 
