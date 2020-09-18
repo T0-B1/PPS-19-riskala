@@ -12,12 +12,12 @@ import scala.scalajs.js.annotation.{JSExportAll, JSExportTopLevel}
  * @param states         list of state
  * @param bridges        list of bridges between states
  */
-@JSExportTopLevel("MapGeography")
+@JSExportTopLevel("MapGeo")
 @JSExportAll
-case class MapGeography(name:String,
-                        regions: Set[Region],
-                        states: Set[State],
-                        bridges: Set[Bridge]) {
+case class MapGeo(name:String,
+                  regions: Set[Region],
+                  states: Set[State],
+                  bridges: Set[Bridge]) {
 
   /**
    * Defines all the neighbor of a state
@@ -38,7 +38,7 @@ case class MapGeography(name:String,
   def areNeighbor(state1: State, state2: State): Boolean =
     bridges.exists(_ == Bridge(state1, state2, false))
 }
-object MapGeography {
+object MapGeo {
   implicit def MapGeographyCodecJson =
-    casecodec4(MapGeography.apply,MapGeography.unapply)("name","regions","states","bridges")
+    casecodec4(MapGeo.apply,MapGeo.unapply)("name","regions","states","bridges")
 }

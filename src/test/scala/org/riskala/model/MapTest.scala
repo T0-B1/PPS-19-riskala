@@ -18,7 +18,7 @@ class MapTest extends AnyWordSpec {
     Bridge(swi,fra,false),
     Bridge(fra,spa,false),
     Bridge(fra,ger,false))
-  val map = MapGeography("Europe",Set.empty,states,bridges)
+  val map = MapGeo("Europe",Set.empty,states,bridges)
 
   "Map neighbors" should {
     "give a list of neighbors" in {

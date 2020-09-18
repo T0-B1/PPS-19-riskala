@@ -2,7 +2,7 @@ package org.riskala.controller.actors
 
 import akka.actor
 import akka.actor.typed.ActorRef
-import org.riskala.model.{MapGeography, PlayerState}
+import org.riskala.model.{MapGeo, PlayerState}
 import org.riskala.model.ModelMessages.{GameMessage, LobbyMessage, RoomMessage}
 import org.riskala.view.messages.ToClientMessages.{GamePersonalInfo, LobbyInfo, RoomInfo}
 
@@ -27,7 +27,7 @@ object PlayerMessages {
   final case class GameInfoMessage(players:Set[String],
                                    actualPlayer:String,
                                    troopsToDeploy:Int,
-                                   map:MapGeography,
+                                   map:MapGeo,
                                    playerStates: Set[PlayerState],
                                    personalInfo:GamePersonalInfo) extends PlayerMessage
 

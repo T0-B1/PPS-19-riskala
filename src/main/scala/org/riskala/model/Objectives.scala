@@ -3,7 +3,7 @@ package org.riskala.model
 import argonaut.Argonaut.casecodec2
 import argonaut.CodecJson
 import org.riskala.model.State.State
-import org.riskala.model.MapGeography
+import org.riskala.model.MapGeo
 
 object Objectives {
 
@@ -11,7 +11,7 @@ object Objectives {
   implicit def ObjectiveCodecJson: CodecJson[Objective] =
     casecodec2(Objective.apply, Objective.unapply)("", "")
 
-  def generateRandomObjective(map: MapGeography, numberOfPlayer: Int): Objective = {
+  def generateRandomObjective(map: MapGeo, numberOfPlayer: Int): Objective = {
     numberOfPlayer match {
       case _ if numberOfPlayer < 4 => Objective(map.states,"Conquer all states")
       case _ =>
