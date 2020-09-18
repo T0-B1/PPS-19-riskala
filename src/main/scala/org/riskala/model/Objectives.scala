@@ -10,7 +10,7 @@ object Objectives {
   implicit def ObjectiveCodecJson: CodecJson[Objective] =
     casecodec2(Objective.apply, Objective.unapply)("", "")
 
-  def generateRandomObjective(map: MapGeo, numberOfPlayer: Int): Objective = {
+  def generateRandomObjective(map: MapGeography, numberOfPlayer: Int): Objective = {
     numberOfPlayer match {
       case _ if numberOfPlayer < 4 => Objective(map.states,"Conquer all states")
       case _ =>

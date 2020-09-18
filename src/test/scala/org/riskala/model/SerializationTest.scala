@@ -20,7 +20,7 @@ class SerializationTest extends AnyWordSpec{
     Bridge(swi,fra,false),
     Bridge(fra,spa,false),
     Bridge(fra,ger,false))
-  val map = MapGeo("Europe",regions,states,bridges)
+  val map = MapGeography("Europe",regions,states,bridges)
   "Bridge" should {
     val bridge = bridges.head
     "be serialized to JSON" in {
@@ -48,7 +48,7 @@ class SerializationTest extends AnyWordSpec{
       assert(map.asJson.hasField("states"))
       assert(map.asJson.hasField("regions"))
       assert(map.asJson.hasField("bridges"))
-      assert(map.asJson.as[MapGeo].toOption.get == map)
+      assert(map.asJson.as[MapGeography].toOption.get == map)
       assert(map.asJson.field("regions").get.as[List[Region]].toOption.get.contains(regions.head))
     }
   }
