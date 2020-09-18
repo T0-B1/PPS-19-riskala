@@ -2,8 +2,8 @@ package org.riskala.controller.actors
 
 import akka.actor
 import akka.actor.typed.ActorRef
-import org.riskala.model.{MapGeography, PlayerState}
-import org.riskala.model.ModelMessages.{GameMessage, LobbyMessage, RoomMessage}
+import org.riskala.modelToFix.{MapGeography, PlayerState}
+import org.riskala.modelToFix.ModelMessages.{GameMessage, LobbyMessage, RoomMessage}
 import org.riskala.view.messages.ToClientMessages.{GamePersonalInfo, LobbyInfo, RoomInfo}
 
 object PlayerMessages {

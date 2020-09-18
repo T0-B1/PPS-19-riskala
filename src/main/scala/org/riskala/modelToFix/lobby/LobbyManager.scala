@@ -5,13 +5,11 @@ import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}
 import org.riskala.controller.actors.PlayerMessages._
 import org.riskala.modelToFix.ModelMessages._
-import org.riskala.modelToFix.game.GameMessages.JoinGame
-import LobbyMessages._
-import org.riskala.modelToFix
-import org.riskala.modelToFix.room.RoomMessages.Join
-import org.riskala.modelToFix.ModelMessages.{GameMessage, LobbyMessage, RoomMessage}
 import org.riskala.modelToFix.game.GameManager
+import org.riskala.modelToFix.game.GameMessages.JoinGame
+import org.riskala.modelToFix.lobby.LobbyMessages._
 import org.riskala.modelToFix.room.RoomManager
+import org.riskala.modelToFix.room.RoomMessages.Join
 import org.riskala.view.messages.ToClientMessages.{LobbyInfo, RoomBasicInfo, RoomNameInfo}
 
 object LobbyManager {
@@ -95,7 +93,7 @@ object LobbyManager {
         case StartGame(info, players, roomSubscribers) =>
           val newRooms = rooms - info.basicInfo.name
           val gameSub = roomSubscribers++players.values
-          val game = context.spawn(modelToFix.game.GameManager(info.basicInfo.name, gameSub,
+          val game = context.spawn(GameManager(info.basicInfo.name, gameSub,
             players.keySet, info.scenario, context.self), "GameManager-"+info.basicInfo.name)
           val newGames = games + (info.basicInfo.name -> game)
           notifyAllSubscribers(getInfo(nextRooms = newRooms,nextGames = newGames))

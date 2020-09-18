@@ -3,7 +3,6 @@ package org.riskala.modelToFix.lobby
 import akka.actor.typed.ActorRef
 import org.riskala.controller.actors.PlayerMessages.PlayerMessage
 import org.riskala.modelToFix.ModelMessages._
-import org.riskala.modelToFix.ModelMessages.{GameMessage, LobbyMessage}
 import org.riskala.modelToFix.Player
 import org.riskala.view.messages.ToClientMessages.{RoomBasicInfo, RoomInfo}
 

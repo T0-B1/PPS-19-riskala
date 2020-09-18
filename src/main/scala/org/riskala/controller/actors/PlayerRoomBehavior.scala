@@ -5,9 +5,9 @@ import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.http.scaladsl.model.ws.TextMessage
 import org.riskala.controller.actors.PlayerMessages.{ErrorMessage, GameReferent, LobbyReferent, PlayerMessage, RoomInfoMessage, SocketMessage}
-import org.riskala.model.ModelMessages.{Logout, RoomMessage}
-import org.riskala.model.Player
-import org.riskala.model.room.RoomMessages.{Leave, Ready, UnReady}
+import org.riskala.modelToFix.ModelMessages.{Logout, RoomMessage}
+import org.riskala.modelToFix.Player
+import org.riskala.modelToFix.room.RoomMessages.{Leave, Ready, UnReady}
 import org.riskala.utils.Parser
 import org.riskala.view.messages.FromClientMessages.ReadyMessage
 import org.riskala.view.messages.ToClientMessages.RoomInfo

@@ -3,7 +3,6 @@ package org.riskala.modelToFix.room
 import akka.actor.typed.ActorRef
 import org.riskala.controller.actors.PlayerMessages.PlayerMessage
 import org.riskala.modelToFix.ModelMessages._
-import org.riskala.modelToFix.ModelMessages.{GameMessage, RoomMessage}
 import org.riskala.modelToFix.Player
 
 /**

@@ -1,7 +1,7 @@
 package org.riskala.view.messages
 
 import argonaut.Argonaut._
-import org.riskala.model.Cards.Cards
+import org.riskala.modelToFix.Cards.Cards
 
 import scala.scalajs.js.annotation.JSExportAll
 

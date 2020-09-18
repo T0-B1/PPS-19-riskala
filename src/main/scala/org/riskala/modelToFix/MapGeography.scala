@@ -1,7 +1,7 @@
-package org.riskala.model
+package org.riskala.modelToFix
 
 import argonaut.Argonaut._
-import org.riskala.model.State.State
+import org.riskala.modelToFix.State.State
 
 import scala.scalajs.js.annotation.{JSExportAll, JSExportTopLevel}
 

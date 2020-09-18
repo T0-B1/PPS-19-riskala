@@ -6,8 +6,8 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import org.riskala.controller.routes.RestRoutes._
 import org.riskala.controller.routes.WebsocketRoute._
-import org.riskala.model.ModelMessages.LobbyMessage
-import org.riskala.model.lobby.LobbyManager
+import org.riskala.modelToFix.ModelMessages.LobbyMessage
+import org.riskala.modelToFix.lobby.LobbyManager
 
 import scala.concurrent.{ExecutionContextExecutor, Future}
 import scala.concurrent.duration._

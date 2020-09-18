@@ -1,13 +1,13 @@
-package org.riskala.model
+package org.riskala.modelToFix
 
 import org.scalatest.wordspec.AnyWordSpec
 import akka.actor.testkit.typed.scaladsl.{ActorTestKit, TestProbe}
 import akka.actor.typed.ActorRef
 import akka.actor.typed.scaladsl.Behaviors
 import org.riskala.controller.actors.PlayerMessages._
-import org.riskala.model.lobby.LobbyManager
-import org.riskala.model.lobby.LobbyMessages._
-import org.riskala.model.ModelMessages._
+import org.riskala.modelToFix.lobby.LobbyManager
+import org.riskala.modelToFix.lobby.LobbyMessages._
+import org.riskala.modelToFix.ModelMessages._
 import org.riskala.view.messages.ToClientMessages.{LobbyInfo, RoomBasicInfo, RoomInfo, RoomNameInfo}
 import org.scalatest.BeforeAndAfterAll
 

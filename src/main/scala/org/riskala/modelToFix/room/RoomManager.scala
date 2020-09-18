@@ -10,7 +10,6 @@ import org.riskala.modelToFix.lobby.LobbyMessages.{EmptyRoom, StartGame, Subscri
 import scala.collection.immutable.{HashMap, HashSet}
 import monocle.Lens
 import monocle.macros.GenLens
-import org.riskala.modelToFix.ModelMessages.{LobbyMessage, RoomMessage}
 import org.riskala.modelToFix.Player
 import org.riskala.view.messages.ToClientMessages.{RoomBasicInfo, RoomInfo}
 
