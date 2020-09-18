@@ -26,7 +26,7 @@ object GameMessages {
    * Message sent when an actor wants to do an action.
    * Action type: Move, Deploy or Attack
    * */
-  case class Action(playerName: String, from: Int, to: Int, troops: Int) extends GameMessage
+  case class Action(playerName: String, from: String, to: String, troops: Int) extends GameMessage
 
   /**
    * Message sent when an actor wants to redeem bonus
