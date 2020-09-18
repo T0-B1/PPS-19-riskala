@@ -6,15 +6,17 @@ import akka.actor.typed.{ActorRef, Behavior}
 import akka.http.scaladsl.model.ws.TextMessage
 import org.riskala.controller.actors.PlayerMessages._
 import org.riskala.model.ModelMessages.{GameMessage, Logout}
-import org.riskala.model.game.GameMessages.{Action, EndTurn, Leave, RedeemBonus}
+import org.riskala.model.game.GameMessages.{Action, EndTurn, GetFullInfo, Leave, RedeemBonus}
 import org.riskala.utils.Parser
 import org.riskala.view.messages.FromClientMessages.{ActionMessage, RedeemBonusMessage}
 import org.riskala.view.messages.ToClientMessages
 import org.riskala.view.messages.ToClientMessages.{GameFullInfo, GameUpdate}
 
 object PlayerGameBehavior {
-  def apply(username: String, game: ActorRef[GameMessage], socket: actor.ActorRef): Behavior[PlayerMessage] = {
-    playerGameBehavior(username, game, socket)
+  def apply(username: String, game: ActorRef[GameMessage], socket: actor.ActorRef): Behavior[PlayerMessage] =
+    Behaviors.setup{ context =>
+      game ! GetFullInfo(username, context.self)
+      playerGameBehavior(username, game, socket)
   }
 
   private def playerGameBehavior(username: String,
