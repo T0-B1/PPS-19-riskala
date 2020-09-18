@@ -6,6 +6,9 @@ import org.riskala.model.State.State
 
 sealed trait Event
 
+final case class GameInitialized(initialSnapshot: GameSnapshot)
+                  extends Event
+
 final case class Battle(from: State,
                        to: State,
                        attacking: Int,
