@@ -1,5 +1,6 @@
 package org.riskala.model.eventSourcing
 
+import org.riskala.model.Cards.Cards
 import org.riskala.model.Player
 import org.riskala.model.State.State
 
@@ -21,14 +22,12 @@ final case class TroopsDeployed(to: State,
                         troops: Int)
                   extends Event
 
-// TODO use card
 final case class CardDrawn(player: Player,
-                      card: Unit)
+                      card: Cards)
                   extends Event
 
-// TODO use card
 final case class BonusRedeemed(player: Player,
-                        cardBonus: Unit)
+                        cardBonus: Cards)
                   extends Event
 
 final case class TurnEnded(player: Player)
