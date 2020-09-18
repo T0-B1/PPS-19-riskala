@@ -9,4 +9,5 @@ class RoomFacade extends js.Object{
   def clearPlayer(): Unit = js.native
   def setName(roomName: String): Unit = js.native
   def goToGame(gameInfo: String): Unit = js.native
+  def notifyError(error: String): Unit = js.native
 }
