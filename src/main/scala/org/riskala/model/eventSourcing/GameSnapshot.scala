@@ -10,7 +10,7 @@ case class GameSnapshot(players: Seq[Player],
                         geopolitics: Set[PlayerState],
                         nowPlaying: Player,
                         deployableTroops: Int,
-                        cards: Map[Player, Set[Cards]],
+                        cards: Map[Player, Seq[Cards]],
                         objectives: Map[Player, Objective])
 
 object GameSnapshot {
@@ -18,7 +18,7 @@ object GameSnapshot {
               scenario: org.riskala.model.Map) : GameSnapshot = {
     val geopolitics: Set[PlayerState] = scenario.states.map(s=> PlayerState(s, Utils.randomSetElement[Player](players.toSet), 1))
     val nowPlaying: Player = Utils.randomSetElement(players.toSet)
-    val cards: Map[Player, Set[Cards]] = players.map(p => (p, Set.empty[Cards])).toMap
+    val cards: Map[Player, Seq[Cards]] = players.map(p => (p, Seq.empty[Cards])).toMap
     val objectives: Map[Player, Objective] = players.map(p => (p, Objectives.generateRandomObjective(scenario, players.size))).toMap
     GameSnapshot(players, scenario, geopolitics, nowPlaying, 0, cards, objectives)
   }
