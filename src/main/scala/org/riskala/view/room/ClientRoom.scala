@@ -47,8 +47,11 @@ object ClientRoom {
       case "ErrorMessage" => {
         println("received error message")
         val errorMsg = Parser.retrieveMessage(wrappedMsg.payload, ErrorMessage.ErrorCodecJson.Decoder).get
-        //roomFacade.notifyCreateError(errorMsg.error)
+        roomFacade.notifyError(errorMsg.error)
       }
+      case "GameFullInfo" =>
+        println("received GameFullInfo")
+        roomFacade.goToGame(wrappedMsg.payload)
       case unhandled => println(s"Ignored message: $unhandled")
     }
 
