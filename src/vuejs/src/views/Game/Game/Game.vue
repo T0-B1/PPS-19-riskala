@@ -58,6 +58,9 @@
       <hr/>
       <b-button class="leaveBtn" variant="outline-danger" @click="leave">Leave Game</b-button>
     </div>
+    <b-modal id="modal-error" auto-focus-button="ok" ok-only title="Error Message">
+      <p class="my-4"><i>{{this.error}}</i></p>
+    </b-modal>
   </div>
 </template>
 
@@ -72,13 +75,13 @@ export default {
     return {
       players: [],
       state: 'Select a state',
-      owner: 'Marto',
-      troops: '5',
+      owner: '',
+      troops: '',
       objective: '',
       infantryCards: 0,
       cavalryCards: 4,
       artilleryCards: 0,
-      region: 'Europa',
+      region: '',
       infantryEnable: false,
       artilleryEnable: false,
       cavalryEnable:false,
@@ -231,6 +234,10 @@ export default {
           ClientGame.clickedState(vue.state, localStorage.riskalaUser, vue)
         };
       })
+    },
+    notifyGameError(error){
+      this.error = error
+      this.$bvModal.show('modal-error')
     },
     getMapImage() {
       return mapsContext(`./italy${mapsExt}`);

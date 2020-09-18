@@ -87,7 +87,7 @@ object ClientGame {
         println("received error message")
         val errorMsg =
           Parser.retrieveMessage(wrappedMsg.payload, ErrorMessage.ErrorCodecJson.Decoder).get
-        gameFacade.notifyError(errorMsg.error)
+        gameFacade.notifyGameError(errorMsg.error)
       }
       case "GameFullInfo" => {
         println("received game full info ")

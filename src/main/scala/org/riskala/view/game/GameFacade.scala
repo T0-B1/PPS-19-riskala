@@ -23,7 +23,7 @@ class GameFacade extends js.Object {
   def addPlayerState(playerState: PlayerState): Unit = js.native //popola la lista di dx
   def loadObjectives(objective: String): Unit = js.native
   def setCardInfo(infantry: Int, cavalry: Int, artillery: Int): Unit = js.native
-  def notifyError(error: String): Unit = js.native
+  def notifyGameError(error: String): Unit = js.native
   def addNeighbor(neighbor: String, checked: Boolean): Unit = js.native
 
 
