@@ -20,5 +20,4 @@ class CardsProjection extends Projection[Map[Player, Seq[Cards]], Event] {
     }
     case _ => cards
   }
-
 }
