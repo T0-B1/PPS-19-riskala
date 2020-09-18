@@ -15,7 +15,7 @@ case class GameSnapshot(players: Seq[Player],
 object GameSnapshot {
   def newGame(players: Seq[Player],
               scenario: org.riskala.model.Map) : GameSnapshot = {
-    val geopolitics: Set[PlayerState] = scenario.states.map(s=> PlayerState(Utils.randomSetElement[Player](players.toSet),1))
+    val geopolitics: Set[PlayerState] = scenario.states.map(s=> PlayerState(s, Utils.randomSetElement[Player](players.toSet), 1))
 
   }
 }
