@@ -98,13 +98,13 @@ export default {
     }
   },  
   mounted() {
-    /*this.myRng = seedRandom(this.roomName)
+    this.myRng = seedRandom(this.roomName)
     var vue = this
     var newHandler = function(evt) {
       console.log('GAME - Receive message: ' + evt.data);
       ClientGame.handleGameMessage(evt.data, vue)
     }
-    this.$store.commit('changeHandler', newHandler)*/
+    this.$store.commit('changeHandler', newHandler)
     this.onLoad()
   },
   methods: {
