@@ -32,6 +32,7 @@ object PlayerMessages {
                                    personalInfo:GamePersonalInfo) extends PlayerMessage
 
   final case class GameUpdateMessage(actualPlayer:String,
+                                     troopsToDeploy:Int,
                                      playerStates: Set[PlayerState],
                                      personalInfo:GamePersonalInfo) extends PlayerMessage
 

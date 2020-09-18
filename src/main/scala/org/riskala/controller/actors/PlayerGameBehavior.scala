@@ -33,7 +33,7 @@ object PlayerGameBehavior {
           context.log.info("GameInfoMessage")
           val tmp = GameFullInfo(players, actualPlayer, troopsToDeploy, map, playerState, personalInfo)
           nextBehavior()
-        case GameUpdateMessage(actualPlayer, playerStates, personalInfo) =>
+        case GameUpdateMessage(actualPlayer, troopsToDeploy, playerStates, personalInfo) =>
           context.log.info("GameUpdateMessage")
           nextBehavior()
         case LobbyReferent(lobby) =>
