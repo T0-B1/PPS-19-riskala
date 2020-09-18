@@ -1,4 +1,4 @@
-package org.riskala.model.game
+package org.riskala.model.eventSourcing
 
 import org.riskala.model.Player
 import org.riskala.model.State.State

@@ -1,4 +1,4 @@
-package org.riskala.model.game
+package org.riskala.model.eventSourcing
 
 case class EventStore[Ev](events: Seq[Ev]) {
 

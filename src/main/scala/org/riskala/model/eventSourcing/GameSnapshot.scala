@@ -1,10 +1,9 @@
-package org.riskala.model.game
+package org.riskala.model.eventSourcing
 
 import org.riskala.model.Cards.Cards
 import org.riskala.model.Objectives.Objective
-import org.riskala.model.{Player, PlayerState}
+import org.riskala.model.{Objectives, Player, PlayerState}
 import org.riskala.utils.Utils
-import org.riskala.model.Objectives
 
 case class GameSnapshot(players: Seq[Player],
                         scenario: org.riskala.model.Map,
