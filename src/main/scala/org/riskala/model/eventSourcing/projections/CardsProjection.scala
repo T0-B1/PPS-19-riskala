@@ -1,23 +1,22 @@
 package org.riskala.model.eventSourcing.projections
 
 import org.riskala.model.Cards.Cards
-import org.riskala.model.Player
-import org.riskala.model.eventSourcing.{BonusRedeemed, CardDrawn, Event}
+import org.riskala.model.eventSourcing.{BonusRedeemed, CardDrawn, Event, GameSnapshot}
 
-class CardsProjection extends Projection[Map[Player, Seq[Cards]], Event] {
+class CardsProjection extends Projection[GameSnapshot, Event] {
 
-  override def Init: Map[Player, Seq[Cards]] = Map.empty
-
-  override def Update: (Map[Player, Seq[Cards]], Event) => Map[Player, Seq[Cards]] = (cards, ev) => ev match {
+  override def Update: (GameSnapshot, Event) => GameSnapshot = (game, ev) => ev match {
     case drawn: CardDrawn => {
-      val playerCards = cards.getOrElse(drawn.player, Seq.empty[Cards]) :+ drawn.card
-      cards + (drawn.player -> playerCards)
+      val playerCards = game.cards.getOrElse(drawn.player, Seq.empty[Cards]) :+ drawn.card
+      val cards = game.cards + (drawn.player -> playerCards)
+      GameSnapshot(game.players, game.scenario, game.geopolitics, game.nowPlaying, game.deployableTroops, cards, game.objectives)
     }
     case redeem: BonusRedeemed => {
       val toRemove = Seq.fill(3)(redeem.cardBonus)
-      val playerCards = cards.getOrElse(redeem.player, Seq.empty[Cards]) diff toRemove
-      cards + (redeem.player -> playerCards)
+      val playerCards = game.cards.getOrElse(redeem.player, Seq.empty[Cards]) diff toRemove
+      val cards = game.cards + (redeem.player -> playerCards)
+      GameSnapshot(game.players, game.scenario, game.geopolitics, game.nowPlaying, game.deployableTroops, cards, game.objectives)
     }
-    case _ => cards
+    case _ => game
   }
 }
