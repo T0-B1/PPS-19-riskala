@@ -91,7 +91,7 @@ export default {
     },
     readyClick() {
       this.ready=true
-      this.$store.state.websocket.send(ClientRoom.getMsgWrapped("ReadyMessage", this.getRandomColor(localStorage.riskalaUser)))
+      this.$store.state.websocket.send(ClientRoom.getReadyMsgWrapped("ReadyMessage", this.getRandomColor(localStorage.riskalaUser)))
     },
     unready(){
       this.ready=false
@@ -112,7 +112,7 @@ export default {
 .preview
   display: flex
   flex-direction: column
-  #svgMapContainer, .joinBtn
+  #svgMapContainer, #joinBtn
     max-width: 30%
     margin: 0 auto
 </style>

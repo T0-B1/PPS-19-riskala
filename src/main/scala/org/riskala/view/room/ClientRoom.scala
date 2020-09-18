@@ -17,6 +17,11 @@ object ClientRoom {
   }
 
   @JSExport
+  def getReadyMsgWrapped(color: String): String = {
+    WrappedMessage("ReadyMessage", ReadyMessage(color).asJson.pretty(nospace)).asJson.pretty(nospace)
+  }
+
+  @JSExport
   def setupRoom(roomInfo: String, roomFacade: RoomFacade): Unit = {
     val room = Parser.retrieveMessage(roomInfo, RoomInfo.RoomInfoCodecJson.Decoder).get
     roomFacade.setName(room.basicInfo.name)
