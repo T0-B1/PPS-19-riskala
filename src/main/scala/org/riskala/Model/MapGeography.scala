@@ -5,12 +5,6 @@ import org.riskala.model.State.State
 
 import scala.scalajs.js.annotation.{JSExportAll, JSExportTopLevel}
 
-@JSExportTopLevel("State")
-@JSExportAll
-object State {
-  type State = String
-}
-
 /** Map structure
  *
  * @param name           name of the map used in game.
