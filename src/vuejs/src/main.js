@@ -16,6 +16,7 @@ const store = new Vuex.Store({
     websocket: null,
     isLogged: false,
     roomInfo: '',
+    gameInfo: '',
     http: Axios.create({
       timeout: 10000,
       headers: { token: 'InvalidToken' },
@@ -50,6 +51,9 @@ const store = new Vuex.Store({
     },
     changeRoomInfo(state, newRoom){
       state.roomInfo = newRoom;
+    },
+    changeGameInfo(state, newGame){
+      state.gameInfo = newGame
     }
   }
 });
