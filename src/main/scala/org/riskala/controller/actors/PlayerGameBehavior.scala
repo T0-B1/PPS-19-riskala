@@ -3,8 +3,6 @@ package org.riskala.controller.actors
 import akka.actor
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}
-import akka.http.javadsl.model.ws.TextMessage
-import jdk.nashorn.internal.runtime.ParserException
 import org.riskala.controller.actors.PlayerMessages._
 import org.riskala.model.ModelMessages.GameMessage
 import org.riskala.utils.Parser
