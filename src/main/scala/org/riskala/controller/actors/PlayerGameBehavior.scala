@@ -5,8 +5,10 @@ import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.http.scaladsl.model.ws.TextMessage
 import org.riskala.controller.actors.PlayerMessages._
-import org.riskala.model.ModelMessages.GameMessage
+import org.riskala.model.ModelMessages.{GameMessage, Logout}
+import org.riskala.model.game.GameMessages.{Action, EndTurn, Leave, RedeemBonus}
 import org.riskala.utils.Parser
+import org.riskala.view.messages.FromClientMessages.{ActionMessage, RedeemBonusMessage}
 import org.riskala.view.messages.ToClientMessages
 import org.riskala.view.messages.ToClientMessages.{GameFullInfo, GameUpdate}
 
@@ -33,18 +35,25 @@ object PlayerGameBehavior {
             wrapped.classType match {
               case "ActionMessage" =>
                 context.log.info("PlayerGameActor received ActionMessage")
+                val action = Parser.retrieveMessage(wrapped.payload,ActionMessage.ActionCodecJson.Decoder)
+                action.foreach(a => game ! Action(username,a.from,a.to,a.troops))
                 nextBehavior()
               case "RedeemBonusMessage" =>
                 context.log.info("PlayerGameActor received RedeemBonusMessage")
+                val redeem = Parser.retrieveMessage(wrapped.payload,RedeemBonusMessage.RedeemBonusCodecJson.Decoder)
+                redeem.foreach(r => game ! RedeemBonus(username,r.card))
                 nextBehavior()
               case "EndTurnMessage" =>
                 context.log.info("PlayerGameActor received RedeemBonusMessage")
+                game ! EndTurn(username)
                 nextBehavior()
               case "LeaveMessage" =>
                 context.log.info("PlayerGameActor received LeaveMessage")
+                game ! Leave(context.self)
                 nextBehavior()
               case "LogoutMessage" =>
                 context.log.info("PlayerGameActor received RedeemBonusMessage")
+                game ! Logout(context.self)
                 Behaviors.stopped
             }
           } else {
