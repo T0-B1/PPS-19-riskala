@@ -4,7 +4,7 @@ import org.riskala.model.Cards.Cards
 import org.riskala.model.Player
 import org.riskala.model.State.State
 
-sealed trait Event
+trait Event
 
 final case class GameInitialized(initialSnapshot: GameSnapshot)
                   extends Event
