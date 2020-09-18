@@ -37,4 +37,9 @@ object GameMessages {
    * Message sent when an actor ends his turn
    * */
   case class EndTurn(playerName: String) extends GameMessage
+
+  /**
+   * Message sent when an actor need all the game info
+   * */
+  case class GetFullInfo(playerName: String) extends GameMessage
 }
