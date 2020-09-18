@@ -64,7 +64,7 @@
 
 <script>
 import * as d3 from 'd3'
-
+var seedRandom = require('seedrandom')
 const mapsContext = require.context('@/assets/maps/', true, /\.svg$/);
 const mapsExt = '.svg';
 
