@@ -24,7 +24,28 @@ object PlayerGameBehavior {
 
       message match {
         case SocketMessage(payload) =>
-          context.log.info("SocketMessage")
+          context.log.info(s"PlayerGameActor of $username received socket payload: $payload")
+          val wrappedOpt = Parser.retrieveWrapped(payload)
+          if(wrappedOpt.isDefined) {
+            val wrapped = wrappedOpt.get
+            wrapped.classType match {
+              case "ActionMessage" =>
+                context.log.info("PlayerGameActor received ActionMessage")
+                nextBehavior()
+              case "RedeemBonusMessage" =>
+                context.log.info("PlayerGameActor received RedeemBonusMessage")
+                nextBehavior()
+              case "EndTurnMessage" =>
+                context.log.info("PlayerGameActor received RedeemBonusMessage")
+                nextBehavior()
+              case "LeaveMessage" =>
+                context.log.info("PlayerGameActor received LeaveMessage")
+                nextBehavior()
+              case "LogoutMessage" =>
+                context.log.info("PlayerGameActor received RedeemBonusMessage")
+                Behaviors.stopped
+            }
+          }
           nextBehavior()
         //case ActionMessage(from,to,attacking,defending,invading) => nextBehavior()
         case GameInfoMessage(players, actualPlayer, troopsToDeploy, map, playerState, personalInfo) =>
