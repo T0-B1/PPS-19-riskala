@@ -15,7 +15,7 @@ import org.riskala.view.messages.ToClientMessages.{GameFullInfo, GameUpdate}
 object PlayerGameBehavior {
   def apply(username: String, game: ActorRef[GameMessage], socket: actor.ActorRef): Behavior[PlayerMessage] =
     Behaviors.setup{ context =>
-      game ! GetFullInfo(username)
+      game ! GetFullInfo(username, context.self)
       playerGameBehavior(username, game, socket)
   }
 

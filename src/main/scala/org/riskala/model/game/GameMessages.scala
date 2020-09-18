@@ -41,5 +41,5 @@ object GameMessages {
   /**
    * Message sent when an actor need all the game info
    * */
-  case class GetFullInfo(playerName: String) extends GameMessage
+  case class GetFullInfo(playerName: String, replyTo: ActorRef[PlayerMessage]) extends GameMessage
 }

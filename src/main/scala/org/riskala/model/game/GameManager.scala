@@ -5,9 +5,11 @@ import akka.actor.typed.scaladsl.Behaviors
 import org.riskala.controller.actors.PlayerMessages.{GameInfoMessage, GameReferent, PlayerMessage}
 import org.riskala.model.ModelMessages.{GameMessage, LobbyMessage, Logout}
 import org.riskala.model.Player
+import org.riskala.model.eventSourcing.GameSnapshot
 import org.riskala.model.game.GameMessages._
 import org.riskala.model.lobby.LobbyMessages.Subscribe
-import org.riskala.view.messages.ToClientMessages.{GameFullInfo, RoomInfo}
+import org.riskala.utils.MapLoader
+import org.riskala.view.messages.ToClientMessages.{GameFullInfo, GamePersonalInfo, RoomInfo}
 
 import scala.collection.immutable.{HashMap, HashSet}
 
@@ -56,6 +58,19 @@ object GameManager {
 
         case RedeemBonus(playerName, card) =>
           context.log.info("RedeemBonus")
+          nextBehavior()
+
+        case GetFullInfo(playerName, actor) =>
+          context.log.info("GetFullInfo")
+          val player = Player(playerName,"")
+          val starterGame = GameSnapshot.newGame(players.toSeq,MapLoader.loadMap("italy").get)
+          val personalInfo = GamePersonalInfo(starterGame.objectives(player),starterGame.cards(player).toList)
+          val gameInfo = GameInfoMessage(starterGame.players.map(_.nickname).toSet,
+            starterGame.nowPlaying.nickname,
+            starterGame.deployableTroops,
+            starterGame.scenario,
+            starterGame.geopolitics,personalInfo)
+          actor ! gameInfo
           nextBehavior()
 
         case EndTurn(playerName) =>
