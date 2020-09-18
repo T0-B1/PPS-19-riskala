@@ -3,10 +3,12 @@ package org.riskala.controller.actors
 import akka.actor
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}
+import akka.http.scaladsl.model.ws.TextMessage
 import org.riskala.controller.actors.PlayerMessages._
 import org.riskala.model.ModelMessages.GameMessage
 import org.riskala.utils.Parser
-import org.riskala.view.messages.ToClientMessages.GameFullInfo
+import org.riskala.view.messages.ToClientMessages
+import org.riskala.view.messages.ToClientMessages.{GameFullInfo, GameUpdate}
 
 object PlayerGameBehavior {
   def apply(username: String, game: ActorRef[GameMessage], socket: actor.ActorRef): Behavior[PlayerMessage] = {
@@ -45,23 +47,29 @@ object PlayerGameBehavior {
                 context.log.info("PlayerGameActor received RedeemBonusMessage")
                 Behaviors.stopped
             }
+          } else {
+            context.log.info("PlayerGameActor failed to retrieve message, IGNORED")
+            nextBehavior()
           }
-          nextBehavior()
-        //case ActionMessage(from,to,attacking,defending,invading) => nextBehavior()
         case GameInfoMessage(players, actualPlayer, troopsToDeploy, map, playerState, personalInfo) =>
-          context.log.info("GameInfoMessage")
-          val tmp = GameFullInfo(players, actualPlayer, troopsToDeploy, map, playerState, personalInfo)
+          context.log.info(s"PlayerGameActor of $username received GameInfoMessage")
+          val fullInfo = GameFullInfo(players, actualPlayer, troopsToDeploy, map, playerState, personalInfo)
+          socket ! TextMessage(Parser.wrap("GameFullInfo",fullInfo,GameFullInfo.GameFullInfoCodecJson.Encoder))
           nextBehavior()
         case GameUpdateMessage(actualPlayer, troopsToDeploy, playerStates, personalInfo) =>
-          context.log.info("GameUpdateMessage")
+          context.log.info(s"PlayerGameActor of $username received GameUpdateMessage")
+          val updateInfo = GameUpdate(actualPlayer, troopsToDeploy, playerStates, personalInfo)
+          socket ! TextMessage(Parser.wrap("GameUpdate",updateInfo,GameUpdate.GameUpdateCodecJson.Encoder))
           nextBehavior()
         case LobbyReferent(lobby) =>
           context.log.info("LobbyReferent")
-          nextBehavior()
-        //case LeaveMessage() => nextBehavior()
-        //case LogoutMessage() => nextBehavior()
-        case ErrorMessage(error) =>
+          PlayerLobbyBehavior(username,lobby,socket)
+        case errorMessage: PlayerMessages.ErrorMessage =>
           context.log.info("ErrorMessage")
+          val clientError = ToClientMessages.ErrorMessage(errorMessage.error)
+          socket ! TextMessage(Parser.wrap("ErrorMessage",
+            clientError,
+            ToClientMessages.ErrorMessage.ErrorCodecJson.Encoder))
           nextBehavior()
       }
     }
