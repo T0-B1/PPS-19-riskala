@@ -3,7 +3,7 @@ package org.riskala.view.messages
 import argonaut.Argonaut._
 import org.riskala.model.Cards.Cards
 import org.riskala.model.Objectives.Objective
-import org.riskala.model.{MapGeography, PlayerState}
+import org.riskala.model.{MapGeography, Player, PlayerState}
 
 import scala.scalajs.js.annotation.JSExportAll
 
@@ -27,7 +27,7 @@ object ToClientMessages {
    * @param basicInfo               Object containing basic information of a room
    * @param scenario                Name of the game map
    * */
-  case class RoomInfo(basicInfo: RoomBasicInfo, players: Set[String], scenario: String)
+  case class RoomInfo(basicInfo: RoomBasicInfo, players: Set[Player], scenario: String)
   object RoomInfo {
     implicit def RoomInfoCodecJson =
       casecodec3(RoomInfo.apply,RoomInfo.unapply)("basicInfo","players","scenario")

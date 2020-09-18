@@ -2,6 +2,7 @@ package org.riskala.model.game
 
 import akka.actor.typed.ActorRef
 import org.riskala.controller.actors.PlayerMessages.PlayerMessage
+import org.riskala.model.Cards.Cards
 import org.riskala.model.ModelMessages.GameMessage
 
 import scala.collection.immutable.Queue
@@ -10,8 +11,6 @@ import scala.collection.immutable.Queue
  * Type of possible messages that GameManager can receive
  * */
 object GameMessages {
-
-  case class GameInfo(name: String, scenario: String, players: Queue[String])
 
   /**
    * Message sent when an actor wants to join this game
@@ -24,27 +23,18 @@ object GameMessages {
   case class Leave(actor: ActorRef[PlayerMessage]) extends GameMessage
 
   /**
-   * Message sent when an actor wants to deploy troops
+   * Message sent when an actor wants to do an action.
+   * Action type: Move, Deploy or Attack
    * */
-  case class Deploy() extends GameMessage
-
-  /**
-   * Message sent when an actor wants to attack
-   * */
-  case class Attack() extends GameMessage
-
-  /**
-   * Message sent when an actor wants to move troops
-   * */
-  case class Move() extends GameMessage
+  case class Action(playerName: String, from: Int, to: Int, troops: Int) extends GameMessage
 
   /**
    * Message sent when an actor wants to redeem bonus
    * */
-  case class RedeemBonus() extends GameMessage
+  case class RedeemBonus(playerName: String, card: Cards) extends GameMessage
 
   /**
    * Message sent when an actor ends his turn
    * */
-  case class EndTurn() extends GameMessage
+  case class EndTurn(playerName: String) extends GameMessage
 }
