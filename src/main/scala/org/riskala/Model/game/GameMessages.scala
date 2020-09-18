@@ -1,9 +1,10 @@
-package org.riskala.model.game
+package org.riskala.modelToFix.game
 
 import akka.actor.typed.ActorRef
 import org.riskala.controller.actors.PlayerMessages.PlayerMessage
-import org.riskala.model.Cards.Cards
-import org.riskala.model.ModelMessages.GameMessage
+import org.riskala.modelToFix.Cards.Cards
+import org.riskala.modelToFix.ModelMessages.GameMessage
+import org.riskala.modelToFix.ModelMessages.GameMessage
 
 import scala.collection.immutable.Queue
 

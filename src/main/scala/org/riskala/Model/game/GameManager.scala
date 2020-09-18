@@ -1,12 +1,13 @@
-package org.riskala.model.game
+package org.riskala.modelToFix.game
 
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.actor.typed.scaladsl.Behaviors
 import org.riskala.controller.actors.PlayerMessages.{GameInfoMessage, GameReferent, PlayerMessage}
-import org.riskala.model.ModelMessages.{GameMessage, LobbyMessage, Logout}
-import org.riskala.model.Player
-import org.riskala.model.game.GameMessages._
-import org.riskala.model.lobby.LobbyMessages.Subscribe
+import org.riskala.modelToFix.ModelMessages.{GameMessage, LobbyMessage, Logout}
+import GameMessages._
+import org.riskala.modelToFix.lobby.LobbyMessages.Subscribe
+import org.riskala.modelToFix.ModelMessages.{GameMessage, LobbyMessage}
+import org.riskala.modelToFix.Player
 import org.riskala.view.messages.ToClientMessages.{GameFullInfo, RoomInfo}
 
 import scala.collection.immutable.{HashMap, HashSet}

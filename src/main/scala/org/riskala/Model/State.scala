@@ -1,4 +1,4 @@
-package org.riskala.model
+package org.riskala.modelToFix
 
 import scala.scalajs.js.annotation.{JSExportAll, JSExportTopLevel}
 
