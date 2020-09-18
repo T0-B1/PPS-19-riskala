@@ -10,6 +10,12 @@ object Objectives {
   implicit def ObjectiveCodecJson: CodecJson[Objective] =
     casecodec2(Objective.apply, Objective.unapply)("", "")
 
+  /**
+   * Utility to generate a random Objective based on map and number of player
+   * @param map the map used for the random generated Objective
+   * @param numberOfPlayer the numbre of player for the game where this Objective will be used
+   * @return the random Objective based on params
+   * */
   def generateRandomObjective(map: MapGeography, numberOfPlayer: Int): Objective = {
     numberOfPlayer match {
       case _ if numberOfPlayer < 4 => Objective(map.states,"Conquer all states")
