@@ -31,7 +31,7 @@ object ClientRoom {
     val room = Parser.retrieveMessage(roomInfo, RoomInfo.RoomInfoCodecJson.Decoder).get
     roomFacade.setName(room.basicInfo.name)
     roomFacade.clearPlayer()
-    room.players.foreach(pl => roomFacade.addPlayers(pl))
+    room.players.foreach(pl => roomFacade.addPlayers(pl.nickname))
     //TODO gestione scenario
   }
 
@@ -47,7 +47,7 @@ object ClientRoom {
           Parser.retrieveMessage(wrappedMsg.payload, RoomInfo.RoomInfoCodecJson.Decoder).get
         println("Ended parser retrieve message")
         roomFacade.clearPlayer()
-        roomInfoMsg.players.foreach(player=>roomFacade.addPlayers(player))
+        roomInfoMsg.players.foreach(player=>roomFacade.addPlayers(player.nickname))
       }
       case "ErrorMessage" => {
         println("received error message")

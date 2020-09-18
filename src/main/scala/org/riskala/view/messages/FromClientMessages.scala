@@ -14,7 +14,11 @@ object FromClientMessages {
       casecodec1(JoinMessage.apply,JoinMessage.unapply)("name")
   }
 
-  final case class ReadyMessage()
+  final case class ReadyMessage(color: String)
+  object ReadyMessage {
+    implicit def ReadyMessageCodecJson =
+      casecodec1(ReadyMessage.apply,ReadyMessage.unapply)("color")
+  }
 
   final case class UnReadyMessage()
 
