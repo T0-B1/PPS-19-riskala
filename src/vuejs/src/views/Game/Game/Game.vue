@@ -14,16 +14,16 @@
           </div>
           <hr/>
           <div class="buttonDiv" >
-            <button v-on="infantryEnable" type="submit" style="border: 1px solid black; border-radius:10px; background: transparent">
-              <img src="@/assets/buttonsImg/infantry.png" width="50" height="50" alt="submit" />
+            <button :disabled='isInfEnable' class="submitBtn" type="submit" @click="handleEvent">
+              <img id="submitBtnI" src="@/assets/buttonsImg/infantry.png" width="50" height="50" alt="submit" />
             </button>
             <span>{{infantryCards}}</span>
-            <button v-on="cavalryEnable" type="submit" style="border: 1px solid black; border-radius:10px; background: transparent">
-              <img src="@/assets/buttonsImg/cavalry.png" width="50" height="50" alt="submit" />
+            <button :disabled="isCavEnable" class="submitBtn" type="submit" @click="handleEvent">
+              <img id="submitBtnC" src="@/assets/buttonsImg/cavalry.png" width="50" height="50" alt="submit" />
             </button>
             <span>{{cavalryCards}}</span>
-            <button v-on="artilleryEnable" type="submit" style="border: 1px solid black; border-radius:10px; background: transparent">
-              <img src="@/assets/buttonsImg/artillery.png" width="50" height="50" alt="submit" />
+            <button :disabled="isArtEnable" class="submitBtn" type="submit" @click="handleEvent">
+              <img id="submitBtnA" src="@/assets/buttonsImg/artillery.png" width="50" height="50" alt="submit" />
             </button>
             <span>{{artilleryCards}}</span>
           </div>
@@ -44,20 +44,11 @@
               <span> Region:<b>{{region}}</b>&emsp;</span>
             </div>
           </div>
-          <div class="buttons">
-            </br>
-            <div class="btns">
-              <b-button variant="outline-info" class="insideBtn"> Schiera truppe </b-button>
-              <b-button variant="outline-info" class="insideBtn"> Attacca </b-button>
-            </div>
-            <div class="btns">
-              <b-button variant="outline-info" id ="id" class="insideBtn"> Sposta truppe </b-button>
-              <b-button variant="outline-info" class="insideBtn"> Gioca bonus </b-button>
-            </div>
-          </div>
         </div>
       </div>
       <div id="svgMapContainer"></div>
+      <hr/>
+      <b-button class="leaveBtn" variant="outline-danger" @click="leave">Leave Game</b-button>
     </div>
   </div>
 </template>
@@ -76,9 +67,9 @@ export default {
       owner: 'Marto',
       troops: '5',
       objective: '',
-      infantryCards: Number,
-      cavalryCards: Number,
-      artilleryCards: Number,
+      infantryCards: 0,
+      cavalryCards: 4,
+      artilleryCards: 0,
       region: 'Europa',
       infantryEnable: false,
       artilleryEnable: false,
@@ -87,25 +78,39 @@ export default {
       playerStates: [],
     }
   },
+  computed: {
+    isInfEnable: function() {
+      return !this.infantryEnable
+    },
+    isCavEnable: function() {
+      return !this.cavalryEnable
+    },
+    isArtEnable: function() {
+      return !this.artilleryEnable
+    }
+  },  
   mounted() {
-    this.myRng = seedRandom(this.roomName)
+    /*this.myRng = seedRandom(this.roomName)
     var vue = this
     var newHandler = function(evt) {
       console.log('GAME - Receive message: ' + evt.data);
       ClientGame.handleGameMessage(evt.data, vue)
     }
-    this.$store.commit('changeHandler', newHandler)
-
+    this.$store.commit('changeHandler', newHandler)*/
     this.onLoad()
   },
   methods: {
+    leave(){
+      console.log("leave")
+      ClientGame.getEmptyMsgWrapped("LeaveMessage")
+    },
     onLoad(){
       this.loadSvg()
-      this.loadCardsInfo()
+      /*this.loadCardsInfo()
       this.addPlayers()
       this.setMap()
       this.addPlayerState()
-      this.loadObjective(),
+      this.loadObjective(),*/
       this.setCardInfo()
     },
     addPlayer(player, myTurn){
@@ -130,12 +135,51 @@ export default {
       this.objective = obj
     },
     setCardInfo(infantry, cavalry, artillery){
-      this.infantryCards = infantry
-      this.cavalryCards = cavalry
-      this.artilleryCards = artillery
+      //this.infantryCards = infantry
+      this.infantryCards = 0
+      this.checkInfantry()
+      //this.cavalryCards = cavalry
+      this.cavalryCards = 4
+      this.checkCavalry()
+      //this.artilleryCards = artillery
+      this.artilleryCards = 0
+      this.checkArtillery()
     },
     notifyError(error){
       console.log("error " + error)
+    },
+    checkInfantry() {
+      if(this.infantryCards >= 3) {
+        this.infantryEnable = true
+        document.getElementById("submitBtnoI").style.opacity = 1
+      } else {
+        this.infantryEnable = false
+        document.getElementById("submitBtnI").style.opacity = 0.4
+      }
+    },
+    checkCavalry(){
+      if(this.cavalryCards >= 3) {
+        this.cavalryEnable = true
+        document.getElementById("submitBtnC").style.opacity = 1
+      } else {
+        this.cavalryEnable = false
+        document.getElementById("submitBtnC").style.opacity = 0.4
+      }
+    },
+    checkArtillery() {
+      if(this.artilleryCards >= 3) {
+        this.artilleryEnable = true
+        document.getElementById("submitBtnA").style.opacity = 1
+      } else {
+        this.artilleryEnable = false
+        document.getElementById("submitBtnA").style.opacity = 0.4
+      }
+    },
+    handleEvent(){
+      /*Aggiungi parametri al metodo: fromState, toState, numTroops */
+      if(localStorage.riskalaUser != ""){
+        ClientGame.getActionMsgWrapped(localStorage.riskalaUser)
+      }
     },
     getRandomColor(name) {
       var rng = seedRandom(name)
@@ -187,51 +231,6 @@ export default {
 }
 </script>
 
-<style lang="sass" scoped>
-.wrapper
-  padding-top: 20px
-  max-width: 98%
-  margin: 0 auto
-  .objective
-    border: 1px solid black
-    border-radius: 10px
-    width: fit-content
-    margin: 0 auto
-    padding: .5%
-  .infoContainer
-    display: flex
-    justify-content: space-between
-    height: fit-content
-    .leftContainer
-      display: flex
-      flex-direction: column
-      max-width: 15%
-      width: 15%
-      .radioDiv
-        border: 1px black solid
-        border-radius: 10px
-        flex-direction: column
-        width: fit-content
-        margin-left: .5%
-        padding: 1% 
-        .form-check
-          text-align: justify
-      .buttonDiv
-        display: flex
-        flex-direction: column
-        justify-content: space-around
-    .stateInfo
-      display: flex
-      flex-direction: column
-      border: 1px black solid
-      border-radius: 10px
-      padding: 1%
-      width: 25%
-      .buttons
-        .btns
-          margin: 2% auto
-          display: flex
-          justify-content: space-between
-  #svgMapContainer
-    margin: -20% auto auto auto
+<style lang="sass">
+@import './Game.sass'
 </style>
