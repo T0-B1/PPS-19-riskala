@@ -32,7 +32,10 @@
             <b-button id="joinBtn" variant="outline-danger" @click="leaveRoom">Leave room</b-button>
           </div>
         </b-card>
-      </div>    
+      </div>
+      <b-modal id="modal-error" auto-focus-button="ok" ok-only title="Error Message">
+        <p class="my-4"><i>{{this.error}}</i></p>
+      </b-modal>
   </div>
 </template>
 
@@ -105,6 +108,10 @@ export default {
       this.$store.state.websocket.send(ClientRoom.getMsgWrapped("LeaveMessage"))
       this.$router.push('/')
       this.$store.state.roomInfo = ''
+    },
+    notifyError(error){
+      this.error = error
+      this.$bvModal.show('modal-error')
     }
   }
 }
