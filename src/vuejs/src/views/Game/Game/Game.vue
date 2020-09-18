@@ -6,10 +6,11 @@
         <div class="leftContainer">
           <div class="radioDiv">
             <h5> Turn of: </h5>
-            <div v-for="(player,index) in players" :key="index" class="form-check">
-              <input type="radio" :id="player.id" :checked="player.checked">
-              <label :for="player.id">{{player.nome_giocatore}}</label>
-            </div>
+            <ul id="listPlayers">
+              <li v-for="(player,index) in players" :key="index">
+                <label>{{player.nome_giocatore}}</label>
+              </li>
+            </ul>
             <b-button variant="danger"> End Turn </b-button>
           </div>
           <hr/>
@@ -30,7 +31,7 @@
         </div>
         <div class="stateInfo">
           <h4 id="idInfo"> Info </h4>
-          <div class="text">
+          <div class="textInfo">
             <div>
               <span>State: <b><i>{{state}}</i></b></span>
             </div>
@@ -42,6 +43,13 @@
             </div>
             <div>
               <span> Region:<b>{{region}}</b>&emsp;</span>
+            </div>
+          </div>
+          <div v-if="visible == true" class="action">
+            <h4> Choose one state </h4>
+            <div v-for="(neighbor,index) in neighbors" :key="index" class="form-check">
+              <input type="radio" :id="neighbor.id" :checked:"neighbor.checked">
+              <label :for="neighbor.id">{{neighbor.neighbor_name}}</label>
             </div>
           </div>
         </div>
@@ -75,7 +83,7 @@ export default {
       artilleryEnable: false,
       cavalryEnable:false,
       neighbors: [],
-      playerStates: [],
+      visible: false,
     }
   },
   computed: {
@@ -112,6 +120,15 @@ export default {
       this.addPlayerState()
       this.loadObjective(),*/
       this.setCardInfo()
+    },
+    addNeighbors(neighbor, checked){
+      this.neighbors.push({neighbor_name: neighbor, checked: checked})
+    },
+    setStateInfo(nameState, owner, troops, region){
+      this.state = nameState
+      this.owner = owner
+      this.troops = troops
+      this.region = region
     },
     addPlayer(player, myTurn){
       console.log("addPlayer")
@@ -199,7 +216,7 @@ export default {
         el.style.strokeWidth = '2'
 
         el.onclick = function(){ 
-          if(vue.state !== 'Select a state'){
+          if(vue.state !== 'Select a state' || vue.state == el.id){
             document.getElementById(vue.state).setAttribute('fill', 'blue')
             document.getElementById(vue.state).style.opacity = 1
             document.getElementById(vue.state).style.stroke = 'red'
@@ -211,6 +228,7 @@ export default {
           el.style.stroke = 'green'
           el.style.strokeWidth = '6'
           vue.state = el.id;
+          ClientGame.clickedState(vue.state, localStorage.riskalaUser, vue)
         };
       })
     },
