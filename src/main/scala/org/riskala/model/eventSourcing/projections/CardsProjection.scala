@@ -9,13 +9,13 @@ class CardsProjection extends Projection[GameSnapshot, Event] {
     case drawn: CardDrawn => {
       val playerCards = game.cards.getOrElse(drawn.player, Seq.empty[Cards]) :+ drawn.card
       val cards = game.cards + (drawn.player -> playerCards)
-      GameSnapshot(game.players, game.scenario, game.geopolitics, game.nowPlaying, game.deployableTroops, cards, game.objectives)
+      game.copy(cards = cards)
     }
     case redeem: BonusRedeemed => {
       val toRemove = Seq.fill(3)(redeem.cardBonus)
       val playerCards = game.cards.getOrElse(redeem.player, Seq.empty[Cards]) diff toRemove
       val cards = game.cards + (redeem.player -> playerCards)
-      GameSnapshot(game.players, game.scenario, game.geopolitics, game.nowPlaying, game.deployableTroops, cards, game.objectives)
+      game.copy(cards = cards)
     }
     case _ => game
   }
