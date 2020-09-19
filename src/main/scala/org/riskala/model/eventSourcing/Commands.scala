@@ -6,9 +6,9 @@ import org.riskala.model.State.State
 import org.riskala.model.eventSourcing.EventStore.Behavior
 
 sealed trait Command{
-  def Execution(state: GameSnapshot): Behavior[Event]
+  def execution(state: GameSnapshot): Behavior[Event]
 
-  def Feasible(state: GameSnapshot): FeasibilityReport
+  def feasible(state: GameSnapshot): FeasibilityReport
 }
 
 case class FeasibilityReport(feasibility: Boolean, error: Option[String])
@@ -17,41 +17,41 @@ final case class Attack(from: State,
                         to: State,
                         troops: Int)
                   extends Command {
-  override def Execution(state: GameSnapshot): Behavior[Event] = ???
+  override def execution(state: GameSnapshot): Behavior[Event] = ???
 
-  override def Feasible(state: GameSnapshot): FeasibilityReport = ???
+  override def feasible(state: GameSnapshot): FeasibilityReport = ???
 }
 
 final case class MoveTroops(from: State,
                             to: State,
                             troops: Int)
                   extends Command {
-  override def Execution(state: GameSnapshot): Behavior[Event] = ???
+  override def execution(state: GameSnapshot): Behavior[Event] = ???
 
-  override def Feasible(state: GameSnapshot): FeasibilityReport = ???
+  override def feasible(state: GameSnapshot): FeasibilityReport = ???
 }
 
 final case class Deploy(to: State,
                         troops: Int)
                   extends Command {
-  override def Execution(state: GameSnapshot): Behavior[Event] = ???
+  override def execution(state: GameSnapshot): Behavior[Event] = ???
 
-  override def Feasible(state: GameSnapshot): FeasibilityReport = ???
+  override def feasible(state: GameSnapshot): FeasibilityReport = ???
 }
 
 final case class RedeemBonus(player: Player,
                              cardBonus: Cards)
                   extends Command {
-  override def Execution(state: GameSnapshot): Behavior[Event] = ???
+  override def execution(state: GameSnapshot): Behavior[Event] = ???
 
-  override def Feasible(state: GameSnapshot): FeasibilityReport = ???
+  override def feasible(state: GameSnapshot): FeasibilityReport = ???
 }
 
 final case class EndTurn(player: Player)
                   extends Command {
-  override def Execution(state: GameSnapshot): Behavior[Event] = ???
+  override def execution(state: GameSnapshot): Behavior[Event] = ???
 
-  override def Feasible(state: GameSnapshot): FeasibilityReport = ???
+  override def feasible(state: GameSnapshot): FeasibilityReport = ???
 }
 
 
