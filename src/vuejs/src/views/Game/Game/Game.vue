@@ -114,18 +114,24 @@ export default {
     }
   },  
   mounted() {
-    this.myRng = seedRandom(this.roomName)
+    console.log("MOUNTED OF GAME")
     var vue = this
-    var newHandler = function(evt) {
-      console.log('GAME - Receive message: ' + evt.data);
-      ClientGame.handleGameMessage(evt.data, vue)
-    }
-    this.$store.commit('changeHandler', newHandler)
-
-    if(this.$store.state.gameInfo !== ''){
-      ClientGame.setupGame(this.$store.state.gameInfo, this)
-    }
-    this.loadSvg()
+    var myD3 = d3;
+    myD3.xml(this.getMapImage())
+    .then(data => {
+      var map = myD3.select("#svgMapContainer");
+      var myMap = map.node().append(data.documentElement);
+      this.bind()
+      var newHandler = function(evt) {
+        console.log('GAME - Receive message');
+        ClientGame.handleGameMessage(evt.data, vue)
+      }
+      this.$store.commit('changeHandler', newHandler)
+        if(vue.$store.state.gameInfo !== ''){
+        console.log("MOUNTED OF GAME FOUND GAME INFO")
+        ClientGame.setupGame(vue.$store.state.gameInfo, vue)
+      }
+    });
   },
   methods: {
     endTurn(){
@@ -138,7 +144,7 @@ export default {
     },    
     addPlayer(player, myTurn){
       console.log("addPlayer")
-      this.players.push({Name_Player: players, My_Turn: myTurn})
+      this.players.push({Name_Player: player, My_Turn: myTurn})
       console.log(this.players)
     },
     setCurrentPlayer(player){
@@ -174,15 +180,15 @@ export default {
     addNeighbor(neighbor, checked){
       this.neighbors.push({neighbor_name: neighbor, checked: checked})
     },
-    setPlayerState(playerState){
+    setPlayerState(playerState,owner,troops){
       console.log("playerState " + playerState)
       //this.playerStates.push({playerState})
-      document.getElementById(playerState.state).setAttribute("fill", playerState.owner.color)
+      document.getElementById(playerState).setAttribute("fill", this.getRandomColor(owner))
       //add troops
     },
     setStateRegion(state, region) {
-      document.getElementById(playerState.state).style.stroke = this.getRandomColor(region)
-      document.getElementById(playerState.state).style.strokeWidth = '4'
+      document.getElementById(state).style.stroke = this.getRandomColor(region)
+      document.getElementById(state).style.strokeWidth = '4'
     },
     redeemBonus(cardType){
       this.$store.state.websocket.send(ClientGame.getRedeemBonusMsgWrapped(cardType))
@@ -199,13 +205,15 @@ export default {
     bind(){
       var vue = this
       Array.prototype.forEach.call(document.getElementsByTagName("path"), function(el) {
-        el.onclick = function(){ 
+        el.onclick = function(){
+          if(vue.state !== 'Select a state'){
+            document.getElementById(vue.state).style.opacity = 1
+          }
           if(el.id !== 'Select a state'){
             document.getElementById(el.id).style.opacity = 0.5
             vue.state = el.id;
             ClientGame.clickedState(vue.state, localStorage.riskalaUser, vue)
           } else {
-            document.getElementById(vue.state).style.opacity = 1
             vue.state = "Select a state"
             vue.visible = false
             vue.neighbors.splice(0)
