@@ -1,5 +1,6 @@
 package org.riskala.model.eventSourcing
 
+import org.riskala.model.State.State
 import org.riskala.model.{Player, PlayerState}
 import org.riskala.utils.{MapLoader, Utils}
 import org.scalatest.wordspec.AnyWordSpec
@@ -75,11 +76,23 @@ class EventTest extends AnyWordSpec {
   }
 
   "A troops moving event from A to B of n troops" should{
-    "decrease the troops in A of n" in {
+    val fromState = "Emilia-Romagna"
+    val toState = "Toscana"
+    val movedTroops = 3
+    val fromPlayerState = PlayerState(fromState, p1, 5)
+    val toPlayerState = PlayerState(toState, p1, 5)
+    val playerStates: Set[PlayerState] = initialSnapshot.geopolitics.filterNot(p =>
+      p.state.equals(fromState) || p.state.equals(toState)) + fromPlayerState + toPlayerState
+    val preMoveGame = initialSnapshot.copy(geopolitics = playerStates)
+    val postMoveGame = TroopsMoved(fromState, toState, movedTroops).happen(preMoveGame)
+    val A = getPlayerStateByName(fromState, postMoveGame)
+    val B = getPlayerStateByName(fromState, postMoveGame)
 
+    "decrease the troops in A of n" in {
+      assert(A.troops.equals(fromPlayerState.troops - movedTroops))
     }
     "increase the troops in B of n" in {
-
+      assert(B.troops.equals(toPlayerState.troops + movedTroops))
     }
   }
 
@@ -112,5 +125,11 @@ class EventTest extends AnyWordSpec {
 
       }
     }
+  }
+
+  def getPlayerStateByName(name: State, game: GameSnapshot) : PlayerState = {
+    game.geopolitics.collectFirst({
+      case s if s.state.equals(name) => s
+    }).get
   }
 }
