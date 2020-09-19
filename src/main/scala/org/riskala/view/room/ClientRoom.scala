@@ -50,6 +50,9 @@ object ClientRoom {
       case "GameFullInfo" =>
         println("received GameFullInfo")
         roomFacade.goToGame(wrappedMsg.payload)
+      case "LobbyInfo" =>
+        println("received LobbyInfo")
+        roomFacade.goToLobby(wrappedMsg.payload)
       case unhandled => println(s"Ignored message: $unhandled")
     }
 

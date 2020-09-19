@@ -106,8 +106,11 @@ export default {
     },
     leaveRoom(){
       this.$store.state.websocket.send(ClientRoom.getMsgWrapped("LeaveMessage"))
+    },
+    goToLobby(lobby){
+      this.$store.commit('changeLobbyInfo', lobby)
+      this.$store.commit('changeRoomInfo', '')
       this.$router.push('/')
-      this.$store.state.roomInfo = ''
     },
     notifyError(error){
       this.error = error
