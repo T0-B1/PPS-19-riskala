@@ -96,6 +96,9 @@ export default {
       this.$store.commit('changeRoomInfo', newRoom)
       this.$router.push('/room')
     },
+    updateLobby(lobby){
+      this.$store.commit('changeLobbyInfo', lobby)
+    },
     createRoom() {
       this.checkForm();
       if(this.passed) {

@@ -24,7 +24,8 @@ object ClientCreateRoom {
     wrappedMsg.classType match {
       case "RoomInfo" =>
         createRoomFacade.goToRoom(wrappedMsg.payload)
-
+      case "LobbyInfo" =>
+        createRoomFacade.updateLobby(wrappedMsg.payload)
       case "ErrorMessage" =>
         println("received error message")
         val errorMsg = Parser.retrieveMessage(wrappedMsg.payload, ErrorMessage.ErrorCodecJson.Decoder).get

@@ -12,18 +12,13 @@ import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 object ClientRoom {
 
   @JSExport
-  def getReadyMsgWrapped(): String = {
-    WrappedMessage("ReadyMessage", "").asJson.pretty(nospace)
+  def getMsgWrapped(typeMsg: String): String = {
+    WrappedMessage(typeMsg, "").asJson.pretty(nospace)
   }
 
   @JSExport
-  def getUnReadyMsgWrapped(): String = {
-    WrappedMessage("UnReadyMessage", "").asJson.pretty(nospace)
-  }
-
-  @JSExport
-  def getLeaveMsgWrapped(): String = {
-    WrappedMessage("LeaveMessage", "").asJson.pretty(nospace)
+  def getReadyMsgWrapped(color: String): String = {
+    WrappedMessage("ReadyMessage", ReadyMessage(color).asJson.pretty(nospace)).asJson.pretty(nospace)
   }
 
   @JSExport
@@ -55,6 +50,9 @@ object ClientRoom {
       case "GameFullInfo" =>
         println("received GameFullInfo")
         roomFacade.goToGame(wrappedMsg.payload)
+      case "LobbyInfo" =>
+        println("received LobbyInfo")
+        roomFacade.goToLobby(wrappedMsg.payload)
       case unhandled => println(s"Ignored message: $unhandled")
     }
 

@@ -1,120 +1,238 @@
 <template>
   <div>
-    <div class="myContainer">
-      <div class="playTurnAndMap">
-        <div class="radioDiv">
-          <h5> Turno </h5>
-          <div v-for="(player,index) in players" :key="index" class="form-check">
-            <input type="radio" :id="player.id" :checked="player.checked">
-            <label :for="player.id">{{player.nome_giocatore}}</label>
+    <div class="wrapper">
+      <div class="objective"> <span> Your objective is: <b><i> {{objective}} </i></b></span> </div>
+      <div class="infoContainer">
+        <div class="leftContainer">
+          <div class="radioDiv">
+            <h5> Turn of: </h5>
+            <ul id="listPlayers">
+              <li v-for="(player,index) in players" :key="index">
+                <label v-bind:style="[player.My_Turn ? {color: getRandomColor(player.Name_Player)} : {color: "black"}]">
+                  {{player.Name_Player}}</label>
+              </li>
+            </ul>
+            <b-button variant="danger" @click="endTurn"> End Turn </b-button>
           </div>
-          <b-button variant="danger"> Fine turno </b-button>
+          <hr/>
+          <div class="buttonDiv" >
+            <button :disabled='isInfEnable' class="submitBtn" type="submit" @click="redeemBonus('Infantry')" 
+            v-bind:style="[isInfEnable ? opacity = 1 : opacity = 0.4]">
+              <img id="submitBtnI" src="@/assets/buttonsImg/infantry.png" width="50" height="50" alt="submit" />
+            </button>
+            <span>{{infantryCards}}</span>
+            <button :disabled="isCavEnable" class="submitBtn" type="submit" @click="redeemBonus('Cavalry')"
+            v-bind:style="[isCavEnable ? opacity = 1 : opacity = 0.4]">
+              <img id="submitBtnC" src="@/assets/buttonsImg/cavalry.png" width="50" height="50" alt="submit" />
+            </button>
+            <span>{{cavalryCards}}</span>
+            <button :disabled="isArtEnable" class="submitBtn" type="submit" @click="redeemBonus('Artillery')"
+            v-bind:style="[isArtEnable ? opacity = 1 : opacity = 0.4]">
+              <img id="submitBtnA" src="@/assets/buttonsImg/artillery.png" width="50" height="50" alt="submit" />
+            </button>
+            <span>{{artilleryCards}}</span>
+          </div>
         </div>
-        <div id="svgMapContainer"></div>
+        <div class="stateInfo">
+          <h4 id="idInfo"> Info </h4>
+          <div class="textInfo">
+            <div>
+              <span>State: <b><i>{{state}}</i></b></span>
+            </div>
+            <div>
+              <span> Owner:<b>{{owner}}&emsp;</b></span>
+            </div>
+            <div>
+              <span> N. Troops:<b>{{troops}}</b>&emsp;</span>
+            </div>
+            <div>
+              <span> Region:<b>{{region}}</b>&emsp;</span>
+            </div>
+          </div>
+          <div v-if="visible == true" class="action">
+            <h4> Choose one state </h4>
+            <div v-for="(neighbor,index) in neighbors" :key="index" class="form-check">
+              <input type="radio" :id="neighbor.id" :checked:"neighbor.checked">
+              <label v-model="selectedNeighbor" :for="neighbor.id">{{neighbor.neighbor_name}}</label>
+            </div>
+            <h4> How many troops? </h4>
+            <input type="number" :value="0" :max="maxAvailableTroops" v-model="troopsDeployed" number></br>
+            <b-button @click="actionOnMap">{{nameActionBtn}}</b-button>
+          </div>
+        </div>
       </div>
+      <div id="svgMapContainer"></div>
+      <hr/>
+      <b-button class="leaveBtn" variant="outline-danger" @click="leave">Leave Game</b-button>
     </div>
-    <hr class="divider">
-    <div>
-      <h4> Info </h4>
-      <div class="containerInfo">
-        <div class="text">
-          <div>
-            <span> Stato:<b>{{stato}}&emsp;</b></span>
-            <span> Proprietario:<b>{{proprietario}}&emsp;</b></span>
-          </div>
-          <div>
-            <span> N. Truppe:<b>{{truppe}}</b>&emsp;</span>
-            <span> Regione:<b>{{regione}}</b>&emsp;</span>
-          </div>
-        </div>
-        <div class="buttons">
-          <div class="btns">
-            <b-button variant="outline-info" class="insideBtn"> Schiera truppe </b-button>
-            <b-button variant="outline-info" class="insideBtn"> Attacca </b-button>
-          </div>
-          <div class="btns">
-            <b-button variant="outline-info" class="insideBtn"> Sposta truppe </b-button>
-            <b-button variant="outline-info" class="insideBtn"> Gioca bonus </b-button>
-          </div>
-        </div>
-      </div>
-    </div>
+    <b-modal id="modal-error" auto-focus-button="ok" ok-only title="Error Message">
+      <p class="my-4"><i>{{this.error}}</i></p>
+    </b-modal>
   </div>
 </template>
 
 <script>
-//con mounted chiamo API se num max giocatori
 import * as d3 from 'd3'
+var seedRandom = require('seedrandom')
+const mapsContext = require.context('@/assets/maps/', true, /\.svg$/);
+const mapsExt = '.svg';
+
 export default {
- data(){
-   return {
-     srcMap:'https://raw.githubusercontent.com/raddrick/risk-map-svg/master/risk.svg',
-     stato: 'Italia',
-     proprietario: 'Marto',
-     truppe: '5',
-     regione: 'Europa',
-     players: [
-       {nome_giocatore: "Giordo", id:"01",colore:'red', checked:true},
-       {nome_giocatore: "Ale", id:"02", colore:'blue', checked:false},
-       {nome_giocatore: "Marto", id:"03", colore:'yellow', checked:false}
-     ]
-   }
- },
- mounted() {
-   this.loadSvg()
- },
- methods: {
-  bind(){
-    Array.prototype.forEach.call( document.getElementsByTagName("path"), function(el) {
-      el.onclick = function(){ 
-        alert(el.id)
-        this.stato = el.id;
-        console.log(this.stato)
-        };
-    })
+  data(){
+    return {
+      players: [],
+      state: 'Select a state',
+      owner: '',
+      troops: '',
+      objective: '',
+      infantryCards: 0,
+      cavalryCards: 4,
+      artilleryCards: 0,
+      region: '',
+      neighbors: [],
+      visible: false,
+      troopsToDeploy: '',
+      nameActionBtn: '',
+      troopsDeployed: '',
+      selectedNeighbor: ''
+    }
   },
-  loadSvg(){
-    d3.xml(this.srcMap)
-    .then(data => {
-      d3.select("#svgMapContainer").node().append(data.documentElement);
-      this.bind();
-    });
-    
+  computed: {
+    isInfEnable: function() {
+      return (this.infantryCards>=3)
+    },
+    isCavEnable: function() {
+      return (this.cavalryCards>=3)
+    },
+    isArtEnable: function() {
+      return (this.artilleryCards>=3)
+    }
+  },  
+  mounted() {
+    this.myRng = seedRandom(this.roomName)
+    var vue = this
+    var newHandler = function(evt) {
+      console.log('GAME - Receive message: ' + evt.data);
+      ClientGame.handleGameMessage(evt.data, vue)
+    }
+    this.$store.commit('changeHandler', newHandler)
+
+    if(this.$store.state.gameInfo !== ''){
+      ClientGame.setupGame(this.$store.state.gameInfo, this)
+    }
+    this.loadSvg()
+  },
+  methods: {
+    endTurn(){
+      console.log("endTurn")
+      this.$store.state.websocket.send(ClientGame.getEmptyMsgWrapped("EndTurnMessage"))
+    },
+    leave(){
+      console.log("leave")
+      this.$store.state.websocket.send(ClientGame.getEmptyMsgWrapped("LeaveMessage"))
+    },    
+    addPlayer(player, myTurn){
+      console.log("addPlayer")
+      this.players.push({Name_Player: players, My_Turn: myTurn})
+      console.log(this.players)
+    },
+    setCurrentPlayer(player){
+      this.players.forEach(pl => pl.My_Turn = false)
+      this.players.find( function(p){
+        return p.Name_Player === player
+      }).My_Turn = true
+    },
+    setCardInfo(infantry, cavalry, artillery){
+      this.infantryCards = infantry
+      //this.checkCardCounter("submitBtnoI")
+      this.cavalryCards = cavalry
+      //this.checkCardCounter("submitBtnoC")
+      this.artilleryCards = artillery
+      //this.checkCardCounter("submitBtnoA")
+    },
+    /*checkCardCounter(btn) {
+      if(this.infantryCards >= 3) {
+        document.getElementById(btn).style.opacity = 1
+      } else {
+        document.getElementById(btn).style.opacity = 0.4
+      }
+    },*/
+    setObjective(obj) {
+      this.objective = obj
+    },
+    setStateInfo(nameState, owner, troops, region){
+      this.state = nameState
+      this.owner = owner
+      this.troops = troops
+      this.region = region
+    },
+    addNeighbor(neighbor, checked){
+      this.neighbors.push({neighbor_name: neighbor, checked: checked})
+    },
+    setPlayerState(playerState){
+      console.log("playerState " + playerState)
+      //this.playerStates.push({playerState})
+      document.getElementById(playerState.state).setAttribute("fill", playerState.owner.color)
+      //add troops
+    },
+    setStateRegion(state, region) {
+      document.getElementById(playerState.state).style.stroke = this.getRandomColor(region)
+      document.getElementById(playerState.state).style.strokeWidth = '4'
+    },
+    redeemBonus(cardType){
+      this.$store.state.websocket.send(ClientGame.getRedeemBonusMsgWrapped(cardType))
+    },
+    getRandomColor(name) {
+      var rng = seedRandom(name)
+      var letters = '0123456789ABCDEF';
+      var color = '#';
+      for (var i = 0; i < 6; i++) {
+        color += letters[Math.floor(rng() * 16)];
+      }
+      return color;
+    },
+    bind(){
+      var vue = this
+      Array.prototype.forEach.call(document.getElementsByTagName("path"), function(el) {
+        el.onclick = function(){ 
+          if(el.id !== 'Select a state'){
+            document.getElementById(el.id).style.opacity = 0.5
+            vue.state = el.id;
+            ClientGame.clickedState(vue.state, localStorage.riskalaUser, vue)
+          } else {
+            document.getElementById(vue.state).style.opacity = 1
+            vue.state = "Select a state"
+            vue.visible = false
+            vue.neighbors.splice(0)
+            vue.setStateInfo('', '', '', '')
+          }
+        };
+      })
+    },
+    notifyGameError(error){
+      this.error = error
+      this.$bvModal.show('modal-error')
+    },
+    getMapImage() {
+      return mapsContext(`./italy${mapsExt}`);
+    },
+    loadSvg(){
+      var vue = this
+      var myD3 = d3;
+      myD3.xml(this.getMapImage())
+      .then(data => {
+        var map = myD3.select("#svgMapContainer");
+        var myMap = map.node().append(data.documentElement);
+        this.bind()
+      });
+    },
+    actionOnMap(){
+      this.$store.state.websocket.send(ClientGame.getActionMsgWrapped(this.state, this.selectedNeighbor,this.troopsDeployed))
+    }
   }
- }
 }
 </script>
 
-<style lang="sass" scoped>
-.myContainer
-  max-width: 95%
-  padding-top: 40px
-  margin: 0 auto
-  .playTurnAndMap
-    .radioDiv
-      max-width: 20%
-      border: 1px solid black
-      padding: 2px
-      .form-check
-        text-align: justify
-    #svgMapContainer
-      margin-top: -11em
-.containerInfo
-  display: flex
-  justify-content: space-around
-  padding-bottom: 30px
-  .text
-    padding: 10px
-    max-width: 40%
-    line-height: 2em
-    letter-spacing: 2px
-  .buttons
-    display: flex
-    max-width: 60%
-    flex-direction: column
-    .btns
-      display: flex
-      justify-content: space-between
-      .insideBtn
-      margin: 5px 
+<style lang="sass">
+@import './Game.sass'
 </style>
