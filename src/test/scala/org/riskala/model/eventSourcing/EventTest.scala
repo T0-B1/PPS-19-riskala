@@ -1,11 +1,14 @@
 package org.riskala.model.eventSourcing
 
+import org.junit.runner.RunWith
 import org.riskala.model.Cards.Cards
 import org.riskala.model.State.State
 import org.riskala.model.{Cards, Player, PlayerState}
-import org.riskala.utils.{MapLoader}
+import org.riskala.utils.MapLoader
 import org.scalatest.wordspec.AnyWordSpec
+import org.scalatestplus.junit.JUnitRunner
 
+@RunWith(classOf[JUnitRunner])
 class EventTest extends AnyWordSpec {
 
   val p1 = Player("p1", "green")
@@ -135,9 +138,15 @@ class EventTest extends AnyWordSpec {
   }
 
   "A turn" when {
+    val players = initialSnapshot.players
+    val curPlayer = initialSnapshot.nowPlaying
+    val curIndex = players.indexOf(curPlayer)
+    val nextIndex = if(curIndex.equals(players.size - 1)) 0 else curIndex+1
+    val nextPlayer = players(nextIndex)
+    val nextTurn = TurnEnded(curPlayer).happen(initialSnapshot)
     "ended" should {
-      "update the current player" in {
-
+      "update the current player to be the next in the sequence" in {
+        assert(nextTurn.nowPlaying.equals(nextPlayer))
       }
     }
   }
