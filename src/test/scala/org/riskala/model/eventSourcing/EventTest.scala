@@ -40,7 +40,9 @@ class EventTest extends AnyWordSpec {
       val postBattleGame = Battle(attackingState, defendingState, attackers, passed, dead).happen(preBattleGame)
       val atkState = getPlayerStateByName(attackingState, postBattleGame)
       "decrease the number of troops present in the attacking state of an amount equal to the attacking troops" in {
-        assert(atkState.troops.equals(attackingPlayerState.troops - attackers))
+        assertResult(atkState.troops) {
+          attackingPlayerState.troops - attackers
+        }
       }
     }
 
@@ -54,7 +56,9 @@ class EventTest extends AnyWordSpec {
         assert(lostState.owner.equals(attackingPlayerState.owner))
       }
       "result in the attacked state to have an amount of troops equal to the attackingPassed" in {
-        assert(lostState.troops.equals(passed))
+        assertResult(lostState.troops) {
+          passed
+        }
       }
     }
 
@@ -68,7 +72,9 @@ class EventTest extends AnyWordSpec {
         assert(heldState.owner.equals(defendingPlayerState.owner))
       }
       "result in the attacked state to have an amount of troops decreased by an amount equal to defendingCasualties" in {
-        assert(heldState.troops.equals(defendingPlayerState.troops - dead))
+        assertResult(heldState.troops) {
+          defendingPlayerState.troops - dead
+        }
       }
     }
   }
@@ -87,10 +93,14 @@ class EventTest extends AnyWordSpec {
     val B = getPlayerStateByName(fromState, postMoveGame)
 
     "decrease the troops in A of n" in {
-      assert(A.troops.equals(fromPlayerState.troops - movedTroops))
+      assertResult(A.troops) {
+        fromPlayerState.troops - movedTroops
+      }
     }
     "increase the troops in B of n" in {
-      assert(B.troops.equals(toPlayerState.troops + movedTroops))
+      assertResult(B.troops) {
+        toPlayerState.troops + movedTroops
+      }
     }
   }
 
@@ -104,10 +114,14 @@ class EventTest extends AnyWordSpec {
     val postDeployGame = TroopsDeployed(toState, deployed).happen(preDeployGame)
     val A = getPlayerStateByName(toState, postDeployGame)
     "increase the troops in the destination state" in {
-      assert(A.troops.equals(toPlayerState.troops + deployed))
+      assertResult(A.troops) {
+        toPlayerState.troops + deployed
+      }
     }
     "reduce the amount of deployable troops" in {
-      assert(postDeployGame.deployableTroops.equals(preDeployGame.deployableTroops - deployed))
+      assertResult(postDeployGame.deployableTroops) {
+        preDeployGame.deployableTroops - deployed
+      }
     }
   }
 
@@ -115,8 +129,9 @@ class EventTest extends AnyWordSpec {
     val card = Cards.generateCard()
     val postDrawGame = CardDrawn(p1, card).happen(initialSnapshot)
     "add a card to the correct player" in {
-      assert(postDrawGame.cards.get(p1).get.size
-        .equals(initialSnapshot.cards.get(p1).get.size + 1))
+      assertResult(postDrawGame.cards.get(p1).get.size) {
+        initialSnapshot.cards.get(p1).get.size + 1
+      }
     }
   }
 
@@ -128,8 +143,9 @@ class EventTest extends AnyWordSpec {
     val postRedeemGame = BonusRedeemed(p1, card).happen(initialSnapshot)
     "redeemed" should {
       "remove 3 cards from the players hand" in {
-        assert(postRedeemGame.cards.get(p1).get.size
-          .equals(preRedeemGame.cards.get(p1).get.size - 3))
+        assertResult(postRedeemGame.cards.get(p1).get.size) {
+          preRedeemGame.cards.get(p1).get.size - 3
+        }
       }
       "give the player extra troops to deploy" in {
         assertResult(postRedeemGame.deployableTroops) {
