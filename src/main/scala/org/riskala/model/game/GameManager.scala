@@ -23,7 +23,7 @@ object GameManager {
     Behaviors.setup { context =>
       subscribers.foreach(_ ! GameReferent(context.self))
       //TODO: event sourcing, scenario and GameFullInfo
-      gameManager(gameName, subscribers, players, scenarioName, lobby, EventStore[Event], GameSnapshot.newGame(players.toSeq, scenarioName)
+      gameManager(gameName, subscribers, players, scenarioName, lobby, EventStore[Event](), GameSnapshot.newGame(players.toSeq, scenarioName))
     }
 
   private def gameManager(gameName: String,
