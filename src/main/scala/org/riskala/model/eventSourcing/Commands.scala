@@ -19,7 +19,9 @@ final case class Attack(from: State,
                   extends Command {
   override def execution(state: GameSnapshot): Behavior[Event] = e => e
 
-  override def feasibility(state: GameSnapshot): FeasibilityReport = FeasibilityReport(true, None)
+  override def feasibility(state: GameSnapshot): FeasibilityReport = {
+    FeasibilityReport(true, None)
+  }
 }
 
 final case class MoveTroops(from: State,
@@ -74,6 +76,13 @@ object Command {
         _ => Seq(BonusRedeemed(player, cardBonus))
       case EndTurn(player) =>
         _ => Seq(TurnEnded(player))
+    }
+  }
+
+  def checkTurn(player: Player, game: GameSnapshot): FeasibilityReport = {
+    game.nowPlaying match {
+      case p if p.equals(player) => FeasibilityReport(true, None)
+      case _ => FeasibilityReport(false, Some("Not your turn"))
     }
   }
 
