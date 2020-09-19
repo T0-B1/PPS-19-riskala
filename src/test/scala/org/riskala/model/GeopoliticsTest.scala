@@ -11,6 +11,7 @@ class GeopoliticsTest extends AnyWordSpec {
   val p1 = Player("p1", "")
   val p2 = Player("p2", "")
   val troopsDelta = -5
+  val troopsValue = 3
   val playerState = PlayerState(state, p1, 7)
   val geopolitics = Set(playerState)
 
@@ -27,6 +28,11 @@ class GeopoliticsTest extends AnyWordSpec {
       assertResult(playerState.troops + troopsDelta) {
         Geopolitics.getPlayerState(state,
           Geopolitics.modifyStateTroops(state, troopsDelta, geopolitics)).get.troops
+      }
+
+      assertResult(troopsValue) {
+        Geopolitics.getPlayerState(state,
+          Geopolitics.setStateTroops(state, troopsValue, geopolitics)).get.troops
       }
     }
   }
