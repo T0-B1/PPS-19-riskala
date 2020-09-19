@@ -1,12 +1,15 @@
 package org.riskala.model.eventSourcing
 
-import org.riskala.model.Player
+import org.riskala.model.{Player, PlayerState}
 import org.riskala.utils.{MapLoader, Utils}
 import org.scalatest.wordspec.AnyWordSpec
 
 class EventTest extends AnyWordSpec {
 
-  val players = Seq(Player("p1", "green"), Player("p2", "blue"), Player("p3", "red"))
+  val p1 = Player("p1", "green")
+  val p2 = Player("p2", "blue")
+  val p3 = Player("p3", "red")
+  val players = Seq(p1, p2, p3)
   val scenario = MapLoader.loadMap("italy").get
   val initialSnapshot: GameSnapshot = GameSnapshot.newGame(players, scenario)
 
@@ -16,11 +19,8 @@ class EventTest extends AnyWordSpec {
     }
   }
 
-  "A battle event" should {
-    "decrease the number of troops present in the attacking state of an amount equal to the attacking troops" in {
-
-    }
-  }
+  val attackingState = PlayerState("Emilia-Romagna", p1, 10)
+  val defendingState = PlayerState("Toscana", p2, 5)
 
   "A battle event" when {
     "victorious" should {
@@ -40,6 +40,10 @@ class EventTest extends AnyWordSpec {
       }
     }
 
+  }
+  it should {
+    "decrease the number of troops present in the attacking state of an amount equal to the attacking troops" in {
+    }
   }
 
   "A troops moving event from A to B of n troops" should{
@@ -77,7 +81,7 @@ class EventTest extends AnyWordSpec {
   "A turn" when {
     "ended" should {
       "update the current player" in {
-        
+
       }
     }
   }
