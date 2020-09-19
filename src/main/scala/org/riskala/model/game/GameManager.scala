@@ -5,7 +5,7 @@ import akka.actor.typed.scaladsl.Behaviors
 import org.riskala.controller.actors.PlayerMessages.{GameInfoMessage, GameReferent, PlayerMessage}
 import org.riskala.model.ModelMessages.{GameMessage, LobbyMessage, Logout}
 import org.riskala.model.{Player, eventsourcing}
-import org.riskala.model.eventsourcing.{Command, Event, EventStore, GameSnapshot, SnapshotGenerator}
+import org.riskala.model.eventsourcing.{Command, Event, EventStore, GameInitialized, GameSnapshot, SnapshotGenerator}
 import org.riskala.model.game.GameMessages._
 import org.riskala.model.lobby.LobbyMessages.Subscribe
 import org.riskala.utils.MapLoader
@@ -23,7 +23,9 @@ object GameManager {
     Behaviors.setup { context =>
       subscribers.foreach(_ ! GameReferent(context.self))
       //TODO: event sourcing, scenario and GameFullInfo
-      gameManager(gameName, subscribers, players, scenarioName, lobby, EventStore[Event](), GameSnapshot.newGame(players.toSeq, scenarioName))
+      val gameSnapshot: GameSnapshot = GameSnapshot.newGame(players.toSeq, scenarioName)
+      val eventStore: EventStore[Event] = EventStore(Seq(GameInitialized(gameSnapshot)))
+      gameManager(gameName, subscribers, players, scenarioName, lobby, eventStore, gameSnapshot)
     }
 
   private def gameManager(gameName: String,
