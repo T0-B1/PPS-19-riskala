@@ -6,11 +6,11 @@ import akka.actor.typed.{ActorRef, Behavior}
 import akka.http.scaladsl.model.ws.TextMessage
 import org.riskala.controller.actors.PlayerMessages._
 import org.riskala.model.ModelMessages.{GameMessage, Logout}
-import org.riskala.model.game.GameMessages.{Action, EndTurn, GetFullInfo, Leave, RedeemBonus}
+import org.riskala.model.game.GameMessages.{ActionAttack, ActionDeploy, ActionMove, EndTurn, GetFullInfo, Leave, RedeemBonus}
 import org.riskala.utils.Parser
 import org.riskala.view.messages.FromClientMessages.{ActionAttackMessage, ActionDeployMessage, ActionMoveMessage, RedeemBonusMessage}
 import org.riskala.view.messages.ToClientMessages
-import org.riskala.view.messages.ToClientMessages.{GameFullInfo, GameUpdate}
+import org.riskala.view.messages.ToClientMessages.{GameEnd, GameFullInfo, GameUpdate}
 
 object PlayerGameBehavior {
   def apply(username: String, game: ActorRef[GameMessage], socket: actor.ActorRef): Behavior[PlayerMessage] =
@@ -38,17 +38,17 @@ object PlayerGameBehavior {
               case "ActionAttackMessage" =>
                 context.log.info("PlayerGameActor received ActionAttackMessage")
                 val action = Parser.retrieveMessage(wrapped.payload,ActionAttackMessage.ActionAttackMessageCodecJson.Decoder)
-                action.foreach(a => game ! Action(username,a.from,a.to,a.troops))
+                action.foreach(a => game ! ActionAttack(username,a.from,a.to,a.troops))
                 nextBehavior()
               case "ActionMoveMessage" =>
                 context.log.info("PlayerGameActor received ActionMoveMessage")
                 val action = Parser.retrieveMessage(wrapped.payload,ActionMoveMessage.ActionMoveMessageCodecJson.Decoder)
-                action.foreach(a => game ! Action(username,a.from,a.to,a.troops))
+                action.foreach(a => game ! ActionMove(username,a.from,a.to,a.troops))
                 nextBehavior()
               case "ActionDeployMessage" =>
                 context.log.info("PlayerGameActor received ActionMessage")
                 val action = Parser.retrieveMessage(wrapped.payload,ActionDeployMessage.ActionDeployMessageCodecJson.Decoder)
-                action.foreach(a => game ! Action(username,a.from,a.to,a.troops))
+                action.foreach(a => game ! ActionDeploy(username,a.from,a.to,a.troops))
                 nextBehavior()
               case "RedeemBonusMessage" =>
                 context.log.info("PlayerGameActor received RedeemBonusMessage")
@@ -81,6 +81,10 @@ object PlayerGameBehavior {
           context.log.info(s"PlayerGameActor of $username received GameUpdateMessage")
           val updateInfo = GameUpdate(actualPlayer, troopsToDeploy, playerStates, personalInfo)
           socket ! TextMessage(Parser.wrap("GameUpdate",updateInfo,GameUpdate.GameUpdateCodecJson.Encoder))
+          nextBehavior()
+        case GameEndMessage(winner) =>
+          context.log.info(s"PlayerGameActor of $username received EndGameMessage")
+          socket ! TextMessage(Parser.wrap("GameUpdate",GameEnd(winner),GameEnd.GameEndCodecJson.Encoder))
           nextBehavior()
         case LobbyReferent(lobby) =>
           context.log.info(s"PlayerGameActor of $username received LobbyReferent")
