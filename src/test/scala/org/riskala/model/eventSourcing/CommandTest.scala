@@ -52,7 +52,7 @@ class CommandTest extends AnyWordSpec {
     }
     "be feasible" when {
       "having enough troops during own turn" in {
-        assert(!Attack(attackingState, defendingState, 1).feasibility(game).feasible)
+        assert(Attack(attackingState, defendingState, 1).feasibility(game).feasible)
       }
     }
   }
