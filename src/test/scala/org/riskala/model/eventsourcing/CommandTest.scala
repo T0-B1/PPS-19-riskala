@@ -2,7 +2,7 @@ package org.riskala.model.eventsourcing
 
 import org.junit.runner.RunWith
 import org.riskala.model
-import org.riskala.model.{Cards, Geopolitics, Player}
+import org.riskala.model.{Cards, Geopolitics, MapGeography, Player}
 import org.riskala.utils.MapLoader
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.junit.JUnitRunner
@@ -14,7 +14,7 @@ class CommandTest extends AnyWordSpec {
   val p2: Player = Player("p2", "blue")
   val p3: Player = Player("p3", "red")
   val players = Seq(p1, p2, p3)
-  val scenario: model.Map = MapLoader.loadMap("italy").get
+  val scenario: MapGeography = MapLoader.loadMap("italy").get
   val initialSnapshot: GameSnapshot = GameSnapshot.newGame(players, scenario)
   val attackingState = "Emilia-Romagna"
   val defendingState = "Toscana"
