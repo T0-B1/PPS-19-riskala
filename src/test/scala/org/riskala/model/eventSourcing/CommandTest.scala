@@ -17,6 +17,7 @@ class CommandTest extends AnyWordSpec {
   val players = Seq(p1, p2, p3)
   val scenario: model.Map = MapLoader.loadMap("italy").get
   val initialSnapshot: GameSnapshot = GameSnapshot.newGame(players, scenario)
+  val game = initialSnapshot.copy(nowPlaying = p1)
   val attackingState = "Emilia-Romagna"
   val defendingState = "Toscana"
 
@@ -35,7 +36,8 @@ class CommandTest extends AnyWordSpec {
   "End turn" should {
     "only be feasible" when {
       "is your turn" in {
-
+        assert(!EndTurn(p2).feasibility(game).feasible)
+        assert(EndTurn(p1).feasibility(game).feasible)
       }
     }
   }
@@ -43,6 +45,11 @@ class CommandTest extends AnyWordSpec {
   "An attack" should {
     "not be feasible" when {
       "attacking state does not have enough troops" in {
+
+      }
+    }
+    "be feasible" when {
+      "having enough troops during own turn" in {
 
       }
     }
@@ -54,6 +61,11 @@ class CommandTest extends AnyWordSpec {
 
       }
     }
+    "be feasible" when {
+      "having enough troops during own turn" in {
+
+      }
+    }
   }
 
   "Deploy troops" should {
@@ -62,11 +74,21 @@ class CommandTest extends AnyWordSpec {
 
       }
     }
+    "be feasible" when {
+      "having enough troops during own turn" in {
+
+      }
+    }
   }
 
   "Redeem bonus" should {
     "not be feasible" when {
       "a player does not have enough cards of the same type" in {
+
+      }
+    }
+    "be feasible" when {
+      "having enough cards during own turn" in {
 
       }
     }
