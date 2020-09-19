@@ -78,7 +78,8 @@ final case class TurnEnded(player: Player)
   override def happen(game: GameSnapshot): GameSnapshot = {
     val currentPlayerIndex = game.players.indexOf(game.nowPlaying)
     val nextIndex = (currentPlayerIndex + 1) % game.players.size
-    game.copy(nowPlaying = game.players(nextIndex))
+    val nextPlayer = game.players(nextIndex)
+    game.copy(nowPlaying = nextPlayer, deployableTroops = game.geopolitics.count(p => p.owner.equals(nextPlayer)))
   }
 }
 
