@@ -57,38 +57,33 @@ object GameManager {
         (newEventStore, newSnapshot)
       }
 
+      context.log.info(s"GameManager $gameName: $message")
+
       message match {
         case JoinGame(actor) =>
-          context.log.info("Join")
           val newSubs = subscribers + actor
           nextBehavior(updatedSub = newSubs)
 
         case Leave(actor) =>
-          context.log.info("Leave")
           lobby ! Subscribe(actor)
           nextBehavior(updatedSub = subscribers - actor)
 
         case ActionAttack(playerName, from, to, troops) =>
-          context.log.info("Action")
           nextBehavior()
 
         case ActionMove(playerName, from, to, troops) =>
-          context.log.info("Action")
           nextBehavior()
 
         case ActionDeploy(playerName, from, to, troops) =>
-          context.log.info("Action")
           val (newEventStore, newSnapshot) = evolveEventStore(Deploy(to,troops))
           nextBehavior(eventStore = newEventStore, gameSnapshot = newSnapshot)
 
         case RedeemBonus(playerName, card) =>
-          context.log.info("RedeemBonus")
           val player = getPlayerByName(players, playerName).get
           val (newEventStore, newSnapshot) = evolveEventStore(eventsourcing.RedeemBonus(player, card))
           nextBehavior(eventStore = newEventStore, gameSnapshot = newSnapshot)
 
         case GetFullInfo(playerName, actor) =>
-          context.log.info("GetFullInfo")
           val player = Player(playerName,"")
           val starterGame = GameSnapshot.newGame(players.toSeq,MapLoader.loadMap("italy").get)
           val personalInfo =
@@ -104,13 +99,11 @@ object GameManager {
           nextBehavior()
 
         case EndTurn(playerName) =>
-          context.log.info("EndTurn")
           val player = getPlayerByName(players, playerName).get
           val (newEventStore, newSnapshot) = evolveEventStore(eventsourcing.EndTurn(player))
           nextBehavior(eventStore = newEventStore, gameSnapshot = newSnapshot)
 
         case Logout(actor) =>
-          context.log.info("Logout")
           nextBehavior(updatedSub = subscribers - actor)
       }
     }
@@ -119,4 +112,5 @@ object GameManager {
   private def getPlayerByName(players: Set[Player], playerName: String): Option[Player] = {
     players.collectFirst({case p if p.nickname.equals(playerName) => p})
   }
+
 }
