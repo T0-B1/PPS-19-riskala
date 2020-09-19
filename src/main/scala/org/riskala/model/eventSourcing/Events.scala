@@ -3,6 +3,7 @@ package org.riskala.model.eventSourcing
 import org.riskala.model.Cards.Cards
 import org.riskala.model.{Geopolitics, Player, PlayerState}
 import org.riskala.model.State.State
+import org.riskala.model.Geopolitics
 
 trait Event{
   def happen(game: GameSnapshot): GameSnapshot
@@ -21,14 +22,13 @@ final case class Battle(from: State,
                   extends Event {
   override def happen(game: GameSnapshot): GameSnapshot = {
     var geopolitics = game.geopolitics
-    val attacker = Geopolitics.getPlayerState(from, geopolitics).get.owner
-    geopolitics = Geopolitics.modifyStateTroops(from, -attacking, geopolitics)
+    val attacker = geopolitics.getPlayerState(from).get.owner
+    geopolitics = geopolitics.modifyStateTroops(from, -attacking)
     if(attackingPassed > 0) {
-      geopolitics = Geopolitics.setStateTroops(to, attackingPassed, geopolitics)
-      geopolitics = Geopolitics.updateStateOwner(to, attacker, geopolitics)
+      game.copy(geopolitics = geopolitics.setStateTroops(to, attackingPassed)
+        .updateStateOwner(to, attacker))
     } else
-      geopolitics = Geopolitics.modifyStateTroops(to, - defendingCasualties, geopolitics)
-    game.copy(geopolitics = geopolitics)
+      game.copy(geopolitics = geopolitics.modifyStateTroops(to, - defendingCasualties))
   }
 }
 
@@ -37,10 +37,9 @@ final case class TroopsMoved(from: State,
                              moved: Int)
                   extends Event {
   override def happen(game: GameSnapshot): GameSnapshot = {
-    var geopolitics = game.geopolitics
-    geopolitics = Geopolitics.modifyStateTroops(from, -moved, geopolitics)
-    geopolitics = Geopolitics.modifyStateTroops(to, +moved, geopolitics)
-    game.copy(geopolitics = geopolitics)
+    game.copy(geopolitics = game.geopolitics
+      .modifyStateTroops(from, -moved)
+      .modifyStateTroops(to, +moved))
   }
 }
 
@@ -48,7 +47,7 @@ final case class TroopsDeployed(to: State,
                         troops: Int)
                   extends Event {
   override def happen(game: GameSnapshot): GameSnapshot = {
-    game.copy(geopolitics = Geopolitics.modifyStateTroops(to, +troops, game.geopolitics),
+    game.copy(geopolitics = game.geopolitics.modifyStateTroops(to, +troops),
       deployableTroops = game.deployableTroops - troops)
   }
 }
