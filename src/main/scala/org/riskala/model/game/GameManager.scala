@@ -102,16 +102,8 @@ object GameManager {
 
         case EndTurn(playerName) =>
           context.log.info("EndTurn")
-          val player: Player = players.collectFirst({case p if p.nickname.equals(playerName) => p}).get
-          // Creating a command
-          val command = eventsourcing.EndTurn(player)
-          // Executing the command over the state produces a set of new events (a behavior)
-          val behavior = command.execution(gameSnapshot)
-          // The event store is updated with the new events
-          val newEventStore = eventStore.perform(behavior)
-          // A new state is computed by projecting the behavior over the old state
-          val newSnapshot = SnapshotGenerator().Project(gameSnapshot, behavior)
-          // New store and snapshot are updated
+          val player = getPlayerByName(players, playerName).get
+          val (newEventStore, newSnapshot) = evolveEventStore(eventsourcing.EndTurn(player))
           nextBehavior(eventStore = newEventStore, gameSnapshot = newSnapshot)
 
         case Logout(actor) =>
@@ -119,5 +111,9 @@ object GameManager {
           nextBehavior(updatedSub = subscribers - actor)
       }
     }
+  }
+
+  private def getPlayerByName(players: Set[Player], playerName: String): Option[Player] = {
+    players.collectFirst({case p if p.nickname.equals(playerName) => p})
   }
 }
