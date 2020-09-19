@@ -56,7 +56,7 @@ const store = new Vuex.Store({
     changeGameInfo(state, newGame){
       state.gameInfo = newGame
     },
-    changeLobbyInfo(state, newlobby){
+    changeLobbyInfo(state, newLobby){
       state.lobbyInfo = newLobby
     }
   }
