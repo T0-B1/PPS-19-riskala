@@ -5,7 +5,7 @@ import akka.actor.typed.scaladsl.Behaviors
 import org.riskala.controller.actors.PlayerMessages.{GameInfoMessage, GameReferent, PlayerMessage}
 import org.riskala.model.ModelMessages.{GameMessage, LobbyMessage, Logout}
 import org.riskala.model.Player
-import org.riskala.model.eventSourcing.GameSnapshot
+import org.riskala.model.eventsourcing.GameSnapshot
 import org.riskala.model.game.GameMessages._
 import org.riskala.model.lobby.LobbyMessages.Subscribe
 import org.riskala.utils.MapLoader
