@@ -1,6 +1,7 @@
 package org.riskala.model.eventSourcing
 
 import org.junit.runner.RunWith
+import org.riskala.model
 import org.riskala.model.Cards.Cards
 import org.riskala.model.State.State
 import org.riskala.model.{Cards, Player, PlayerState}
@@ -11,11 +12,11 @@ import org.scalatestplus.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class EventTest extends AnyWordSpec {
 
-  val p1 = Player("p1", "green")
-  val p2 = Player("p2", "blue")
-  val p3 = Player("p3", "red")
+  val p1: Player = Player("p1", "green")
+  val p2: Player = Player("p2", "blue")
+  val p3: Player = Player("p3", "red")
   val players = Seq(p1, p2, p3)
-  val scenario = MapLoader.loadMap("italy").get
+  val scenario: model.Map = MapLoader.loadMap("italy").get
   val initialSnapshot: GameSnapshot = GameSnapshot.newGame(players, scenario)
 
   "An initialization event" should {
@@ -129,8 +130,8 @@ class EventTest extends AnyWordSpec {
     val card = Cards.generateCard()
     val postDrawGame = CardDrawn(p1, card).happen(initialSnapshot)
     "add a card to the correct player" in {
-      assertResult(postDrawGame.cards.get(p1).get.size) {
-        initialSnapshot.cards.get(p1).get.size + 1
+      assertResult(postDrawGame.cards(p1).size) {
+        initialSnapshot.cards(p1).size + 1
       }
     }
   }
@@ -143,8 +144,8 @@ class EventTest extends AnyWordSpec {
     val postRedeemGame = BonusRedeemed(p1, card).happen(initialSnapshot)
     "redeemed" should {
       "remove 3 cards from the players hand" in {
-        assertResult(postRedeemGame.cards.get(p1).get.size) {
-          preRedeemGame.cards.get(p1).get.size - 3
+        assertResult(postRedeemGame.cards(p1).size) {
+          preRedeemGame.cards(p1).size - 3
         }
       }
       "give the player extra troops to deploy" in {
