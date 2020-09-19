@@ -82,7 +82,17 @@ final case class RedeemBonus(player: Player,
                   extends Command {
   override def execution(game: GameSnapshot): Behavior[Event] = e => e
 
-  override def feasibility(game: GameSnapshot): FeasibilityReport = FeasibilityReport(true, None)
+  override def feasibility(game: GameSnapshot): FeasibilityReport = {
+    val turnFeasibility = Command.checkTurn(player, game)
+    if(!turnFeasibility.feasible)
+      return turnFeasibility
+    val playerCards = game.cards.get(player)
+    if(playerCards.isEmpty)
+      return FeasibilityReport(false, Some(s"No deck found"))
+    if(playerCards.get.count(c => c.equals(cardBonus)) < 3)
+      return FeasibilityReport(false, Some(s"Not enough cards of type $cardBonus"))
+    FeasibilityReport()
+  }
 }
 
 final case class EndTurn(player: Player)
@@ -92,6 +102,7 @@ final case class EndTurn(player: Player)
   override def feasibility(game: GameSnapshot): FeasibilityReport = {
     Command.checkTurn(player, game)
   }
+}
 
 
 object Command {
