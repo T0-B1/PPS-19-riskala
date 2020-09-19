@@ -1,6 +1,4 @@
-package org.riskala.model.eventSourcing.projections
-
-import org.riskala.model.eventSourcing.{Event, GameSnapshot}
+package org.riskala.model.eventSourcing
 
 trait Projection[State, Event] {
   def Update: (State, Event) => State
