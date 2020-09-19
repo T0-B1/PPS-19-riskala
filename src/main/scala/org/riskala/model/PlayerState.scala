@@ -18,3 +18,5 @@ object PlayerState {
   implicit def PlayerStateCodecJson =
     casecodec3(PlayerState.apply, PlayerState.unapply)("name", "owner", "troops")
 }
+
+

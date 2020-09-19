@@ -4,12 +4,13 @@ import akka.actor.typed.{ActorRef, Behavior}
 import akka.actor.typed.scaladsl.Behaviors
 import org.riskala.controller.actors.PlayerMessages.{GameInfoMessage, GameReferent, PlayerMessage}
 import org.riskala.model.ModelMessages.{GameMessage, LobbyMessage, Logout}
-import org.riskala.model.Player
-import org.riskala.model.eventSourcing.GameSnapshot
+import org.riskala.model.{Player, eventsourcing}
+import org.riskala.model.eventsourcing.{Event, EventStore, GameSnapshot, SnapshotGenerator}
 import org.riskala.model.game.GameMessages._
 import org.riskala.model.lobby.LobbyMessages.Subscribe
 import org.riskala.utils.MapLoader
 import org.riskala.view.messages.ToClientMessages.{GameFullInfo, GamePersonalInfo, RoomInfo}
+import org.riskala.model._
 
 import scala.collection.immutable.{HashMap, HashSet}
 
@@ -22,23 +23,27 @@ object GameManager {
     Behaviors.setup { context =>
       subscribers.foreach(_ ! GameReferent(context.self))
       //TODO: event sourcing, scenario and GameFullInfo
-      gameManager(gameName, subscribers, players, scenarioName, lobby)
+      gameManager(gameName, subscribers, players, scenarioName, lobby, EventStore[Event], GameSnapshot.newGame(players.toSeq, scenarioName)
     }
 
   private def gameManager(gameName: String,
                           subscribers: Set[ActorRef[PlayerMessage]],
                           players: Set[Player],
                           scenarioName: String,
-                          lobby: ActorRef[LobbyMessage]): Behavior[GameMessage] =
+                          lobby: ActorRef[LobbyMessage],
+                          eventStore: EventStore[Event],
+                          gameSnapshot: GameSnapshot): Behavior[GameMessage] =
     Behaviors.receive { (context,message) => {
 
       def nextBehavior(updateName: String = gameName,
                        updatedSub: Set[ActorRef[PlayerMessage]] = subscribers,
                        updatedPlayers: Set[Player] = players,
                        updateScenario: String = scenarioName,
-                       updateLobby: ActorRef[LobbyMessage] = lobby
+                       updateLobby: ActorRef[LobbyMessage] = lobby,
+                       eventStore: EventStore[Event] = eventStore,
+                       gameSnapshot: GameSnapshot = gameSnapshot
                       ): Behavior[GameMessage] =
-        gameManager(updateName, updatedSub, updatedPlayers, updateScenario, updateLobby)
+        gameManager(updateName, updatedSub, updatedPlayers, updateScenario, updateLobby, eventStore, gameSnapshot)
 
       message match {
         case JoinGame(actor) =>
@@ -77,7 +82,17 @@ object GameManager {
 
         case EndTurn(playerName) =>
           context.log.info("EndTurn")
-          nextBehavior()
+          val player: Player = players.collectFirst({case p if p.nickname.equals(player) => p}).get
+          // Creating a command
+          val command = eventsourcing.EndTurn(player)
+          // Executing the command over the state produces a set of new events (a behavior)
+          val behavior = command.execution(gameSnapshot)
+          // The event store is updated with the new events
+          val newEventStore = eventStore.perform(behavior)
+          // A new state is computed by projecting the behavior over the old state
+          val newSnapshot = SnapshotGenerator().Project(gameSnapshot, behavior)
+          // New store and snapshot are updated
+          nextBehavior(eventStore = newEventStore, gameSnapshot = newSnapshot)
 
         case Logout(actor) =>
           context.log.info("Logout")
