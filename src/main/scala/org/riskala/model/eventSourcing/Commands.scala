@@ -89,8 +89,9 @@ final case class EndTurn(player: Player)
                   extends Command {
   override def execution(game: GameSnapshot): Behavior[Event] = e => e
 
-  override def feasibility(game: GameSnapshot): FeasibilityReport = FeasibilityReport(true, None)
-}
+  override def feasibility(game: GameSnapshot): FeasibilityReport = {
+    Command.checkTurn(player, game)
+  }
 
 
 object Command {
