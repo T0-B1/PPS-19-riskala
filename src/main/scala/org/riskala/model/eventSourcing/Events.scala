@@ -56,6 +56,10 @@ final case class BonusRedeemed(player: Player,
 
 final case class TurnEnded(player: Player)
                   extends Event {
-  override def happen(game: GameSnapshot): GameSnapshot = game
+  override def happen(game: GameSnapshot): GameSnapshot = {
+    val currentPlayerIndex = game.players.indexOf(game.nowPlaying)
+    val nextIndex = (currentPlayerIndex + 1) % game.players.size
+    game.copy(nowPlaying = game.players(nextIndex))
+  }
 }
 

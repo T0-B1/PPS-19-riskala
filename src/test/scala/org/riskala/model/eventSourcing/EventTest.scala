@@ -141,7 +141,7 @@ class EventTest extends AnyWordSpec {
     val players = initialSnapshot.players
     val curPlayer = initialSnapshot.nowPlaying
     val curIndex = players.indexOf(curPlayer)
-    val nextIndex = if(curIndex.equals(players.size - 1)) 0 else curIndex+1
+    val nextIndex = (curIndex + 1) % players.size
     val nextPlayer = players(nextIndex)
     val nextTurn = TurnEnded(curPlayer).happen(initialSnapshot)
     "ended" should {
