@@ -8,7 +8,7 @@ object Objectives {
 
   final case class Objective(states: Set[State] = Set.empty[State], info: String = "")
   implicit def ObjectiveCodecJson: CodecJson[Objective] =
-    casecodec2(Objective.apply, Objective.unapply)("", "")
+    casecodec2(Objective.apply, Objective.unapply)("states", "info")
 
   /**
    * Utility to generate a random Objective based on map and number of player
