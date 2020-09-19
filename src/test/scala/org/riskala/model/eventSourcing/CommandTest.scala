@@ -3,7 +3,7 @@ package org.riskala.model.eventSourcing
 import org.junit.runner.RunWith
 import org.riskala.model
 import org.riskala.model.eventSourcing.EventStore.Behavior
-import org.riskala.model.{Cards, Geopolitics, Player}
+import org.riskala.model.{Cards, Geopolitics, Player, PlayerState}
 import org.riskala.utils.MapLoader
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.junit.JUnitRunner
@@ -46,7 +46,7 @@ class CommandTest extends AnyWordSpec {
     "generate a TurnEnded event" when {
       "feasible" in {
         assertResult(TurnEnded(p1)) {
-          EndTurn(p1).execution(game)(0)
+          EndTurn(p1).execution(game).head
         }
       }
     }
@@ -66,20 +66,34 @@ class CommandTest extends AnyWordSpec {
     "generate a Battle event" when {
       "feasible" in {
         assertResult(Battle(_, _, _, _, _)) {
-          Attack(attackingState, defendingState, 1).execution(game)(0)
+          Attack(attackingState, defendingState, 1).execution(game).head
         }
       }
     }
     "generate a Battle event and a CardDrawn event" when {
       "feasible and successful" in {
         assertResult(Battle(_, _, _, _, _)) {
-          Attack(attackingState, defendingState, 1).execution(game)(0)
+          Attack(attackingState, defendingState, 1).execution(game).head
         }
       }
     }
     "generate a GameEnded event" when {
       "the objective is reached" in {
-        fail()
+        var geopolitics = game.geopolitics
+        // All states belongs to p1
+        game.geopolitics.states.foreach(s => {
+          geopolitics = geopolitics.updateStateOwner(s.state, p1)
+        })
+        // Except one
+        geopolitics = geopolitics.updateStateOwner(defendingState, p2)
+          .setStateTroops(defendingState, 0)
+          .setStateTroops(attackingState, Int.MaxValue)
+        assertResult(Battle(_,_,_,_,_)) {
+          Attack(attackingState, defendingState, 1).execution(game).head
+        }
+        assertResult(GameEnded(p1)) {
+          Attack(attackingState, defendingState, 1).execution(game)(1)
+        }
       }
     }
   }
@@ -100,7 +114,9 @@ class CommandTest extends AnyWordSpec {
     }
     "generate a TroopsMoved event" when {
       "feasible" in {
-        fail()
+        assertResult(TroopsMoved(attackingState, defendingState, 1)) {
+          MoveTroops(attackingState, defendingState, 1).execution(game).head
+        }
       }
     }
   }
@@ -121,7 +137,9 @@ class CommandTest extends AnyWordSpec {
     }
     "generate a TroopsDeployed event" when {
       "feasible" in {
-        fail()
+        assertResult(TroopsDeployed(attackingState, 1)) {
+          Deploy(attackingState, 1).execution(game).head
+        }
       }
     }
   }
@@ -140,7 +158,7 @@ class CommandTest extends AnyWordSpec {
     "generate a BonusRedeemed event" when {
       "feasible" in {
         assertResult(BonusRedeemed(p1, Cards.Artillery)) {
-          RedeemBonus(p1, Cards.Artillery).execution(game)(0)
+          RedeemBonus(p1, Cards.Artillery).execution(game).head
         }
       }
     }
