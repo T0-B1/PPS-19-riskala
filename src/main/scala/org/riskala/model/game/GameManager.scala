@@ -82,7 +82,9 @@ object GameManager {
 
         case RedeemBonus(playerName, card) =>
           context.log.info("RedeemBonus")
-          nextBehavior()
+          val player = getPlayerByName(players, playerName).get
+          val (newEventStore, newSnapshot) = evolveEventStore(eventsourcing.RedeemBonus(player, card))
+          nextBehavior(eventStore = newEventStore, gameSnapshot = newSnapshot)
 
         case GetFullInfo(playerName, actor) =>
           context.log.info("GetFullInfo")
