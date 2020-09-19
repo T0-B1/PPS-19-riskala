@@ -47,7 +47,10 @@ final case class TroopsMoved(from: State,
 final case class TroopsDeployed(to: State,
                         troops: Int)
                   extends Event {
-  override def happen(game: GameSnapshot): GameSnapshot = game
+  override def happen(game: GameSnapshot): GameSnapshot = {
+    game.copy(geopolitics = Geopolitics.modifyStateTroops(to, +troops, game.geopolitics),
+      deployableTroops = game.deployableTroops - troops)
+  }
 }
 
 final case class CardDrawn(player: Player,
