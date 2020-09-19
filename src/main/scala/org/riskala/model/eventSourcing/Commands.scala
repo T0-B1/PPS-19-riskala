@@ -22,11 +22,19 @@ final case class Attack(from: State,
   override def feasibility(state: GameSnapshot): FeasibilityReport = {
     val fromPS = state.geopolitics.getPlayerState(from)
     if(fromPS.isEmpty)
-      FeasibilityReport(false, Some(s"Attacking from an unknown state: $from"))
-    val availableTroops = fromPS.get.troops
-    if(availableTroops <= troops)
-      FeasibilityReport(false, Some(s"Unsufficient troops ($availableTroops) for attack with $troops from $from"))
-    FeasibilityReport()
+      return FeasibilityReport(false, Some(s"Attacking from an unknown state: $from"))
+    val toPS = state.geopolitics.getPlayerState(to)
+    if(toPS.isEmpty)
+      return FeasibilityReport(false, Some(s"Attacking an unknown state: $to"))
+    val turnFeasibility = Command.checkTurn(fromPS.get.owner, state)
+    if(!turnFeasibility.feasible)
+      turnFeasibility
+    else {
+      val availableTroops = fromPS.get.troops
+      if(availableTroops <= troops)
+        FeasibilityReport(false, Some(s"Insufficient troops ($availableTroops) for attack with $troops from $from"))
+      FeasibilityReport()
+    }
   }
 }
 
