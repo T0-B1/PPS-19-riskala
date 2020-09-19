@@ -5,7 +5,7 @@ import org.riskala.model.Cards._
 import org.riskala.model.{Cards, MapGeography, PlayerState}
 import org.riskala.utils.Parser
 import org.riskala.view.messages.FromClientMessages.{ActionAttackMessage, ActionDeployMessage, ActionMoveMessage, RedeemBonusMessage}
-import org.riskala.view.messages.ToClientMessages.{ErrorMessage, GameFullInfo, GameUpdate, LobbyInfo}
+import org.riskala.view.messages.ToClientMessages.{ErrorMessage, GameEnd, GameFullInfo, GameUpdate, LobbyInfo}
 import org.riskala.view.messages.WrappedMessage
 
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
@@ -113,7 +113,7 @@ object ClientGame {
           Parser.retrieveMessage(wrappedMsg.payload, ErrorMessage.ErrorCodecJson.Decoder).get
         gameFacade.notifyGameError(errorMsg.error)
       }
-      case "GameUpdate" => {
+      case "GameUpdate" =>
         println("received GameUpdate ")
         val gameUpdate =
           Parser.retrieveMessage(wrappedMsg.payload, GameUpdate.GameUpdateCodecJson.Decoder).get
@@ -126,7 +126,11 @@ object ClientGame {
         gameFacade.setCardInfo(cardOccurrence.getOrElse(Infantry, 0),
           cardOccurrence.getOrElse(Cavalry, 0),
           cardOccurrence.getOrElse(Artillery, 0))
-      }
+
+      case "GameEnd" =>
+        val winner =
+          Parser.retrieveMessage(wrappedMsg.payload, GameEnd.GameEndCodecJson.Decoder).get.winner
+        gameFacade.setWinner(winner.nickname)
     }
   }
 }

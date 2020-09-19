@@ -1,7 +1,10 @@
 <template>
   <div>
     <div class="wrapper">
-      <div class="objective"> <span> Your objective is: <b><i> {{objective}} </i></b></span> </div>
+      <div class="objective"> 
+        <span> Your objective is: <b><i> {{objective}} </i></b></span>
+        <span class="winner" v-if="isEnded === true"> The winner is: <b><i>{{winnerPlayer}}</i></b></span>
+      </div>
       <div class="infoContainer">
         <div class="leftContainer">
           <div class="radioDiv">
@@ -94,7 +97,9 @@ export default {
       troopsToDeploy: '',
       nameActionBtn: '',
       troopsDeployed: '',
-      selectedNeighbor: ''
+      selectedNeighbor: '',
+      winnerPlayer: '',
+      isEnded: false
     }
   },
   computed: {
@@ -228,6 +233,10 @@ export default {
     },
     actionOnMap(){
       this.$store.state.websocket.send(ClientGame.getActionMsgWrapped(this.nameActionBtn, this.state, this.selectedNeighbor,this.troopsDeployed))
+    },
+    setWinner(winner){
+      this.isEnded = true
+      this.winnerPlayer = winner
     }
   }
 }
