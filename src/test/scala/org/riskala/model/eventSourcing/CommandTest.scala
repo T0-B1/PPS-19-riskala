@@ -60,6 +60,9 @@ class CommandTest extends AnyWordSpec {
       "origin state does not have enough troops" in {
 
       }
+      "you don't own the destination state" in {
+
+      }
     }
     "be feasible" when {
       "having enough troops during own turn" in {
@@ -71,6 +74,9 @@ class CommandTest extends AnyWordSpec {
   "Deploy troops" should {
     "not be feasible" when {
       "a player does not have enough troops to deploy" in {
+
+      }
+      "you don't own the destination state" in {
 
       }
     }
