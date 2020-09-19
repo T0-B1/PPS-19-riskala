@@ -53,6 +53,12 @@ class EventTest extends AnyWordSpec {
 
   "A deploy event" should {
     "increase the troops in the destination state" in {
+
+    }
+  }
+
+  "A card drawn event" should {
+    "add a card to the correct player" in {
       
     }
   }
