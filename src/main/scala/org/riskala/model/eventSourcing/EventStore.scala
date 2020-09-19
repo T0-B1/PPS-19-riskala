@@ -3,7 +3,7 @@ package org.riskala.model.eventSourcing
 import org.riskala.model.eventSourcing.EventStore.Behavior
 
 object EventStore {
-  type Behavior[Ev] = Seq[Ev] => Seq[Ev]
+  type Behavior[Ev] = Seq[Ev]
 }
 
 case class EventStore[Ev](events: Seq[Ev]) {
@@ -15,7 +15,7 @@ case class EventStore[Ev](events: Seq[Ev]) {
   }
 
   def perform(behavior: Behavior[Ev]) : EventStore[Ev] = {
-    EventStore(events ++ behavior(events))
+    EventStore(events ++ behavior)
   }
 
 }
