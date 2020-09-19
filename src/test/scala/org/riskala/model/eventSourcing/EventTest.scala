@@ -157,15 +157,22 @@ class EventTest extends AnyWordSpec {
   }
 
   "A turn" when {
-    val players = initialSnapshot.players
-    val curPlayer = initialSnapshot.nowPlaying
+    val game = initialSnapshot.copy(deployableTroops = 0)
+    val players = game.players
+    val curPlayer = game.nowPlaying
     val curIndex = players.indexOf(curPlayer)
     val nextIndex = (curIndex + 1) % players.size
     val nextPlayer = players(nextIndex)
-    val nextTurn = TurnEnded(curPlayer).happen(initialSnapshot)
+    val nextDeployableTroops = game.geopolitics.count(p => p.owner.equals(nextPlayer))
+    val nextTurn = TurnEnded(curPlayer).happen(game)
     "ended" should {
       "update the current player to be the next in the sequence" in {
         assert(nextTurn.nowPlaying.equals(nextPlayer))
+      }
+      "update the deployable troops" in {
+        assertResult(nextDeployableTroops) {
+          nextTurn.deployableTroops
+        }
       }
     }
   }
