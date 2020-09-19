@@ -69,6 +69,14 @@ class EventTest extends AnyWordSpec {
 
       }
       "give the player extra troops to deploy" in {
+
+      }
+    }
+  }
+
+  "A turn" when {
+    "ended" should {
+      "update the current player" in {
         
       }
     }
