@@ -44,7 +44,6 @@ object GameManager {
         case JoinGame(actor) =>
           context.log.info("Join")
           val newSubs = subscribers + actor
-          //actor ! GameInfoMessage(players)
           nextBehavior(updatedSub = newSubs)
 
         case Leave(actor) =>
