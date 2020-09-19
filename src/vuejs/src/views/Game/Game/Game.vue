@@ -8,22 +8,26 @@
             <h5> Turn of: </h5>
             <ul id="listPlayers">
               <li v-for="(player,index) in players" :key="index">
-                <label>{{player.nome_giocatore}}</label>
+                <label v-bind:style="[player.My_Turn ? {color: getRandomColor(player.Name_Player)} : {color: "black"}]">
+                  {{player.Name_Player}}</label>
               </li>
             </ul>
-            <b-button variant="danger"> End Turn </b-button>
+            <b-button variant="danger" @click="endTurn"> End Turn </b-button>
           </div>
           <hr/>
           <div class="buttonDiv" >
-            <button :disabled='isInfEnable' class="submitBtn" type="submit" @click="handleEvent">
+            <button :disabled='isInfEnable' class="submitBtn" type="submit" @click="redeemBonus('Infantry')" 
+            v-bind:style="[isInfEnable ? opacity = 1 : opacity = 0.4]">
               <img id="submitBtnI" src="@/assets/buttonsImg/infantry.png" width="50" height="50" alt="submit" />
             </button>
             <span>{{infantryCards}}</span>
-            <button :disabled="isCavEnable" class="submitBtn" type="submit" @click="handleEvent">
+            <button :disabled="isCavEnable" class="submitBtn" type="submit" @click="redeemBonus('Cavalry')"
+            v-bind:style="[isCavEnable ? opacity = 1 : opacity = 0.4]">
               <img id="submitBtnC" src="@/assets/buttonsImg/cavalry.png" width="50" height="50" alt="submit" />
             </button>
             <span>{{cavalryCards}}</span>
-            <button :disabled="isArtEnable" class="submitBtn" type="submit" @click="handleEvent">
+            <button :disabled="isArtEnable" class="submitBtn" type="submit" @click="redeemBonus('Artillery')"
+            v-bind:style="[isArtEnable ? opacity = 1 : opacity = 0.4]">
               <img id="submitBtnA" src="@/assets/buttonsImg/artillery.png" width="50" height="50" alt="submit" />
             </button>
             <span>{{artilleryCards}}</span>
@@ -49,8 +53,11 @@
             <h4> Choose one state </h4>
             <div v-for="(neighbor,index) in neighbors" :key="index" class="form-check">
               <input type="radio" :id="neighbor.id" :checked:"neighbor.checked">
-              <label :for="neighbor.id">{{neighbor.neighbor_name}}</label>
+              <label v-model="selectedNeighbor" :for="neighbor.id">{{neighbor.neighbor_name}}</label>
             </div>
+            <h4> How many troops? </h4>
+            <input type="number" :value="0" :max="maxAvailableTroops" v-model="troopsDeployed" number></br>
+            <b-button @click="actionOnMap">{{nameActionBtn}}</b-button>
           </div>
         </div>
       </div>
@@ -82,22 +89,23 @@ export default {
       cavalryCards: 4,
       artilleryCards: 0,
       region: '',
-      infantryEnable: false,
-      artilleryEnable: false,
-      cavalryEnable:false,
       neighbors: [],
       visible: false,
+      troopsToDeploy: '',
+      nameActionBtn: '',
+      troopsDeployed: '',
+      selectedNeighbor: ''
     }
   },
   computed: {
     isInfEnable: function() {
-      return !this.infantryEnable
+      return (this.infantryCards>=3)
     },
     isCavEnable: function() {
-      return !this.cavalryEnable
+      return (this.cavalryCards>=3)
     },
     isArtEnable: function() {
-      return !this.artilleryEnable
+      return (this.artilleryCards>=3)
     }
   },  
   mounted() {
@@ -108,24 +116,49 @@ export default {
       ClientGame.handleGameMessage(evt.data, vue)
     }
     this.$store.commit('changeHandler', newHandler)
-    this.onLoad()
+
+    if(this.$store.state.gameInfo !== ''){
+      ClientGame.setupGame(this.$store.state.gameInfo, this)
+    }
+    this.loadSvg()
   },
   methods: {
+    endTurn(){
+      console.log("endTurn")
+      this.$store.state.websocket.send(ClientGame.getEmptyMsgWrapped("EndTurnMessage"))
+    },
     leave(){
       console.log("leave")
-      ClientGame.getEmptyMsgWrapped("LeaveMessage")
+      this.$store.state.websocket.send(ClientGame.getEmptyMsgWrapped("LeaveMessage"))
+    },    
+    addPlayer(player, myTurn){
+      console.log("addPlayer")
+      this.players.push({Name_Player: players, My_Turn: myTurn})
+      console.log(this.players)
     },
-    onLoad(){
-      this.loadSvg()
-      /*this.loadCardsInfo()
-      this.addPlayers()
-      this.setMap()
-      this.addPlayerState()
-      this.loadObjective(),*/
-      this.setCardInfo()
+    setCurrentPlayer(player){
+      this.players.forEach(pl => pl.My_Turn = false)
+      this.players.find( function(p){
+        return p.Name_Player === player
+      }).My_Turn = true
     },
-    addNeighbors(neighbor, checked){
-      this.neighbors.push({neighbor_name: neighbor, checked: checked})
+    setCardInfo(infantry, cavalry, artillery){
+      this.infantryCards = infantry
+      //this.checkCardCounter("submitBtnoI")
+      this.cavalryCards = cavalry
+      //this.checkCardCounter("submitBtnoC")
+      this.artilleryCards = artillery
+      //this.checkCardCounter("submitBtnoA")
+    },
+    /*checkCardCounter(btn) {
+      if(this.infantryCards >= 3) {
+        document.getElementById(btn).style.opacity = 1
+      } else {
+        document.getElementById(btn).style.opacity = 0.4
+      }
+    },*/
+    setObjective(obj) {
+      this.objective = obj
     },
     setStateInfo(nameState, owner, troops, region){
       this.state = nameState
@@ -133,73 +166,21 @@ export default {
       this.troops = troops
       this.region = region
     },
-    addPlayer(player, myTurn){
-      console.log("addPlayer")
-      this.players.push({Name_Player: players, My_Turn: myTurn})
-      console.log(this.players)
+    addNeighbor(neighbor, checked){
+      this.neighbors.push({neighbor_name: neighbor, checked: checked})
     },
-    setMap(map){
-      console.log("mappp")
-      console.log(map)
-    },
-    cleanPlayerState() {
-      console.log("cleanPlayerState")
-      this.playerStates.splice(0)
-    },
-    addPlayerState(playerState){
+    setPlayerState(playerState){
       console.log("playerState " + playerState)
-      this.playerStates.push({playerState})
-      console.log(this.playerState)
+      //this.playerStates.push({playerState})
+      document.getElementById(playerState.state).setAttribute("fill", playerState.owner.color)
+      //add troops
     },
-    loadObjective(obj) {
-      this.objective = obj
+    setStateRegion(state, region) {
+      document.getElementById(playerState.state).style.stroke = this.getRandomColor(region)
+      document.getElementById(playerState.state).style.strokeWidth = '4'
     },
-    setCardInfo(infantry, cavalry, artillery){
-      //this.infantryCards = infantry
-      this.infantryCards = 0
-      this.checkInfantry()
-      //this.cavalryCards = cavalry
-      this.cavalryCards = 4
-      this.checkCavalry()
-      //this.artilleryCards = artillery
-      this.artilleryCards = 0
-      this.checkArtillery()
-    },
-    notifyError(error){
-      console.log("error " + error)
-    },
-    checkInfantry() {
-      if(this.infantryCards >= 3) {
-        this.infantryEnable = true
-        document.getElementById("submitBtnoI").style.opacity = 1
-      } else {
-        this.infantryEnable = false
-        document.getElementById("submitBtnI").style.opacity = 0.4
-      }
-    },
-    checkCavalry(){
-      if(this.cavalryCards >= 3) {
-        this.cavalryEnable = true
-        document.getElementById("submitBtnC").style.opacity = 1
-      } else {
-        this.cavalryEnable = false
-        document.getElementById("submitBtnC").style.opacity = 0.4
-      }
-    },
-    checkArtillery() {
-      if(this.artilleryCards >= 3) {
-        this.artilleryEnable = true
-        document.getElementById("submitBtnA").style.opacity = 1
-      } else {
-        this.artilleryEnable = false
-        document.getElementById("submitBtnA").style.opacity = 0.4
-      }
-    },
-    handleEvent(){
-      /*Aggiungi parametri al metodo: fromState, toState, numTroops */
-      if(localStorage.riskalaUser != ""){
-        ClientGame.getActionMsgWrapped(localStorage.riskalaUser)
-      }
+    redeemBonus(cardType){
+      this.$store.state.websocket.send(ClientGame.getRedeemBonusMsgWrapped(cardType))
     },
     getRandomColor(name) {
       var rng = seedRandom(name)
@@ -213,25 +194,18 @@ export default {
     bind(){
       var vue = this
       Array.prototype.forEach.call(document.getElementsByTagName("path"), function(el) {
-        //set the color of el as owner color
-        el.setAttribute('fill', 'blue')
-        el.style.stroke = 'red'
-        el.style.strokeWidth = '2'
-
         el.onclick = function(){ 
-          if(vue.state !== 'Select a state' || vue.state == el.id){
-            document.getElementById(vue.state).setAttribute('fill', 'blue')
+          if(el.id !== 'Select a state'){
+            document.getElementById(el.id).style.opacity = 0.5
+            vue.state = el.id;
+            ClientGame.clickedState(vue.state, localStorage.riskalaUser, vue)
+          } else {
             document.getElementById(vue.state).style.opacity = 1
-            document.getElementById(vue.state).style.stroke = 'red'
-            document.getElementById(vue.state).style.strokeWidth = '2'
+            vue.state = "Select a state"
+            vue.visible = false
+            vue.neighbors.splice(0)
+            vue.setStateInfo('', '', '', '')
           }
-          el.style.opacity = 0.7;
-          el.setAttribute('fill', 'gold')
-          el.setAttribute("font-size", "14") 
-          el.style.stroke = 'green'
-          el.style.strokeWidth = '6'
-          vue.state = el.id;
-          ClientGame.clickedState(vue.state, localStorage.riskalaUser, vue)
         };
       })
     },
@@ -251,6 +225,9 @@ export default {
         var myMap = map.node().append(data.documentElement);
         this.bind()
       });
+    },
+    actionOnMap(){
+      this.$store.state.websocket.send(ClientGame.getActionMsgWrapped(this.state, this.selectedNeighbor,this.troopsDeployed))
     }
   }
 }

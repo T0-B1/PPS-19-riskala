@@ -81,6 +81,10 @@
         this.$store.commit('changeRoomInfo', newRoom)
         this.$router.push('/room')
       },
+      goToGame(newGame){
+        this.$store.commit('changeGameInfo', newGame)
+        this.$router.push('/game')
+      },
       notifyError(error) {
         console.log(error)
       },

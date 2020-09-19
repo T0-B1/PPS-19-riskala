@@ -42,6 +42,8 @@ object ClientLobby {
         lobbyFacade.notifyError(errorMsg.error)
       case "RoomInfo" =>
         lobbyFacade.goToRoom(wrappedMsg.payload)
+      case "GameFullInfo" =>
+        lobbyFacade.goToGame(wrappedMsg.payload)
       case unhandled => println(s"Ignored message: $unhandled")
     }
   }
