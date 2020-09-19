@@ -2,12 +2,10 @@ package org.riskala.model.eventSourcing
 
 import org.junit.runner.RunWith
 import org.riskala.model
-import org.riskala.model.eventSourcing.EventStore.Behavior
-import org.riskala.model.{Cards, Geopolitics, Player, PlayerState}
+import org.riskala.model.{Cards, Geopolitics, Player}
 import org.riskala.utils.MapLoader
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.junit.JUnitRunner
-
 
 @RunWith(classOf[JUnitRunner])
 class CommandTest extends AnyWordSpec {
@@ -22,7 +20,7 @@ class CommandTest extends AnyWordSpec {
   val defendingState = "Toscana"
   var geopolitics: Geopolitics = initialSnapshot.geopolitics.updateStateOwner(attackingState, p1)
     .updateStateOwner(defendingState, p2)
-    .setStateTroops(attackingState, 10)
+    .setStateTroops(attackingState, Int.MaxValue)
   val game: GameSnapshot = initialSnapshot.copy(nowPlaying = p1, geopolitics = geopolitics, cards = Map.empty + (p1 -> Seq.fill(3)(Cards.Artillery)))
 
   "No command except EndTurn" should {
@@ -71,7 +69,7 @@ class CommandTest extends AnyWordSpec {
     }
     "generate a Battle event and a CardDrawn event" when {
       "feasible and successful" in {
-        val evs = Attack(attackingState, defendingState, 5).execution(game)
+        val evs = Attack(attackingState, defendingState, Int.MaxValue-1).execution(game)
         assert(evs.head.isInstanceOf[Battle])
         assert(evs(1).isInstanceOf[CardDrawn])
       }
@@ -87,7 +85,8 @@ class CommandTest extends AnyWordSpec {
         geopolitics = geopolitics.updateStateOwner(defendingState, p2)
           .setStateTroops(defendingState, 0)
           .setStateTroops(attackingState, Int.MaxValue)
-        val evs = Attack(attackingState, defendingState, Int.MaxValue-1).execution(game)
+        val newGame = game.copy(geopolitics = geopolitics)
+        val evs = Attack(attackingState, defendingState, Int.MaxValue-1).execution(newGame)
         assert(evs.head.isInstanceOf[Battle])
         assert(evs(1).isInstanceOf[CardDrawn])
         assertResult(GameEnded(p1)) {

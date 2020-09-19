@@ -16,8 +16,10 @@ sealed trait Command{
 trait SelfCheckingCommand extends Command {
   override def execution(game: GameSnapshot): Behavior[Event] = {
     val feasibilityReport = feasibility(game)
-    if(!feasibilityReport.feasible)
+    if(!feasibilityReport.feasible) {
+      println(feasibilityReport.error)
       return Seq.empty
+    }
     checkedExecution(game)
   }
 
