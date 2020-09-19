@@ -21,15 +21,13 @@ final case class Battle(from: State,
                   extends Event {
   override def happen(game: GameSnapshot): GameSnapshot = {
     var geopolitics = game.geopolitics
-    var fromPS = Geopolitics.getPlayerState(from, geopolitics).get
-    var toPS = Geopolitics.getPlayerState(to, geopolitics).get
-    fromPS = fromPS.copy(troops = fromPS.troops - attacking)
-    if(attackingPassed > 0)
-      toPS = toPS.copy(owner = fromPS.owner, troops = attackingPassed)
-    else
-      toPS = toPS.copy(troops = toPS.troops - defendingCasualties)
-    geopolitics = Geopolitics.updateGeopolitics(fromPS, geopolitics)
-    geopolitics = Geopolitics.updateGeopolitics(toPS, geopolitics)
+    val attacker = Geopolitics.getPlayerState(from, geopolitics).get.owner
+    geopolitics = Geopolitics.modifyStateTroops(from, -attacking, geopolitics)
+    if(attackingPassed > 0) {
+      geopolitics = Geopolitics.setStateTroops(to, attackingPassed, geopolitics)
+      geopolitics = Geopolitics.updateStateOwner(from, attacker, geopolitics)
+    } else
+      geopolitics = Geopolitics.modifyStateTroops(to, - defendingCasualties, geopolitics)
     game.copy(geopolitics = geopolitics)
   }
 }
@@ -40,11 +38,9 @@ final case class TroopsMoved(from: State,
                   extends Event {
   override def happen(game: GameSnapshot): GameSnapshot = {
     var geopolitics = game.geopolitics
-    var fromPS = Geopolitics.getPlayerState(from, geopolitics).get
-    var toPS = Geopolitics.getPlayerState(to, geopolitics).get
-    fromPS = fromPS.copy(troops = fromPS.troops - moved)
-    toPS = toPS.copy(troops = toPS.troops + moved)
-    game
+    geopolitics = Geopolitics.modifyStateTroops(from, -moved, geopolitics)
+    geopolitics = Geopolitics.modifyStateTroops(to, +moved, geopolitics)
+    game.copy(geopolitics = geopolitics)
   }
 }
 
