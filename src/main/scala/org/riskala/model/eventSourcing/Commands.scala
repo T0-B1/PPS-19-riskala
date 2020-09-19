@@ -1,7 +1,7 @@
 package org.riskala.model.eventSourcing
 
 import org.riskala.model.Cards.Cards
-import org.riskala.model.Player
+import org.riskala.model.{Geopolitics, Player}
 import org.riskala.model.State.State
 import org.riskala.model.eventSourcing.EventStore.Behavior
 
@@ -11,7 +11,7 @@ sealed trait Command{
   def feasibility(state: GameSnapshot): FeasibilityReport
 }
 
-case class FeasibilityReport(feasible: Boolean, error: Option[String])
+case class FeasibilityReport(feasible: Boolean = true, error: Option[String] = None)
 
 final case class Attack(from: State,
                         to: State,
@@ -20,7 +20,13 @@ final case class Attack(from: State,
   override def execution(state: GameSnapshot): Behavior[Event] = e => e
 
   override def feasibility(state: GameSnapshot): FeasibilityReport = {
-    FeasibilityReport(true, None)
+    val fromPS = Geopolitics.getPlayerState(from, state.geopolitics)
+    if(fromPS.isEmpty)
+      FeasibilityReport(false, Some(s"Attacking from an unknown state: $from"))
+    val availableTroops = fromPS.get.troops
+    if(availableTroops <= troops)
+      FeasibilityReport(false, Some(s"Unsufficient troops ($availableTroops) for attack with $troops from $from"))
+    FeasibilityReport()
   }
 }
 
