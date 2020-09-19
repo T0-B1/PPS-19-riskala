@@ -44,9 +44,9 @@ final case class Attack(from: State,
     if(remainingAttackers == 0)
       Seq(Battle(from, to, troops, 0, defenders - remainingDefenders))
     else{
-      val events: Seq[Event] =
-        Seq(Battle(from, to, troops, remainingAttackers, defenders)) ++
-          Seq(CardDrawn(game.geopolitics.getPlayerState(from).get.owner, Cards.generateCard()))
+      val events: Seq[Event] = Seq.empty :+
+        Battle(from, to, troops, remainingAttackers, defenders) :+
+        CardDrawn(game.geopolitics.getPlayerState(from).get.owner, Cards.generateCard())
 
 
     }
