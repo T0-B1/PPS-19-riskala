@@ -4,36 +4,51 @@ import org.riskala.model.Cards.Cards
 import org.riskala.model.Player
 import org.riskala.model.State.State
 
-trait Event
+trait Event{
+  def happen(snapshot: GameSnapshot): GameSnapshot
+}
 
 final case class GameInitialized(initialSnapshot: GameSnapshot)
-                  extends Event
+                  extends Event {
+  override def happen(snapshot: GameSnapshot): GameSnapshot = ???
+}
 
 final case class Battle(from: State,
                        to: State,
                        attacking: Int,
                        attackingPassed: Int,
                        defendingCasualties: Int)
-                  extends Event
+                  extends Event {
+  override def happen(snapshot: GameSnapshot): GameSnapshot = ???
+}
 
 final case class TroopsMoved(from: State,
                       to: State,
                       troops: Int)
-                  extends Event
+                  extends Event {
+  override def happen(snapshot: GameSnapshot): GameSnapshot = ???
+}
 
 final case class TroopsDeployed(to: State,
                         troops: Int)
-                  extends Event
+                  extends Event {
+  override def happen(snapshot: GameSnapshot): GameSnapshot = ???
+}
 
 final case class CardDrawn(player: Player,
                       card: Cards)
-                  extends Event
+                  extends Event {
+  override def happen(snapshot: GameSnapshot): GameSnapshot = ???
+}
 
 final case class BonusRedeemed(player: Player,
                         cardBonus: Cards)
-                  extends Event
+                  extends Event {
+  override def happen(snapshot: GameSnapshot): GameSnapshot = ???
+}
 
 final case class TurnEnded(player: Player)
-                  extends Event
-
+                  extends Event {
+  override def happen(snapshot: GameSnapshot): GameSnapshot = ???
+}
 
