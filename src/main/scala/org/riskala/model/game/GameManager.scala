@@ -72,7 +72,8 @@ object GameManager {
           nextBehavior()
 
         case ActionMove(playerName, from, to, troops) =>
-          nextBehavior()
+          val (newEventStore, newSnapshot) = evolveEventStore(eventsourcing.MoveTroops(from, to, troops))
+          nextBehavior(eventStore = newEventStore, gameSnapshot = newSnapshot)
 
         case ActionDeploy(playerName, from, to, troops) =>
           val (newEventStore, newSnapshot) = evolveEventStore(Deploy(to,troops))
