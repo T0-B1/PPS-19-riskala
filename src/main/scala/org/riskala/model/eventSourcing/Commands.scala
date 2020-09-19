@@ -35,7 +35,7 @@ final case class Attack(from: State,
     val defenders = game.geopolitics.getPlayerStateByName(to).get.troops
     var remainingDefenders = defenders
     var remainingAttackers = troops
-    while(remainingAttackers > 0 || remainingDefenders > 0) {
+    while(remainingAttackers > 0 && remainingDefenders > 0) {
       if(rng.nextInt(10) > 5)
         remainingDefenders = remainingDefenders - 1
       else
