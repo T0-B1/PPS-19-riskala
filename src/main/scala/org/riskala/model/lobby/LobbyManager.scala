@@ -91,6 +91,9 @@ object LobbyManager {
           }
 
         case StartGame(info, players, roomSubscribers) =>
+          context.log.info("info -> "+info)
+          context.log.info("players -> "+players)
+          context.log.info("roomSubscribers -> "+roomSubscribers)
           val newRooms = rooms - info.basicInfo.name
           val gameSub = roomSubscribers++players.values
           val game = context.spawn(GameManager(info.basicInfo.name, gameSub,

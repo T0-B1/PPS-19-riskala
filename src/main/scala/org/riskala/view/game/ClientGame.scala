@@ -85,12 +85,16 @@ object ClientGame {
 
   @JSExport
   def setupGame(gameInfo: String, gameFacade: GameFacade): Unit = {
-    val game = Parser.retrieveMessage(gameInfo, GameFullInfo.GameFullInfoCodecJson.Decoder).get
+    println("SCALAJS SETUP GAME")
+    println(gameInfo)
+    val gameOpt = Parser.retrieveMessage(gameInfo, GameFullInfo.GameFullInfoCodecJson.Decoder)
+    println(if(gameOpt.isDefined) "PARSED GAMEINFO" else "FAILED TO PARSE GAMEINFO")
+    val game = gameOpt.get
     map = game.map
     playerStates = game.playerStates
 
     game.players.foreach(pl => gameFacade.addPlayer(pl, game.actualPlayer == pl))
-    playerStates.foreach(ps => gameFacade.setPlayerState(ps))
+    playerStates.foreach(ps => gameFacade.setPlayerState(ps.state, ps.owner.nickname, ps.troops))
     map.regions.foreach(r => r.states.foreach(s => gameFacade.setStateRegion(s,r.name)))
 
     gameFacade.setObjective(game.personalInfo.objective.info)
