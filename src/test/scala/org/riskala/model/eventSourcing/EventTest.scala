@@ -4,7 +4,7 @@ import org.junit.runner.RunWith
 import org.riskala.model
 import org.riskala.model.Cards.Cards
 import org.riskala.model.State.State
-import org.riskala.model.{Cards, Player, PlayerState}
+import org.riskala.model.{Cards, Geopolitics, Player, PlayerState}
 import org.riskala.utils.MapLoader
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.junit.JUnitRunner
@@ -30,7 +30,7 @@ class EventTest extends AnyWordSpec {
     val defendingState = "Toscana"
     val attackingPlayerState = PlayerState(attackingState, p1, 10)
     val defendingPlayerState = PlayerState(defendingState, p2, 5)
-    val playerStates: Set[PlayerState] = initialSnapshot.geopolitics.filterNot(p =>
+    val playerStates: Geopolitics = initialSnapshot.geopolitics.filterNot(p =>
       p.state.equals(attackingState) || p.state.equals(defendingState)) + attackingPlayerState + defendingPlayerState
     val preBattleGame = initialSnapshot.copy(geopolitics = playerStates)
 
@@ -86,7 +86,7 @@ class EventTest extends AnyWordSpec {
     val movedTroops = 3
     val fromPlayerState = PlayerState(fromState, p1, 5)
     val toPlayerState = PlayerState(toState, p1, 5)
-    val playerStates: Set[PlayerState] = initialSnapshot.geopolitics.filterNot(p =>
+    val playerStates: Geopolitics = initialSnapshot.geopolitics.filterNot(p =>
       p.state.equals(fromState) || p.state.equals(toState)) + fromPlayerState + toPlayerState
     val preMoveGame = initialSnapshot.copy(geopolitics = playerStates)
     val postMoveGame = TroopsMoved(fromState, toState, movedTroops).happen(preMoveGame)
@@ -109,7 +109,7 @@ class EventTest extends AnyWordSpec {
     val toState = "Emilia-Romagna"
     val deployed = 3
     val toPlayerState = PlayerState(toState, p1, 5)
-    val playerStates: Set[PlayerState] = initialSnapshot.geopolitics.filterNot(p =>
+    val playerStates: Geopolitics = initialSnapshot.geopolitics.filterNot(p =>
       p.state.equals(toState)) + toPlayerState
     val preDeployGame = initialSnapshot.copy(geopolitics = playerStates)
     val postDeployGame = TroopsDeployed(toState, deployed).happen(preDeployGame)
