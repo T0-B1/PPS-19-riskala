@@ -91,8 +91,19 @@ class EventTest extends AnyWordSpec {
   }
 
   "A deploy event" should {
+    val toState = "Emilia-Romagna"
+    val deployed = 3
+    val toPlayerState = PlayerState(toState, p1, 5)
+    val playerStates: Set[PlayerState] = initialSnapshot.geopolitics.filterNot(p =>
+      p.state.equals(toState)) + toPlayerState
+    val preDeployGame = initialSnapshot.copy(geopolitics = playerStates)
+    val postDeployGame = TroopsDeployed(toState, deployed).happen(preDeployGame)
+    val A = getPlayerStateByName(toState, postDeployGame)
     "increase the troops in the destination state" in {
-
+      assert(A.troops.equals(toPlayerState.troops + deployed))
+    }
+    "reduce the amount of deployable troops" in {
+      assert(postDeployGame.deployableTroops.equals(preDeployGame.deployableTroops - deployed))
     }
   }
 
