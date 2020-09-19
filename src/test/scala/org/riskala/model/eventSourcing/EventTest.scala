@@ -28,9 +28,22 @@ class EventTest extends AnyWordSpec {
       p.state.equals(attackingState) || p.state.equals(defendingState)) + attackingPlayerState + defendingPlayerState
     val preBattleGame = initialSnapshot.copy(geopolitics = playerStates)
 
+    "happening" should {
+      val attackers = 3
+      val passed = 0
+      val dead = 0
+      val postBattleGame = Battle(attackingState, defendingState, attackers, passed, dead).happen(preBattleGame)
+      val atkState = postBattleGame.geopolitics.collectFirst({
+        case s if s.state.equals(attackingState) => s
+      }).get
+      "decrease the number of troops present in the attacking state of an amount equal to the attacking troops" in {
+        assert(atkState.troops.equals(attackingPlayerState.troops - attackers))
+      }
+    }
+
     "victorious" should {
       val attackers = 5
-      val passed = 5
+      val passed = 3
       val dead = 5
       val postBattleGame = Battle(attackingState, defendingState, attackers, passed, dead).happen(preBattleGame)
       val lostState = postBattleGame.geopolitics.collectFirst({
@@ -43,18 +56,21 @@ class EventTest extends AnyWordSpec {
         assert(lostState.troops.equals(passed))
       }
     }
-    "not victorious" should {
-      "not result in the attacked state to change ownership" in {
 
+    "not victorious" should {
+      val attackers = 5
+      val passed = 0
+      val dead = 4
+      val postBattleGame = Battle(attackingState, defendingState, attackers, passed, dead).happen(preBattleGame)
+      val heldState = postBattleGame.geopolitics.collectFirst({
+        case s if s.state.equals(defendingState) => s
+      }).get
+      "not result in the attacked state to be conquered" in {
+        assert(heldState.owner.equals(defendingPlayerState.owner))
       }
       "result in the attacked state to have an amount of troops decreased by an amount equal to defendingCasualties" in {
-
+        assert(heldState.troops.equals(defendingPlayerState.troops - dead))
       }
-    }
-
-  }
-  it should {
-    "decrease the number of troops present in the attacking state of an amount equal to the attacking troops" in {
     }
   }
 
