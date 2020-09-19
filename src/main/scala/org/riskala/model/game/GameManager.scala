@@ -90,7 +90,7 @@ object GameManager {
 
         case EndTurn(playerName) =>
           context.log.info("EndTurn")
-          val player: Player = players.collectFirst({case p if p.nickname.equals(player) => p}).get
+          val player: Player = players.collectFirst({case p if p.nickname.equals(playerName) => p}).get
           // Creating a command
           val command = eventsourcing.EndTurn(player)
           // Executing the command over the state produces a set of new events (a behavior)
