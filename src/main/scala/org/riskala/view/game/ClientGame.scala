@@ -4,7 +4,7 @@ import argonaut.Argonaut.{ToJsonIdentity, nospace}
 import org.riskala.model.Cards._
 import org.riskala.model.{Cards, MapGeography, PlayerState}
 import org.riskala.utils.Parser
-import org.riskala.view.messages.FromClientMessages.{ActionMessage, RedeemBonusMessage}
+import org.riskala.view.messages.FromClientMessages.{ActionAttackMessage, ActionDeployMessage, ActionMoveMessage, RedeemBonusMessage}
 import org.riskala.view.messages.ToClientMessages.{ErrorMessage, GameFullInfo, GameUpdate, LobbyInfo}
 import org.riskala.view.messages.WrappedMessage
 
@@ -22,9 +22,13 @@ object ClientGame {
   }
 
   @JSExport
-  def getActionMsgWrapped(from: String, to: String, troops: Int): String =  {
-    WrappedMessage("ActionMessage",
-      ActionMessage(from, to, troops).asJson.pretty(nospace)).asJson.pretty(nospace)
+  def getActionMsgWrapped(actionType: String, from: String, to: String, troops: Int): String =  {
+    val action = actionType match {
+      case "Attack" =>  ActionAttackMessage(from, to, troops).asJson.pretty(nospace)
+      case "Move" =>  ActionMoveMessage(from, to, troops).asJson.pretty(nospace)
+      case "Deploy" =>  ActionDeployMessage(from, to, troops).asJson.pretty(nospace)
+    }
+    WrappedMessage("ActionMessage", action).asJson.pretty(nospace)
   }
 
   @JSExport

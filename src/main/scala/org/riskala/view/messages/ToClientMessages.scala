@@ -7,6 +7,9 @@ import org.riskala.model.{MapGeography, Player, PlayerState}
 
 import scala.scalajs.js.annotation.JSExportAll
 
+/**
+ * Structure of messages that are sent to client
+ * */
 @JSExportAll
 object ToClientMessages {
 
@@ -50,12 +53,24 @@ object ToClientMessages {
       casecodec3(LobbyInfo.apply,LobbyInfo.unapply)("rooms","games","terminatedGames")
   }
 
+  /**
+   * @param objective Personal goal of the player during a game
+   * @param cards The list of cards that the player has
+   * */
   case class GamePersonalInfo(objective: Objective = Objective(), cards: List[Cards] = List.empty[Cards])
   object GamePersonalInfo {
     implicit def GamePersonalInfoCodecJson =
       casecodec2(GamePersonalInfo.apply, GamePersonalInfo.unapply)("objective", "cards")
   }
 
+  /**
+   * @param players List of players into the game
+   * @param actualPlayer The player who is playing
+   * @param troopsToDeploy The number of troops that the player can deploy
+   * @param map The map on which players will play
+   * @param playerStates The states that the player owns
+   * @param personalInfo Personal info about objective and cards
+   * */
   case class GameFullInfo(players:Set[String],
                           actualPlayer:String,
                           troopsToDeploy:Int,
@@ -67,12 +82,20 @@ object ToClientMessages {
       casecodec6(GameFullInfo.apply,GameFullInfo.unapply)("players","actualPlayer","troopsToDeploy","map","playerStates","personalInfo")
   }
 
+  /**
+   * @param actualPlayer The new player who is playing
+   * @param troopsToDeploy The number of troops that the player can deploy
+   * @param personalInfo Personal info about objective and cards
+   * */
   case class GameUpdate(actualPlayer:String, troopsToDeploy:Int, playerStates: Set[PlayerState],personalInfo:GamePersonalInfo)
   object GameUpdate {
     implicit def GameUpdateCodecJson =
       casecodec4(GameUpdate.apply,GameUpdate.unapply)("actualPlayer","troopsToDeploy","playerState","personalInfo")
   }
 
+  /**
+   * @param error The error occurred
+   * */
   final case class ErrorMessage(error: String)
   object ErrorMessage {
     implicit def ErrorCodecJson =
