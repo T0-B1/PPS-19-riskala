@@ -50,7 +50,7 @@ object ToClientMessages {
       casecodec3(LobbyInfo.apply,LobbyInfo.unapply)("rooms","games","terminatedGames")
   }
 
-  case class GamePersonalInfo(objective: Objective, cards: List[Cards])
+  case class GamePersonalInfo(objective: Objective = Objective(), cards: List[Cards] = List.empty[Cards])
   object GamePersonalInfo {
     implicit def GamePersonalInfoCodecJson =
       casecodec2(GamePersonalInfo.apply, GamePersonalInfo.unapply)("objective", "cards")
