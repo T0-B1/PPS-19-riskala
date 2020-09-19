@@ -59,7 +59,18 @@ class EventTest extends AnyWordSpec {
 
   "A card drawn event" should {
     "add a card to the correct player" in {
-      
+
+    }
+  }
+
+  "A bonus" when {
+    "redeemed" should {
+      "remove 3 cards from the players hand" in {
+
+      }
+      "give the player extra troops to deploy" in {
+        
+      }
     }
   }
 }
