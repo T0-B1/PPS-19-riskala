@@ -100,7 +100,7 @@ class CommandTest extends AnyWordSpec {
     }
     "generate a TroopsMoved event" when {
       "feasible" in {
-
+        fail()
       }
     }
   }
@@ -121,7 +121,7 @@ class CommandTest extends AnyWordSpec {
     }
     "generate a TroopsDeployed event" when {
       "feasible" in {
-
+        fail()
       }
     }
   }
@@ -139,7 +139,7 @@ class CommandTest extends AnyWordSpec {
     }
     "generate a BonusRedeemed event" when {
       "feasible" in {
-
+        fail()
       }
     }
   }
