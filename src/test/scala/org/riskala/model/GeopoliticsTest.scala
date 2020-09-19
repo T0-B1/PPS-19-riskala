@@ -13,26 +13,26 @@ class GeopoliticsTest extends AnyWordSpec {
   val troopsDelta = -5
   val troopsValue = 3
   val playerState = PlayerState(state, p1, 7)
-  val geopolitics = Set(playerState)
+  val geopolitics: Geopolitics = Set(playerState)
+
 
   "A state owner" should {
     "be correctly updated" in {
-      assert(Geopolitics.getPlayerState(state,
-        Geopolitics.updateStateOwner(state, p2, geopolitics)).get
-        .owner.equals(p2))
+      assert(geopolitics.updateStateOwner(state, p2)
+        .getPlayerState(state).get.owner.equals(p2))
     }
   }
 
   "The amount of troops in a state" should {
     "be correctly updated" in {
       assertResult(playerState.troops + troopsDelta) {
-        Geopolitics.getPlayerState(state,
-          Geopolitics.modifyStateTroops(state, troopsDelta, geopolitics)).get.troops
+        geopolitics.modifyStateTroops(state, troopsDelta)
+            .getPlayerState(state).get.troops
       }
 
       assertResult(troopsValue) {
-        Geopolitics.getPlayerState(state,
-          Geopolitics.setStateTroops(state, troopsValue, geopolitics)).get.troops
+        geopolitics.setStateTroops(state, troopsValue)
+          .getPlayerState(state).get.troops
       }
     }
   }

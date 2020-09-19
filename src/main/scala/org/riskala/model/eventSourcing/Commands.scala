@@ -20,7 +20,7 @@ final case class Attack(from: State,
   override def execution(state: GameSnapshot): Behavior[Event] = e => e
 
   override def feasibility(state: GameSnapshot): FeasibilityReport = {
-    val fromPS = Geopolitics.getPlayerState(from, state.geopolitics)
+    val fromPS = state.geopolitics.getPlayerState(from)
     if(fromPS.isEmpty)
       FeasibilityReport(false, Some(s"Attacking from an unknown state: $from"))
     val availableTroops = fromPS.get.troops

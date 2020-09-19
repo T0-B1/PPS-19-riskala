@@ -1,6 +1,5 @@
 package org.riskala.model.eventSourcing
 
-
 import org.junit.runner.RunWith
 import org.riskala.model
 import org.riskala.model.{Cards, Geopolitics, Player}
@@ -17,12 +16,11 @@ class CommandTest extends AnyWordSpec {
   val players = Seq(p1, p2, p3)
   val scenario: model.Map = MapLoader.loadMap("italy").get
   val initialSnapshot: GameSnapshot = GameSnapshot.newGame(players, scenario)
-  val game = initialSnapshot.copy(nowPlaying = p1, cards = Map.empty + (p1 -> Seq.fill(3)(Cards.Artillery)))
+  val game: GameSnapshot = initialSnapshot.copy(nowPlaying = p1, cards = Map.empty + (p1 -> Seq.fill(3)(Cards.Artillery)))
   val attackingState = "Emilia-Romagna"
   val defendingState = "Toscana"
-  var geopolitics = game.geopolitics
-  geopolitics = Geopolitics.updateStateOwner(attackingState, p1, geopolitics)
-  geopolitics = Geopolitics.updateStateOwner(defendingState, p2, geopolitics)
+  var geopolitics: Geopolitics = game.geopolitics.updateStateOwner(attackingState, p1)
+    .updateStateOwner(defendingState, p2)
 
   "No command except EndTurn" should {
     "be feasible" when {
