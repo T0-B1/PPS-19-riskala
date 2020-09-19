@@ -82,3 +82,10 @@ final case class TurnEnded(player: Player)
   }
 }
 
+final case class GameEnded(winner: Player)
+                  extends Event {
+  override def happen(game: GameSnapshot): GameSnapshot = {
+    game.copy(winner = Some(winner))
+  }
+}
+
