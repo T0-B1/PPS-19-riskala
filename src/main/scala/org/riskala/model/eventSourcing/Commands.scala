@@ -50,7 +50,9 @@ final case class Attack(from: State,
         CardDrawn(attacker, Cards.generateCard())
       val objective: Set[State] = game.objectives(attacker).states
       val conquered: Set[State] = game.geopolitics.getStatesOfPlayer(attacker)
-      if(conquered.diff(objective).isEmpty)
+      // The ownership of the only state left is yet to be updated, but if it is the one just conquered, it's a victory
+      val diff: Set[State] = objective.diff(conquered)
+      if(diff.size == 1 && diff.head.equals(to))
         events :+ GameEnded(attacker)
       else
         events

@@ -8,6 +8,7 @@ import org.riskala.utils.MapLoader
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.junit.JUnitRunner
 
+
 @RunWith(classOf[JUnitRunner])
 class CommandTest extends AnyWordSpec {
 
@@ -21,7 +22,7 @@ class CommandTest extends AnyWordSpec {
   val defendingState = "Toscana"
   var geopolitics: Geopolitics = initialSnapshot.geopolitics.updateStateOwner(attackingState, p1)
     .updateStateOwner(defendingState, p2)
-    .setStateTroops(attackingState, 5)
+    .setStateTroops(attackingState, 10)
   val game: GameSnapshot = initialSnapshot.copy(nowPlaying = p1, geopolitics = geopolitics, cards = Map.empty + (p1 -> Seq.fill(3)(Cards.Artillery)))
 
   "No command except EndTurn" should {
@@ -65,16 +66,14 @@ class CommandTest extends AnyWordSpec {
     }
     "generate a Battle event" when {
       "feasible" in {
-        assertResult(Battle(_, _, _, _, _)) {
-          Attack(attackingState, defendingState, 1).execution(game).head
-        }
+        assert(Attack(attackingState, defendingState, 1).execution(game).head.isInstanceOf[Battle])
       }
     }
     "generate a Battle event and a CardDrawn event" when {
       "feasible and successful" in {
-        assertResult(Battle(_, _, _, _, _)) {
-          Attack(attackingState, defendingState, 1).execution(game).head
-        }
+        val evs = Attack(attackingState, defendingState, 5).execution(game)
+        assert(evs.head.isInstanceOf[Battle])
+        assert(evs(1).isInstanceOf[CardDrawn])
       }
     }
     "generate a GameEnded event" when {
@@ -88,11 +87,11 @@ class CommandTest extends AnyWordSpec {
         geopolitics = geopolitics.updateStateOwner(defendingState, p2)
           .setStateTroops(defendingState, 0)
           .setStateTroops(attackingState, Int.MaxValue)
-        assertResult(Battle(_,_,_,_,_)) {
-          Attack(attackingState, defendingState, 1).execution(game).head
-        }
+        val evs = Attack(attackingState, defendingState, Int.MaxValue-1).execution(game)
+        assert(evs.head.isInstanceOf[Battle])
+        assert(evs(1).isInstanceOf[CardDrawn])
         assertResult(GameEnded(p1)) {
-          Attack(attackingState, defendingState, 1).execution(game)(1)
+          evs(2)
         }
       }
     }
