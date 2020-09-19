@@ -44,7 +44,6 @@ object GameManager {
         case JoinGame(actor) =>
           context.log.info("Join")
           val newSubs = subscribers + actor
-          //actor ! GameInfoMessage(players)
           nextBehavior(updatedSub = newSubs)
 
         case Leave(actor) =>
@@ -64,12 +63,15 @@ object GameManager {
           context.log.info("GetFullInfo")
           val player = Player(playerName,"")
           val starterGame = GameSnapshot.newGame(players.toSeq,MapLoader.loadMap("italy").get)
-          val personalInfo = GamePersonalInfo(starterGame.objectives(player),starterGame.cards(player).toList)
+          val personalInfo =
+            if(players.contains(player)) GamePersonalInfo(starterGame.objectives(player),starterGame.cards(player).toList)
+            else GamePersonalInfo()
           val gameInfo = GameInfoMessage(starterGame.players.map(_.nickname).toSet,
             starterGame.nowPlaying.nickname,
             starterGame.deployableTroops,
             starterGame.scenario,
-            starterGame.geopolitics,personalInfo)
+            starterGame.geopolitics,
+            personalInfo)
           actor ! gameInfo
           nextBehavior()
 

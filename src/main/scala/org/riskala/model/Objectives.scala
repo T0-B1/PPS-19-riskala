@@ -6,7 +6,7 @@ import org.riskala.model.State.State
 
 object Objectives {
 
-  final case class Objective(states: Set[State], info: String)
+  final case class Objective(states: Set[State] = Set.empty[State], info: String = "")
   implicit def ObjectiveCodecJson: CodecJson[Objective] =
     casecodec2(Objective.apply, Objective.unapply)("", "")
 
