@@ -27,8 +27,8 @@ case class FeasibilityReport(feasible: Boolean = true, error: Option[String] = N
 final case class Attack(from: State,
                         to: State,
                         troops: Int)
-                  extends Command {
-  override def execution(game: GameSnapshot): Behavior[Event] = e => e
+                  extends SelfCheckingCommand {
+  override def checkedExecution(game: GameSnapshot): Behavior[Event] = e => e
 
   override def feasibility(game: GameSnapshot): FeasibilityReport = {
     val fromPS = game.geopolitics.getPlayerState(from)
@@ -50,8 +50,8 @@ final case class Attack(from: State,
 final case class MoveTroops(from: State,
                             to: State,
                             troops: Int)
-                  extends Command {
-  override def execution(game: GameSnapshot): Behavior[Event] = e => e
+                  extends SelfCheckingCommand {
+  override def checkedExecution(game: GameSnapshot): Behavior[Event] = e => e
 
   override def feasibility(game: GameSnapshot): FeasibilityReport = {
     val fromPS = game.geopolitics.getPlayerState(from)
@@ -72,8 +72,8 @@ final case class MoveTroops(from: State,
 
 final case class Deploy(to: State,
                         troops: Int)
-                  extends Command {
-  override def execution(game: GameSnapshot): Behavior[Event] = e => e
+                  extends SelfCheckingCommand {
+  override def checkedExecution(game: GameSnapshot): Behavior[Event] = e => e
 
   override def feasibility(game: GameSnapshot): FeasibilityReport = {
     val toPS = game.geopolitics.getPlayerState(to)
@@ -90,8 +90,8 @@ final case class Deploy(to: State,
 
 final case class RedeemBonus(player: Player,
                              cardBonus: Cards)
-                  extends Command {
-  override def execution(game: GameSnapshot): Behavior[Event] = e => e
+                  extends SelfCheckingCommand {
+  override def checkedExecution(game: GameSnapshot): Behavior[Event] = e => e
 
   override def feasibility(game: GameSnapshot): FeasibilityReport = {
     val turnFeasibility = Command.checkTurn(player, game)
@@ -107,8 +107,8 @@ final case class RedeemBonus(player: Player,
 }
 
 final case class EndTurn(player: Player)
-                  extends Command {
-  override def execution(game: GameSnapshot): Behavior[Event] = e => e
+                  extends SelfCheckingCommand {
+  override def checkedExecution(game: GameSnapshot): Behavior[Event] = e => e
 
   override def feasibility(game: GameSnapshot): FeasibilityReport = {
     Command.checkTurn(player, game)
