@@ -1,9 +1,11 @@
 package org.riskala.model.eventSourcing
 
 import org.riskala.model.Cards.Cards
-import org.riskala.model.{Geopolitics, Player}
+import org.riskala.model.{Cards, Geopolitics, Player}
 import org.riskala.model.State.State
 import org.riskala.model.eventSourcing.EventStore.Behavior
+
+import scala.util.Random
 
 sealed trait Command{
   def execution(game: GameSnapshot): Behavior[Event]
@@ -28,7 +30,28 @@ final case class Attack(from: State,
                         to: State,
                         troops: Int)
                   extends SelfCheckingCommand {
-  override def checkedExecution(game: GameSnapshot): Behavior[Event] = Seq.empty
+  val rng = new Random()
+  override def checkedExecution(game: GameSnapshot): Behavior[Event] = {
+    val defenders = game.geopolitics.getPlayerState(to).get.troops
+    var remainingDefenders = defenders
+    var remainingAttackers = troops
+    while(remainingAttackers > 0 || remainingDefenders > 0) {
+      if(rng.nextInt(10) > 5)
+        remainingDefenders = remainingDefenders - 1
+      else
+        remainingAttackers = remainingAttackers - 1
+    }
+    if(remainingAttackers == 0)
+      Seq(Battle(from, to, troops, 0, defenders - remainingDefenders))
+    else{
+      val events: Seq[Event] =
+        Seq(Battle(from, to, troops, remainingAttackers, defenders)) ++
+          Seq(CardDrawn(game.geopolitics.getPlayerState(from).get.owner, Cards.generateCard()))
+
+
+    }
+    Seq.empty
+  }
 
   override def feasibility(game: GameSnapshot): FeasibilityReport = {
     val fromPS = game.geopolitics.getPlayerState(from)
