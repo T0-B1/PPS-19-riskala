@@ -139,7 +139,9 @@ class CommandTest extends AnyWordSpec {
     }
     "generate a BonusRedeemed event" when {
       "feasible" in {
-        fail()
+        assertResult(BonusRedeemed(p1, Cards.Artillery)) {
+          RedeemBonus(p1, Cards.Artillery).execution(game)(0)
+        }
       }
     }
   }
