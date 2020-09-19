@@ -19,10 +19,15 @@ class EventTest extends AnyWordSpec {
     }
   }
 
-  val attackingState = PlayerState("Emilia-Romagna", p1, 10)
-  val defendingState = PlayerState("Toscana", p2, 5)
-
   "A battle event" when {
+    val attackingStateName = "Emilia-Romagna"
+    val defendingStateName = "Toscana"
+    val attackingState = PlayerState(attackingStateName, p1, 10)
+    val defendingState = PlayerState(defendingStateName, p2, 5)
+    val playerStates: Set[PlayerState] = initialSnapshot.geopolitics.filterNot(p =>
+      p.state.equals(attackingStateName) || p.state.equals(defendingStateName)) + attackingState + defendingState
+    val preBattleGame = initialSnapshot.copy(geopolitics = playerStates)
+
     "victorious" should {
       "result in the attacked state to change ownership" in {
 
