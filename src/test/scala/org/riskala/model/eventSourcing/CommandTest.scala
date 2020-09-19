@@ -16,11 +16,12 @@ class CommandTest extends AnyWordSpec {
   val players = Seq(p1, p2, p3)
   val scenario: model.Map = MapLoader.loadMap("italy").get
   val initialSnapshot: GameSnapshot = GameSnapshot.newGame(players, scenario)
-  val game: GameSnapshot = initialSnapshot.copy(nowPlaying = p1, cards = Map.empty + (p1 -> Seq.fill(3)(Cards.Artillery)))
   val attackingState = "Emilia-Romagna"
   val defendingState = "Toscana"
-  var geopolitics: Geopolitics = game.geopolitics.updateStateOwner(attackingState, p1)
+  var geopolitics: Geopolitics = initialSnapshot.geopolitics.updateStateOwner(attackingState, p1)
     .updateStateOwner(defendingState, p2)
+    .setStateTroops(attackingState, 5)
+  val game: GameSnapshot = initialSnapshot.copy(nowPlaying = p1, geopolitics = geopolitics, cards = Map.empty + (p1 -> Seq.fill(3)(Cards.Artillery)))
 
   "No command except EndTurn" should {
     "be feasible" when {
