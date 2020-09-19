@@ -1,7 +1,10 @@
 <template>
   <div>
     <div class="wrapper">
-      <div class="objective"> <span> Your objective is: <b><i> {{objective}} </i></b></span> </div>
+      <div class="objective"> 
+        <span> Your objective is: <b><i> {{objective}} </i></b></span>
+        <span v-if="isEnded === true"> The winner is:> {{winnerPlayer}}</span>
+      </div>
       <div class="infoContainer">
         <div class="leftContainer">
           <div class="radioDiv">
@@ -94,7 +97,8 @@ export default {
       troopsToDeploy: '',
       nameActionBtn: '',
       troopsDeployed: '',
-      selectedNeighbor: ''
+      selectedNeighbor: '',
+      winnerPlayer: ''
     }
   },
   computed: {
