@@ -44,7 +44,23 @@ final case class MoveTroops(from: State,
                   extends Command {
   override def execution(state: GameSnapshot): Behavior[Event] = e => e
 
-  override def feasibility(state: GameSnapshot): FeasibilityReport = FeasibilityReport(true, None)
+  override def feasibility(state: GameSnapshot): FeasibilityReport = {
+    val fromPS = state.geopolitics.getPlayerState(from)
+    if(fromPS.isEmpty)
+      return FeasibilityReport(false, Some(s"Moving from an unknown state: $from"))
+    val toPS = state.geopolitics.getPlayerState(from)
+    if(toPS.isEmpty)
+      return FeasibilityReport(false, Some(s"Moving to an unknown state: $to"))
+    val turnFeasibility = Command.checkTurn(fromPS.get.owner, state)
+    if(!turnFeasibility.feasible)
+      turnFeasibility
+    else {
+      val availableTroops = fromPS.get.troops
+      if(availableTroops <= troops)
+        FeasibilityReport(false, Some(s"Insufficient troops ($availableTroops) for attack with $troops from $from"))
+      FeasibilityReport()
+    }
+  }
 }
 
 final case class Deploy(to: State,
@@ -52,7 +68,10 @@ final case class Deploy(to: State,
                   extends Command {
   override def execution(state: GameSnapshot): Behavior[Event] = e => e
 
-  override def feasibility(state: GameSnapshot): FeasibilityReport = FeasibilityReport(true, None)
+  override def feasibility(state: GameSnapshot): FeasibilityReport = {
+
+    
+  }
 }
 
 final case class RedeemBonus(player: Player,
