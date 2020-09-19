@@ -3,7 +3,7 @@ package org.riskala.model.eventsourcing
 import org.riskala.model.Cards.Cards
 import org.riskala.model.Objectives.Objective
 import org.riskala.model.{Geopolitics, MapGeography, Objectives, Player, PlayerState}
-import org.riskala.utils.Utils
+import org.riskala.utils.{MapLoader, Utils}
 
 case class GameSnapshot(players: Seq[Player],
                         scenario: MapGeography,
@@ -23,6 +23,11 @@ object GameSnapshot {
     val objectives: Map[Player, Objective] = players.map(p => (p, Objectives.generateRandomObjective(scenario, players.size))).toMap
     val deployable = statesOwned(nowPlaying, geopolitics)
     GameSnapshot(players, scenario, geopolitics, nowPlaying, deployable, cards, objectives)
+  }
+
+  def newGame(players: Seq[Player],
+              scenario: String) : GameSnapshot = {
+    newGame(players, MapLoader.loadMap(scenario).get)
   }
 
   def statesOwned(player: Player, geopolitics: Geopolitics) : Int =
