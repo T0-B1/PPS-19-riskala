@@ -21,11 +21,23 @@ object Geopolitics {
   }
 
   def modifyStateTroops(state: State, troopsDelta: Int, geopolitics: Set[PlayerState]) = {
+    alterStateTroops(state, troopsDelta, geopolitics, true)
+  }
+
+  def setStateTroops(state: State, troops: Int, geopolitics: Set[PlayerState]) = {
+    alterStateTroops(state, troops, geopolitics, false)
+  }
+
+  private def alterStateTroops(state: State, troops: Int, geopolitics: Set[PlayerState], additive: Boolean) = {
     val ps = getPlayerState(state, geopolitics)
     if(ps.isEmpty)
       geopolitics
-    else
-      updateGeopolitics(ps.get.copy(troops = ps.get.troops + troopsDelta), geopolitics)
+    else {
+      var t = troops
+      if(additive)
+        t = ps.get.troops + troops
+      updateGeopolitics(ps.get.copy(troops = t), geopolitics)
+    }
   }
 
 }
