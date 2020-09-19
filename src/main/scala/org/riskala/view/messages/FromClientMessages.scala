@@ -44,12 +44,28 @@ object FromClientMessages {
 
   final case class LeaveMessage()
 
-  final case class ActionMessage(from: String,
+  final case class ActionAttackMessage(from: String,
                                  to: String,
                                  troops: Int)
-  object ActionMessage {
-    implicit def ActionCodecJson =
-      casecodec3(ActionMessage.apply,ActionMessage.unapply)("from", "to", "troops")
+  object ActionAttackMessage {
+    implicit def ActionAttackMessageCodecJson =
+      casecodec3(ActionAttackMessage.apply,ActionAttackMessage.unapply)("from", "to", "troops")
+  }
+
+  final case class ActionDeployMessage(from: String,
+                                 to: String,
+                                 troops: Int)
+  object ActionDeployMessage {
+    implicit def ActionDeployMessageCodecJson =
+      casecodec3(ActionDeployMessage.apply,ActionDeployMessage.unapply)("from", "to", "troops")
+  }
+
+  final case class ActionMoveMessage(from: String,
+                                 to: String,
+                                 troops: Int)
+  object ActionMoveMessage {
+    implicit def ActionMoveMessageCodecJson =
+      casecodec3(ActionMoveMessage.apply,ActionMoveMessage.unapply)("from", "to", "troops")
   }
 
   /**
