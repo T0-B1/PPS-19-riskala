@@ -11,7 +11,8 @@ case class GameSnapshot(players: Seq[Player],
                         nowPlaying: Player,
                         deployableTroops: Int,
                         cards: Map[Player, Seq[Cards]],
-                        objectives: Map[Player, Objective])
+                        objectives: Map[Player, Objective],
+                        winner: Option[Player] = None)
 
 object GameSnapshot {
   def newGame(players: Seq[Player],
