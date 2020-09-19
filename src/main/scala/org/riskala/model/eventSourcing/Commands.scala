@@ -8,10 +8,10 @@ import org.riskala.model.eventSourcing.EventStore.Behavior
 sealed trait Command{
   def execution(state: GameSnapshot): Behavior[Event]
 
-  def feasible(state: GameSnapshot): FeasibilityReport
+  def feasibility(state: GameSnapshot): FeasibilityReport
 }
 
-case class FeasibilityReport(feasibility: Boolean, error: Option[String])
+case class FeasibilityReport(feasible: Boolean, error: Option[String])
 
 final case class Attack(from: State,
                         to: State,
@@ -19,7 +19,7 @@ final case class Attack(from: State,
                   extends Command {
   override def execution(state: GameSnapshot): Behavior[Event] = ???
 
-  override def feasible(state: GameSnapshot): FeasibilityReport = ???
+  override def feasibility(state: GameSnapshot): FeasibilityReport = ???
 }
 
 final case class MoveTroops(from: State,
@@ -28,7 +28,7 @@ final case class MoveTroops(from: State,
                   extends Command {
   override def execution(state: GameSnapshot): Behavior[Event] = ???
 
-  override def feasible(state: GameSnapshot): FeasibilityReport = ???
+  override def feasibility(state: GameSnapshot): FeasibilityReport = ???
 }
 
 final case class Deploy(to: State,
@@ -36,7 +36,7 @@ final case class Deploy(to: State,
                   extends Command {
   override def execution(state: GameSnapshot): Behavior[Event] = ???
 
-  override def feasible(state: GameSnapshot): FeasibilityReport = ???
+  override def feasibility(state: GameSnapshot): FeasibilityReport = ???
 }
 
 final case class RedeemBonus(player: Player,
@@ -44,14 +44,14 @@ final case class RedeemBonus(player: Player,
                   extends Command {
   override def execution(state: GameSnapshot): Behavior[Event] = ???
 
-  override def feasible(state: GameSnapshot): FeasibilityReport = ???
+  override def feasibility(state: GameSnapshot): FeasibilityReport = ???
 }
 
 final case class EndTurn(player: Player)
                   extends Command {
   override def execution(state: GameSnapshot): Behavior[Event] = ???
 
-  override def feasible(state: GameSnapshot): FeasibilityReport = ???
+  override def feasibility(state: GameSnapshot): FeasibilityReport = ???
 }
 
 
