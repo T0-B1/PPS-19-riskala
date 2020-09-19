@@ -22,6 +22,7 @@ export default {
   methods: {
     change() {
       this.$store.commit('logout')
+      this.$store.state.websocket.send(ClientRoom.getMsgWrapped("LogoutMessage"))
       this.$router.push('/login')
     }
   }
