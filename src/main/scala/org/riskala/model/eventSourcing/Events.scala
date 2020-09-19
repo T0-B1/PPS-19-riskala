@@ -1,9 +1,9 @@
 package org.riskala.model.eventSourcing
 
 import org.riskala.model.Cards.Cards
-import org.riskala.model.{Geopolitics, Player, PlayerState}
+import org.riskala.model.Player
 import org.riskala.model.State.State
-import org.riskala.model.Geopolitics
+
 
 trait Event{
   def happen(game: GameSnapshot): GameSnapshot
