@@ -5,7 +5,7 @@ import akka.actor.typed.scaladsl.Behaviors
 import org.riskala.controller.actors.PlayerMessages.{GameInfoMessage, GameReferent, PlayerMessage}
 import org.riskala.model.ModelMessages.{GameMessage, LobbyMessage, Logout}
 import org.riskala.model.{Player, eventsourcing}
-import org.riskala.model.eventsourcing.{Event, EventStore, GameSnapshot, SnapshotGenerator}
+import org.riskala.model.eventsourcing.{Command, Event, EventStore, GameSnapshot, SnapshotGenerator}
 import org.riskala.model.game.GameMessages._
 import org.riskala.model.lobby.LobbyMessages.Subscribe
 import org.riskala.utils.MapLoader
@@ -44,6 +44,16 @@ object GameManager {
                        gameSnapshot: GameSnapshot = gameSnapshot
                       ): Behavior[GameMessage] =
         gameManager(updateName, updatedSub, updatedPlayers, updateScenario, updateLobby, eventStore, gameSnapshot)
+
+      def evolveEventStore(command: Command) : (EventStore[Event], GameSnapshot) = {
+        // Executing the command over the state produces a set of new events (a behavior)
+        val behavior = command.execution(gameSnapshot)
+        // The event store is updated with the new events
+        val newEventStore = eventStore.perform(behavior)
+        // A new state is computed by projecting the behavior over the old state
+        val newSnapshot = SnapshotGenerator().Project(gameSnapshot, behavior)
+        (newEventStore, newSnapshot)
+      }
 
       message match {
         case JoinGame(actor) =>
