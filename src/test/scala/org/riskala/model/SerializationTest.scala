@@ -63,7 +63,7 @@ class SerializationTest extends AnyWordSpec{
   }
 
   "PlayerState" should {
-    val pState = PlayerState(Player("p1","red"),2)
+    val pState = PlayerState("state", Player("p1","red"), 2)
     "be serialized to JSON" in {
       assert(pState.asJson.hasField("owner"))
       assert(pState.asJson.hasField("troops"))
