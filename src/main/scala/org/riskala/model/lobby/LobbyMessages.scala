@@ -3,6 +3,7 @@ package org.riskala.model.lobby
 import akka.actor.typed.ActorRef
 import org.riskala.controller.actors.PlayerMessages.PlayerMessage
 import org.riskala.model.ModelMessages._
+import org.riskala.model.Player
 import org.riskala.view.messages.ToClientMessages.{RoomBasicInfo, RoomInfo}
 
 
@@ -52,7 +53,7 @@ object LobbyMessages {
    * @param roomSubscribers   the list of subscribers actor ref who will spectate the game
    * */
   case class StartGame(info: RoomInfo,
-                       players: Map[String,ActorRef[PlayerMessage]],
+                       players: Map[Player,ActorRef[PlayerMessage]],
                        roomSubscribers: Set[ActorRef[PlayerMessage]]) extends LobbyMessage
 
   /** Message sent when a game ends

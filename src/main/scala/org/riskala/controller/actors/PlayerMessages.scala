@@ -2,8 +2,9 @@ package org.riskala.controller.actors
 
 import akka.actor
 import akka.actor.typed.ActorRef
+import org.riskala.model.{MapGeography, PlayerState}
 import org.riskala.model.ModelMessages.{GameMessage, LobbyMessage, RoomMessage}
-import org.riskala.view.messages.ToClientMessages.{LobbyInfo, RoomInfo}
+import org.riskala.view.messages.ToClientMessages.{GamePersonalInfo, LobbyInfo, RoomInfo}
 
 object PlayerMessages {
 
@@ -23,7 +24,17 @@ object PlayerMessages {
 
   final case class LobbyInfoMessage(lobbyInfo: LobbyInfo) extends PlayerMessage
 
-  final case class GameInfoMessage() extends PlayerMessage
+  final case class GameInfoMessage(players:Set[String],
+                                   actualPlayer:String,
+                                   troopsToDeploy:Int,
+                                   map:MapGeography,
+                                   playerStates: Set[PlayerState],
+                                   personalInfo:GamePersonalInfo) extends PlayerMessage
+
+  final case class GameUpdateMessage(actualPlayer:String,
+                                     troopsToDeploy:Int,
+                                     playerStates: Set[PlayerState],
+                                     personalInfo:GamePersonalInfo) extends PlayerMessage
 
   final case class ErrorMessage(error: String) extends PlayerMessage
 

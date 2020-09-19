@@ -90,7 +90,7 @@ class LobbyTest extends AnyWordSpec with BeforeAndAfterAll {
       probeSub.expectMessage(LobbyReferent(lobby.ref))
       probeSub.expectMessageType[LobbyInfoMessage]
       lobby ! StartGame(RoomInfo(RoomBasicInfo(europe, 4,4), Set.empty, europe),
-        HashMap.empty[String,ActorRef[PlayerMessage]],
+        HashMap.empty[Player,ActorRef[PlayerMessage]],
         HashSet.empty[ActorRef[PlayerMessage]])
       probeSub.expectMessage(LobbyInfoMessage(LobbyInfo(emptyRoomNameInfoList,Set(europe),emptyStringList)))
     }

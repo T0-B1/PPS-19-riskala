@@ -12,18 +12,13 @@ import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 object ClientRoom {
 
   @JSExport
-  def getReadyMsgWrapped(): String = {
-    WrappedMessage("ReadyMessage", "").asJson.pretty(nospace)
+  def getMsgWrapped(typeMsg: String): String = {
+    WrappedMessage(typeMsg, "").asJson.pretty(nospace)
   }
 
   @JSExport
-  def getUnReadyMsgWrapped(): String = {
-    WrappedMessage("UnReadyMessage", "").asJson.pretty(nospace)
-  }
-
-  @JSExport
-  def getLeaveMsgWrapped(): String = {
-    WrappedMessage("LeaveMessage", "").asJson.pretty(nospace)
+  def getReadyMsgWrapped(color: String): String = {
+    WrappedMessage("ReadyMessage", ReadyMessage(color).asJson.pretty(nospace)).asJson.pretty(nospace)
   }
 
   @JSExport
@@ -31,7 +26,7 @@ object ClientRoom {
     val room = Parser.retrieveMessage(roomInfo, RoomInfo.RoomInfoCodecJson.Decoder).get
     roomFacade.setName(room.basicInfo.name)
     roomFacade.clearPlayer()
-    room.players.foreach(pl => roomFacade.addPlayers(pl))
+    room.players.foreach(pl => roomFacade.addPlayers(pl.nickname))
     //TODO gestione scenario
   }
 
@@ -41,19 +36,23 @@ object ClientRoom {
     val wrappedMsg = Parser.retrieveWrapped(message).get
     println(s"wrappedMessage = $wrappedMsg")
     wrappedMsg.classType match {
-      case "RoomInfo" => {
+      case "RoomInfo" =>
         println("case roomInfo inside handleLobby")
         val roomInfoMsg =
           Parser.retrieveMessage(wrappedMsg.payload, RoomInfo.RoomInfoCodecJson.Decoder).get
         println("Ended parser retrieve message")
         roomFacade.clearPlayer()
-        roomInfoMsg.players.foreach(player=>roomFacade.addPlayers(player))
-      }
-      case "ErrorMessage" => {
+        roomInfoMsg.players.foreach(player=>roomFacade.addPlayers(player.nickname))
+      case "ErrorMessage" =>
         println("received error message")
         val errorMsg = Parser.retrieveMessage(wrappedMsg.payload, ErrorMessage.ErrorCodecJson.Decoder).get
-        //roomFacade.notifyCreateError(errorMsg.error)
-      }
+        roomFacade.notifyError(errorMsg.error)
+      case "GameFullInfo" =>
+        println("received GameFullInfo")
+        roomFacade.goToGame(wrappedMsg.payload)
+      case "LobbyInfo" =>
+        println("received LobbyInfo")
+        roomFacade.goToLobby(wrappedMsg.payload)
       case unhandled => println(s"Ignored message: $unhandled")
     }
 

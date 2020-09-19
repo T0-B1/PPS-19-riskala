@@ -1,6 +1,9 @@
 package org.riskala.view.messages
 
 import argonaut.Argonaut._
+import org.riskala.model.Cards.Cards
+import org.riskala.model.Objectives.Objective
+import org.riskala.model.{MapGeography, Player, PlayerState}
 
 import scala.scalajs.js.annotation.JSExportAll
 
@@ -24,7 +27,7 @@ object ToClientMessages {
    * @param basicInfo               Object containing basic information of a room
    * @param scenario                Name of the game map
    * */
-  case class RoomInfo(basicInfo: RoomBasicInfo, players: Set[String], scenario: String)
+  case class RoomInfo(basicInfo: RoomBasicInfo, players: Set[Player], scenario: String)
   object RoomInfo {
     implicit def RoomInfoCodecJson =
       casecodec3(RoomInfo.apply,RoomInfo.unapply)("basicInfo","players","scenario")
@@ -45,6 +48,29 @@ object ToClientMessages {
   object LobbyInfo {
     implicit def LobbyInfoCodecJson =
       casecodec3(LobbyInfo.apply,LobbyInfo.unapply)("rooms","games","terminatedGames")
+  }
+
+  case class GamePersonalInfo(objective: Objective = Objective(), cards: List[Cards] = List.empty[Cards])
+  object GamePersonalInfo {
+    implicit def GamePersonalInfoCodecJson =
+      casecodec2(GamePersonalInfo.apply, GamePersonalInfo.unapply)("objective", "cards")
+  }
+
+  case class GameFullInfo(players:Set[String],
+                          actualPlayer:String,
+                          troopsToDeploy:Int,
+                          map:MapGeography,
+                          playerStates: Set[PlayerState],
+                          personalInfo:GamePersonalInfo)
+  object GameFullInfo {
+    implicit def GameFullInfoCodecJson =
+      casecodec6(GameFullInfo.apply,GameFullInfo.unapply)("players","actualPlayer","troopsToDeploy","map","playerStates","personalInfo")
+  }
+
+  case class GameUpdate(actualPlayer:String, troopsToDeploy:Int, playerStates: Set[PlayerState],personalInfo:GamePersonalInfo)
+  object GameUpdate {
+    implicit def GameUpdateCodecJson =
+      casecodec4(GameUpdate.apply,GameUpdate.unapply)("actualPlayer","troopsToDeploy","playerState","personalInfo")
   }
 
   final case class ErrorMessage(error: String)

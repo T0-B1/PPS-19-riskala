@@ -3,33 +3,18 @@ package org.riskala.model.room
 import akka.actor.typed.ActorRef
 import org.riskala.controller.actors.PlayerMessages.PlayerMessage
 import org.riskala.model.ModelMessages._
+import org.riskala.model.Player
 
 /**
  * Room messages
  */
 object RoomMessages {
-/*
-  /**
-   * @param name                    Room name
-   * @param actualNumberOfPlayer    Number of players in a room
-   * @param maxNumberOfPlayer       Maximum number of players in a room
-   * */
-  case class RoomBasicInfo(name: String,
-                           actualNumberOfPlayer: Int,
-                           maxNumberOfPlayer: Int)
-
-  /**
-   * @param basicInfo               Object containing basic information of a room
-   * @param scenario                Name of the game map
-   * */
-  case class RoomInfo(basicInfo: RoomBasicInfo, scenario: String)
-*/
 
   /** Message sent when an actor is ready in a room
-   *  @param playerName     The name of the player who is ready in a room
+   *  @param player     The name of the player who is ready in a room
    *  @param actor          The player ready in  a room
    * */
-  case class Ready(playerName: String, actor: ActorRef[PlayerMessage]) extends RoomMessage
+  case class Ready(player: Player, actor: ActorRef[PlayerMessage]) extends RoomMessage
 
   /** Message sent when an actor is not ready anymore
    *  @param playerName     The player name who is not ready

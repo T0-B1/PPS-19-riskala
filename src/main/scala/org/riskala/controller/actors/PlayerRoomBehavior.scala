@@ -6,8 +6,10 @@ import akka.actor.typed.{ActorRef, Behavior}
 import akka.http.scaladsl.model.ws.TextMessage
 import org.riskala.controller.actors.PlayerMessages.{ErrorMessage, GameReferent, LobbyReferent, PlayerMessage, RoomInfoMessage, SocketMessage}
 import org.riskala.model.ModelMessages.{Logout, RoomMessage}
+import org.riskala.model.Player
 import org.riskala.model.room.RoomMessages.{Leave, Ready, UnReady}
 import org.riskala.utils.Parser
+import org.riskala.view.messages.FromClientMessages.ReadyMessage
 import org.riskala.view.messages.ToClientMessages.RoomInfo
 import org.riskala.view.messages.ToClientMessages
 
@@ -34,7 +36,8 @@ object PlayerRoomBehavior {
           wrapped.classType match {
             case "ReadyMessage" =>
               context.log.info("PlayerRoomActor received ReadyMessage")
-              room ! Ready(username, context.self)
+              Parser.retrieveMessage(wrapped.payload, ReadyMessage.ReadyMessageCodecJson.Decoder)
+                .foreach(j => room ! Ready(Player(username,j.color), context.self))
               nextBehavior()
             case "LeaveMessage" =>
               context.log.info("PlayerRoomActor received LeaveMessage")

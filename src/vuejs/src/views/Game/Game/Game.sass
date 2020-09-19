@@ -1,0 +1,64 @@
+.wrapper 
+  max-width: -webkit-fill-available
+  width: -webkit-fill-available
+  .objective
+    margin: 1%
+  .infoContainer
+    margin: 2%
+  #svgMapContainer
+    padding: 2%
+@media screen and ( min-width: 992px)
+  .wrapper
+    padding-top: 20px
+    max-width: 98%
+    margin: 0 auto
+    .objective
+      border: 1px solid black
+      border-radius: 10px
+      width: fit-content
+      margin: 0 auto
+      padding: .5%
+    .infoContainer
+      display: flex
+      justify-content: space-between
+      height: fit-content
+      .leftContainer
+        display: flex
+        flex-direction: column
+        max-width: 15%
+        width: 15%
+        .radioDiv
+          border: 1px black solid
+          border-radius: 10px
+          flex-direction: column
+          width: fit-content
+          margin-left: .5%
+          padding: 1% 
+          .listPlayers
+            text-align: justify
+            list-style-type: none
+        .buttonDiv
+          display: flex
+          flex-direction: column
+          justify-content: space-around
+          .submitBtn
+            margin: 2%
+            border: 1px solid black
+            border-radius: 10px
+            background: transparent
+      .stateInfo
+        display: flex
+        flex-direction: column
+        border: 1px black solid
+        border-radius: 10px
+        padding: 1%
+        width: 25%
+        .buttons
+          .btns
+            margin: 2% auto
+            display: flex
+            justify-content: space-between
+    #svgMapContainer
+      margin: -20% auto auto auto
+    .leaveBtn
+      margin: 1%
