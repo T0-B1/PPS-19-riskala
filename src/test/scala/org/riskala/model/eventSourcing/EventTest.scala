@@ -15,7 +15,7 @@ class EventTest extends AnyWordSpec {
       assert(initialSnapshot.equals(GameInitialized(initialSnapshot).happen(initialSnapshot)))
     }
   }
-  
+
   "A battle event" should {
     "decrease the number of troops present in the attacking state of an amount equal to the attacking troops" in {
 
@@ -42,4 +42,12 @@ class EventTest extends AnyWordSpec {
 
   }
 
+  "A troops moving event from A to B of n troops" should{
+    "decrease the troops in A of n" in {
+
+    }
+    "increase the troops in B of n" in {
+      
+    }
+  }
 }
