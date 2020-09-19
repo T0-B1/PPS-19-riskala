@@ -91,7 +91,9 @@ final case class Deploy(to: State,
 final case class RedeemBonus(player: Player,
                              cardBonus: Cards)
                   extends SelfCheckingCommand {
-  override def checkedExecution(game: GameSnapshot): Behavior[Event] = Seq.empty
+  override def checkedExecution(game: GameSnapshot): Behavior[Event] = {
+    Seq(BonusRedeemed(player, cardBonus))
+  }
 
   override def feasibility(game: GameSnapshot): FeasibilityReport = {
     val turnFeasibility = Command.checkTurn(player, game)
@@ -108,7 +110,9 @@ final case class RedeemBonus(player: Player,
 
 final case class EndTurn(player: Player)
                   extends SelfCheckingCommand {
-  override def checkedExecution(game: GameSnapshot): Behavior[Event] = Seq.empty
+  override def checkedExecution(game: GameSnapshot): Behavior[Event] = {
+    Seq(TurnEnded(player))
+  }
 
   override def feasibility(game: GameSnapshot): FeasibilityReport = {
     Command.checkTurn(player, game)
