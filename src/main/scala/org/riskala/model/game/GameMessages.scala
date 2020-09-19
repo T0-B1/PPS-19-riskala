@@ -23,10 +23,20 @@ object GameMessages {
   case class Leave(actor: ActorRef[PlayerMessage]) extends GameMessage
 
   /**
-   * Message sent when an actor wants to do an action.
+   * Message sent when an actor wants to do an attack.
+   * */
+  case class ActionAttack(playerName: String, from: String, to: String, troops: Int) extends GameMessage
+
+  /**
+   * Message sent when an actor wants to do a move.
+   * */
+  case class ActionMove(playerName: String, from: String, to: String, troops: Int) extends GameMessage
+
+  /**
+   * Message sent when an actor wants to do a deploy.
    * Action type: Move, Deploy or Attack
    * */
-  case class Action(playerName: String, from: String, to: String, troops: Int) extends GameMessage
+  case class ActionDeploy(playerName: String, from: String, to: String, troops: Int) extends GameMessage
 
   /**
    * Message sent when an actor wants to redeem bonus
