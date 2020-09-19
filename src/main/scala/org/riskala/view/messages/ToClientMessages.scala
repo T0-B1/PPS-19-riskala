@@ -73,6 +73,12 @@ object ToClientMessages {
       casecodec4(GameUpdate.apply,GameUpdate.unapply)("actualPlayer","troopsToDeploy","playerState","personalInfo")
   }
 
+  case class GameEnd(winner: Player)
+  object GameEnd {
+    implicit def GameEndCodecJson =
+      casecodec1(GameEnd.apply,GameEnd.unapply)("winner")
+  }
+
   final case class ErrorMessage(error: String)
   object ErrorMessage {
     implicit def ErrorCodecJson =
