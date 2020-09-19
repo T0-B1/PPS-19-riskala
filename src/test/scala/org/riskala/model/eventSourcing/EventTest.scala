@@ -1,8 +1,9 @@
 package org.riskala.model.eventSourcing
 
+import org.riskala.model.Cards.Cards
 import org.riskala.model.State.State
-import org.riskala.model.{Player, PlayerState}
-import org.riskala.utils.{MapLoader, Utils}
+import org.riskala.model.{Cards, Player, PlayerState}
+import org.riskala.utils.{MapLoader}
 import org.scalatest.wordspec.AnyWordSpec
 
 class EventTest extends AnyWordSpec {
@@ -108,18 +109,27 @@ class EventTest extends AnyWordSpec {
   }
 
   "A card drawn event" should {
+    val card = Cards.generateCard()
+    val postDrawGame = CardDrawn(p1, card).happen(initialSnapshot)
     "add a card to the correct player" in {
-
+      assert(postDrawGame.cards.get(p1).get.size
+        .equals(initialSnapshot.cards.get(p1).get.size + 1))
     }
   }
 
   "A bonus" when {
+    val card = Cards.Artillery
+    val cardsToAdd = Seq.fill(3)(card)
+    val playerCards = initialSnapshot.cards.getOrElse(p1, Seq.empty[Cards]) ++ cardsToAdd
+    val preRedeemGame = initialSnapshot.copy(cards = initialSnapshot.cards + (p1 -> playerCards))
+    val postRedeemGame = BonusRedeemed(p1, card).happen(initialSnapshot)
     "redeemed" should {
       "remove 3 cards from the players hand" in {
-
+        assert(postRedeemGame.cards.get(p1).get.size
+          .equals(preRedeemGame.cards.get(p1).get.size - 3))
       }
       "give the player extra troops to deploy" in {
-
+        assert(postRedeemGame.deployableTroops.equals(postRedeemGame.deployableTroops + card.id))
       }
     }
   }
