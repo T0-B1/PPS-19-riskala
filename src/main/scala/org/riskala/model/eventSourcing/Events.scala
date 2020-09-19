@@ -44,6 +44,7 @@ final case class TroopsMoved(from: State,
     var toPS = Geopolitics.getPlayerState(to, geopolitics).get
     fromPS = fromPS.copy(troops = fromPS.troops - moved)
     toPS = toPS.copy(troops = toPS.troops + moved)
+    game
   }
 }
 
