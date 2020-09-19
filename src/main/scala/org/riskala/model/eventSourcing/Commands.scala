@@ -32,7 +32,7 @@ final case class Attack(from: State,
                   extends SelfCheckingCommand {
   val rng = new Random()
   override def checkedExecution(game: GameSnapshot): Behavior[Event] = {
-    val defenders = game.geopolitics.getPlayerState(to).get.troops
+    val defenders = game.geopolitics.getPlayerStateByName(to).get.troops
     var remainingDefenders = defenders
     var remainingAttackers = troops
     while(remainingAttackers > 0 || remainingDefenders > 0) {
@@ -44,20 +44,24 @@ final case class Attack(from: State,
     if(remainingAttackers == 0)
       Seq(Battle(from, to, troops, 0, defenders - remainingDefenders))
     else{
+      val attacker = game.geopolitics.getPlayerStateByName(from).get.owner
       val events: Seq[Event] = Seq.empty :+
         Battle(from, to, troops, remainingAttackers, defenders) :+
-        CardDrawn(game.geopolitics.getPlayerState(from).get.owner, Cards.generateCard())
-
-
+        CardDrawn(attacker, Cards.generateCard())
+      val objective: Set[State] = game.objectives(attacker).states
+      val conquered: Set[State] = game.geopolitics.getStatesOfPlayer(attacker)
+      if(conquered.diff(objective).isEmpty)
+        events :+ GameEnded(attacker)
+      else
+        events
     }
-    Seq.empty
   }
 
   override def feasibility(game: GameSnapshot): FeasibilityReport = {
-    val fromPS = game.geopolitics.getPlayerState(from)
+    val fromPS = game.geopolitics.getPlayerStateByName(from)
     if(fromPS.isEmpty)
       return FeasibilityReport(false, Some(s"Attacking from an unknown state: $from"))
-    val toPS = game.geopolitics.getPlayerState(to)
+    val toPS = game.geopolitics.getPlayerStateByName(to)
     if(toPS.isEmpty)
       return FeasibilityReport(false, Some(s"Attacking an unknown state: $to"))
     val turnFeasibility = Command.checkTurn(fromPS.get.owner, game)
@@ -79,10 +83,10 @@ final case class MoveTroops(from: State,
   }
 
   override def feasibility(game: GameSnapshot): FeasibilityReport = {
-    val fromPS = game.geopolitics.getPlayerState(from)
+    val fromPS = game.geopolitics.getPlayerStateByName(from)
     if(fromPS.isEmpty)
       return FeasibilityReport(false, Some(s"Moving from an unknown state: $from"))
-    val toPS = game.geopolitics.getPlayerState(to)
+    val toPS = game.geopolitics.getPlayerStateByName(to)
     if(toPS.isEmpty)
       return FeasibilityReport(false, Some(s"Moving to an unknown state: $to"))
     val turnFeasibility = Command.checkTurn(fromPS.get.owner, game)
@@ -103,7 +107,7 @@ final case class Deploy(to: State,
   }
 
   override def feasibility(game: GameSnapshot): FeasibilityReport = {
-    val toPS = game.geopolitics.getPlayerState(to)
+    val toPS = game.geopolitics.getPlayerStateByName(to)
     if(toPS.isEmpty)
       return FeasibilityReport(false, Some(s"Moving to an unknown state: $to"))
     val turnFeasibility = Command.checkTurn(toPS.get.owner, game)

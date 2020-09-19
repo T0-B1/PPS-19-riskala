@@ -22,7 +22,7 @@ final case class Battle(from: State,
                   extends Event {
   override def happen(game: GameSnapshot): GameSnapshot = {
     var geopolitics = game.geopolitics
-    val attacker = geopolitics.getPlayerState(from).get.owner
+    val attacker = geopolitics.getPlayerStateByName(from).get.owner
     geopolitics = geopolitics.modifyStateTroops(from, -attacking)
     if(attackingPassed > 0) {
       game.copy(geopolitics = geopolitics.setStateTroops(to, attackingPassed)
