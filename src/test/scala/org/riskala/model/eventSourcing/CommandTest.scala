@@ -42,6 +42,11 @@ class CommandTest extends AnyWordSpec {
         assert(EndTurn(p1).feasibility(game).feasible)
       }
     }
+    "generate a TurnEnded event" when {
+      "feasible" in {
+
+      }
+    }
   }
 
   "An attack" should {
@@ -53,6 +58,21 @@ class CommandTest extends AnyWordSpec {
     "be feasible" when {
       "having enough troops during own turn" in {
         assert(Attack(attackingState, defendingState, 1).feasibility(game).feasible)
+      }
+    }
+    "generate a Battle event" when {
+      "feasible" in {
+
+      }
+    }
+    "generate a Battle event and a CardDrawn event" when {
+      "feasible and successful" in {
+
+      }
+    }
+    "generate a GameEnded event" when {
+      "the objective is reached" in {
+
       }
     }
   }
@@ -71,6 +91,11 @@ class CommandTest extends AnyWordSpec {
         assert(MoveTroops(attackingState, defendingState, 1).feasibility(game).feasible)
       }
     }
+    "generate a TroopsMoved event" when {
+      "feasible" in {
+
+      }
+    }
   }
 
   "Deploy troops" should {
@@ -87,6 +112,11 @@ class CommandTest extends AnyWordSpec {
         assert(Deploy(attackingState,1).feasibility(game).feasible)
       }
     }
+    "generate a TroopsDeployed event" when {
+      "feasible" in {
+
+      }
+    }
   }
 
   "Redeem bonus" should {
@@ -98,6 +128,11 @@ class CommandTest extends AnyWordSpec {
     "be feasible" when {
       "having enough cards during own turn" in {
         assert(RedeemBonus(p1, Cards.Artillery).feasibility(game).feasible)
+      }
+    }
+    "generate a BonusRedeemed event" when {
+      "feasible" in {
+
       }
     }
   }
