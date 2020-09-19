@@ -7,13 +7,19 @@ import org.riskala.model.eventSourcing.EventStore.Behavior
 
 sealed trait Command{
   def Execution(state: GameSnapshot): Behavior[Event]
+
+  def Feasible(state: GameSnapshot): FeasibilityReport
 }
+
+case class FeasibilityReport(feasibility: Boolean, error: Option[String])
 
 final case class Attack(from: State,
                         to: State,
                         troops: Int)
                   extends Command {
   override def Execution(state: GameSnapshot): Behavior[Event] = ???
+
+  override def Feasible(state: GameSnapshot): FeasibilityReport = ???
 }
 
 final case class MoveTroops(from: State,
@@ -21,23 +27,31 @@ final case class MoveTroops(from: State,
                             troops: Int)
                   extends Command {
   override def Execution(state: GameSnapshot): Behavior[Event] = ???
+
+  override def Feasible(state: GameSnapshot): FeasibilityReport = ???
 }
 
 final case class Deploy(to: State,
                         troops: Int)
                   extends Command {
   override def Execution(state: GameSnapshot): Behavior[Event] = ???
+
+  override def Feasible(state: GameSnapshot): FeasibilityReport = ???
 }
 
 final case class RedeemBonus(player: Player,
                              cardBonus: Cards)
                   extends Command {
   override def Execution(state: GameSnapshot): Behavior[Event] = ???
+
+  override def Feasible(state: GameSnapshot): FeasibilityReport = ???
 }
 
 final case class EndTurn(player: Player)
                   extends Command {
   override def Execution(state: GameSnapshot): Behavior[Event] = ???
+
+  override def Feasible(state: GameSnapshot): FeasibilityReport = ???
 }
 
 
