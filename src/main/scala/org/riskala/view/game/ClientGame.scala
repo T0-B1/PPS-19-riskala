@@ -17,7 +17,7 @@ object ClientGame {
   private var playerStates: Set[PlayerState] = _
 
   @JSExport
-  def getEmptyMsgWrapped(typeMessage: String): String =  { //per leaveMsg, logoutMsg e endTurnMsg
+  def getEmptyMsgWrapped(typeMessage: String): String =  {
     WrappedMessage(typeMessage, "").asJson.pretty(nospace)
   }
 
