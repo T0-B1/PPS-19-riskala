@@ -14,16 +14,9 @@ import scala.scalajs.js.annotation.{JSExportAll, JSExportTopLevel}
 @JSExportTopLevel("PlayerState")
 @JSExportAll
 case class PlayerState(state: State, owner: Player, troops: Int)
-
 object PlayerState {
   implicit def PlayerStateCodecJson =
     casecodec3(PlayerState.apply, PlayerState.unapply)("name", "owner", "troops")
-
-  def updatePlayerStates(state: PlayerState, set: Set[PlayerState]): Set[PlayerState] = {
-    set.filterNot(p => p.state.equals(state.state)) + state
-  }
-
-  def getPlayerState(state: State, set: Set[PlayerState]): Option[PlayerState] = {
-    set.collectFirst({ case p if p.state.equals(state) => p })
-  }
 }
+
+
