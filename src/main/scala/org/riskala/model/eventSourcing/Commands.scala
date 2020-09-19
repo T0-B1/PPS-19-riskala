@@ -3,29 +3,42 @@ package org.riskala.model.eventSourcing
 import org.riskala.model.Cards.Cards
 import org.riskala.model.Player
 import org.riskala.model.State.State
+import org.riskala.model.eventSourcing.EventStore.Behavior
 
-sealed trait Command
+sealed trait Command{
+  def Execution(state: GameSnapshot): Behavior[Event]
+}
 
 final case class Attack(from: State,
                         to: State,
                         troops: Int)
-                  extends Command
+                  extends Command {
+  override def Execution(state: GameSnapshot): Behavior[Event] = ???
+}
 
 final case class MoveTroops(from: State,
                             to: State,
                             troops: Int)
-                  extends Command
+                  extends Command {
+  override def Execution(state: GameSnapshot): Behavior[Event] = ???
+}
 
 final case class Deploy(to: State,
                         troops: Int)
-                  extends Command
+                  extends Command {
+  override def Execution(state: GameSnapshot): Behavior[Event] = ???
+}
 
 final case class RedeemBonus(player: Player,
                              cardBonus: Cards)
-                  extends Command
+                  extends Command {
+  override def Execution(state: GameSnapshot): Behavior[Event] = ???
+}
 
 final case class EndTurn(player: Player)
-                  extends Command
+                  extends Command {
+  override def Execution(state: GameSnapshot): Behavior[Event] = ???
+}
 
 
 object Command {

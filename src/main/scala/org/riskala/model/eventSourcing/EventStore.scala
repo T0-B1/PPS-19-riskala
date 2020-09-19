@@ -1,8 +1,12 @@
 package org.riskala.model.eventSourcing
 
-case class EventStore[Ev](events: Seq[Ev]) {
+import org.riskala.model.eventSourcing.EventStore.Behavior
 
+object EventStore {
   type Behavior[Ev] = Seq[Ev] => Seq[Ev]
+}
+
+case class EventStore[Ev](events: Seq[Ev]) {
 
   def apply(): EventStore[Ev] = EventStore(Seq.empty)
 
