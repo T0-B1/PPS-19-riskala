@@ -1,9 +1,8 @@
-package org.riskala.model.eventSourcing
+package org.riskala.model.eventsourcing
 
 import org.riskala.model.Cards.Cards
 import org.riskala.model.Player
 import org.riskala.model.State.State
-
 
 trait Event{
   def happen(game: GameSnapshot): GameSnapshot
