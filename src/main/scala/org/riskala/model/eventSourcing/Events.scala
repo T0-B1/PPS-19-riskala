@@ -1,7 +1,7 @@
 package org.riskala.model.eventSourcing
 
 import org.riskala.model.Cards.Cards
-import org.riskala.model.{Player, PlayerState}
+import org.riskala.model.{Geopolitics, Player, PlayerState}
 import org.riskala.model.State.State
 
 trait Event{
@@ -21,24 +21,30 @@ final case class Battle(from: State,
                   extends Event {
   override def happen(game: GameSnapshot): GameSnapshot = {
     var geopolitics = game.geopolitics
-    var fromPS = PlayerState.getPlayerState(from, geopolitics).get
-    var toPS = PlayerState.getPlayerState(to, geopolitics).get
+    var fromPS = Geopolitics.getPlayerState(from, geopolitics).get
+    var toPS = Geopolitics.getPlayerState(to, geopolitics).get
     fromPS = fromPS.copy(troops = fromPS.troops - attacking)
     if(attackingPassed > 0)
       toPS = toPS.copy(owner = fromPS.owner, troops = attackingPassed)
     else
       toPS = toPS.copy(troops = toPS.troops - defendingCasualties)
-    geopolitics = PlayerState.updatePlayerStates(fromPS, geopolitics)
-    geopolitics = PlayerState.updatePlayerStates(toPS, geopolitics)
+    geopolitics = Geopolitics.updateGeopolitics(fromPS, geopolitics)
+    geopolitics = Geopolitics.updateGeopolitics(toPS, geopolitics)
     game.copy(geopolitics = geopolitics)
   }
 }
 
 final case class TroopsMoved(from: State,
-                      to: State,
-                      troops: Int)
+                             to: State,
+                             moved: Int)
                   extends Event {
-  override def happen(game: GameSnapshot): GameSnapshot = game
+  override def happen(game: GameSnapshot): GameSnapshot = {
+    var geopolitics = game.geopolitics
+    var fromPS = Geopolitics.getPlayerState(from, geopolitics).get
+    var toPS = Geopolitics.getPlayerState(to, geopolitics).get
+    fromPS = fromPS.copy(troops = fromPS.troops - moved)
+    toPS = toPS.copy(troops = toPS.troops + moved)
+  }
 }
 
 final case class TroopsDeployed(to: State,
