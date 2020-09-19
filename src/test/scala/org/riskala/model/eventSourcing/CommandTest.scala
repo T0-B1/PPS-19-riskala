@@ -2,6 +2,7 @@ package org.riskala.model.eventSourcing
 
 import org.junit.runner.RunWith
 import org.riskala.model
+import org.riskala.model.eventSourcing.EventStore.Behavior
 import org.riskala.model.{Cards, Geopolitics, Player}
 import org.riskala.utils.MapLoader
 import org.scalatest.wordspec.AnyWordSpec
@@ -44,7 +45,9 @@ class CommandTest extends AnyWordSpec {
     }
     "generate a TurnEnded event" when {
       "feasible" in {
-
+        assertResult(TurnEnded(p1)) {
+          EndTurn(p1).execution(game)(0)
+        }
       }
     }
   }
@@ -62,17 +65,21 @@ class CommandTest extends AnyWordSpec {
     }
     "generate a Battle event" when {
       "feasible" in {
-
+        assertResult(Battle(_, _, _, _, _)) {
+          Attack(attackingState, defendingState, 1).execution(game)(0)
+        }
       }
     }
     "generate a Battle event and a CardDrawn event" when {
       "feasible and successful" in {
-
+        assertResult(Battle(_, _, _, _, _)) {
+          Attack(attackingState, defendingState, 1).execution(game)(0)
+        }
       }
     }
     "generate a GameEnded event" when {
       "the objective is reached" in {
-
+        fail()
       }
     }
   }
