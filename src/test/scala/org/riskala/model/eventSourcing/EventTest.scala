@@ -20,20 +20,27 @@ class EventTest extends AnyWordSpec {
   }
 
   "A battle event" when {
-    val attackingStateName = "Emilia-Romagna"
-    val defendingStateName = "Toscana"
-    val attackingState = PlayerState(attackingStateName, p1, 10)
-    val defendingState = PlayerState(defendingStateName, p2, 5)
+    val attackingState = "Emilia-Romagna"
+    val defendingState = "Toscana"
+    val attackingPlayerState = PlayerState(attackingState, p1, 10)
+    val defendingPlayerState = PlayerState(defendingState, p2, 5)
     val playerStates: Set[PlayerState] = initialSnapshot.geopolitics.filterNot(p =>
-      p.state.equals(attackingStateName) || p.state.equals(defendingStateName)) + attackingState + defendingState
+      p.state.equals(attackingState) || p.state.equals(defendingState)) + attackingPlayerState + defendingPlayerState
     val preBattleGame = initialSnapshot.copy(geopolitics = playerStates)
 
     "victorious" should {
-      "result in the attacked state to change ownership" in {
-
+      val attackers = 5
+      val passed = 5
+      val dead = 5
+      val postBattleGame = Battle(attackingState, defendingState, attackers, passed, dead).happen(preBattleGame)
+      val lostState = postBattleGame.geopolitics.collectFirst({
+        case s if s.state.equals(defendingState) => s
+      }).get
+      "result in the attacked state to be conquered" in {
+        assert(lostState.owner.equals(attackingPlayerState.owner))
       }
       "result in the attacked state to have an amount of troops equal to the attackingPassed" in {
-
+        assert(lostState.troops.equals(passed))
       }
     }
     "not victorious" should {
