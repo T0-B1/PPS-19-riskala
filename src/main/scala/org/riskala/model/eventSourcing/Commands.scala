@@ -51,7 +51,9 @@ final case class MoveTroops(from: State,
                             to: State,
                             troops: Int)
                   extends SelfCheckingCommand {
-  override def checkedExecution(game: GameSnapshot): Behavior[Event] = Seq.empty
+  override def checkedExecution(game: GameSnapshot): Behavior[Event] = {
+    Seq(TroopsMoved(from, to, troops))
+  }
 
   override def feasibility(game: GameSnapshot): FeasibilityReport = {
     val fromPS = game.geopolitics.getPlayerState(from)
@@ -120,7 +122,6 @@ final case class EndTurn(player: Player)
     Command.checkTurn(player, game)
   }
 }
-
 
 object Command {
 
