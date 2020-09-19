@@ -5,7 +5,7 @@ import akka.actor.typed.scaladsl.Behaviors
 import org.riskala.controller.actors.PlayerMessages.{GameInfoMessage, GameReferent, PlayerMessage}
 import org.riskala.model.ModelMessages.{GameMessage, LobbyMessage, Logout}
 import org.riskala.model.{Player, eventsourcing}
-import org.riskala.model.eventsourcing.{Command, Event, EventStore, GameInitialized, GameSnapshot, SnapshotGenerator}
+import org.riskala.model.eventsourcing.{Command, Deploy, Event, EventStore, GameInitialized, GameSnapshot, SnapshotGenerator}
 import org.riskala.model.game.GameMessages._
 import org.riskala.model.lobby.LobbyMessages.Subscribe
 import org.riskala.utils.MapLoader
@@ -78,7 +78,8 @@ object GameManager {
 
         case ActionDeploy(playerName, from, to, troops) =>
           context.log.info("Action")
-          nextBehavior()
+          val (newEventStore, newSnapshot) = evolveEventStore(Deploy(to,troops))
+          nextBehavior(eventStore = newEventStore, gameSnapshot = newSnapshot)
 
         case RedeemBonus(playerName, card) =>
           context.log.info("RedeemBonus")
