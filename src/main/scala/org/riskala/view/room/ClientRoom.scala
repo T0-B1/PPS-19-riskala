@@ -27,7 +27,6 @@ object ClientRoom {
     roomFacade.setName(room.basicInfo.name)
     roomFacade.clearPlayer()
     room.players.foreach(pl => roomFacade.addPlayers(pl.nickname))
-    //TODO gestione scenario
   }
 
   @JSExport
