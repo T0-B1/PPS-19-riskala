@@ -227,7 +227,7 @@ export default {
       });
     },
     actionOnMap(){
-      this.$store.state.websocket.send(ClientGame.getActionMsgWrapped(this.state, this.selectedNeighbor,this.troopsDeployed))
+      this.$store.state.websocket.send(ClientGame.getActionMsgWrapped(this.nameActionBtn, this.state, this.selectedNeighbor,this.troopsDeployed))
     }
   }
 }
