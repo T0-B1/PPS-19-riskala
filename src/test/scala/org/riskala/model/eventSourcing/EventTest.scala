@@ -90,7 +90,7 @@ class EventTest extends AnyWordSpec {
     val preMoveGame = initialSnapshot.copy(geopolitics = playerStates)
     val postMoveGame = TroopsMoved(fromState, toState, movedTroops).happen(preMoveGame)
     val A = getPlayerStateByName(fromState, postMoveGame)
-    val B = getPlayerStateByName(fromState, postMoveGame)
+    val B = getPlayerStateByName(toState, postMoveGame)
 
     "decrease the troops in A of n" in {
       assertResult(A.troops) {

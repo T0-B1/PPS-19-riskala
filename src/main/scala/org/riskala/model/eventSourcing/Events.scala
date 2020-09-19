@@ -25,7 +25,7 @@ final case class Battle(from: State,
     geopolitics = Geopolitics.modifyStateTroops(from, -attacking, geopolitics)
     if(attackingPassed > 0) {
       geopolitics = Geopolitics.setStateTroops(to, attackingPassed, geopolitics)
-      geopolitics = Geopolitics.updateStateOwner(from, attacker, geopolitics)
+      geopolitics = Geopolitics.updateStateOwner(to, attacker, geopolitics)
     } else
       geopolitics = Geopolitics.modifyStateTroops(to, - defendingCasualties, geopolitics)
     game.copy(geopolitics = geopolitics)
