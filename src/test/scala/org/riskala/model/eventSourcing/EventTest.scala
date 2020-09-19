@@ -176,6 +176,15 @@ class EventTest extends AnyWordSpec {
       }
     }
   }
+  
+  "Upon game ending the winner" should {
+    "be present in the snapshot" in {
+      val game = GameEnded(p1).happen(initialSnapshot)
+      assertResult(Some(p1)) {
+        game.winner
+      }
+    }
+  }
 
   def getPlayerStateByName(name: State, game: GameSnapshot) : PlayerState = {
     game.geopolitics.collectFirst({
