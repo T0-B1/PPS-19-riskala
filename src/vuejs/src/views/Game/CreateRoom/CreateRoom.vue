@@ -52,7 +52,7 @@ export default {
       selectedScenario: null,
       error: '',
       passed: false,
-      options: [{value: 'Europe', text: 'Europe'}],
+      options: [{value: 'italy', text: 'Italy'}],
     }
   },
   mounted() {
