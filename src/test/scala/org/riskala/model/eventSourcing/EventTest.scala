@@ -132,7 +132,9 @@ class EventTest extends AnyWordSpec {
           .equals(preRedeemGame.cards.get(p1).get.size - 3))
       }
       "give the player extra troops to deploy" in {
-        assert(postRedeemGame.deployableTroops.equals(postRedeemGame.deployableTroops + card.id))
+        assertResult(postRedeemGame.deployableTroops) {
+          preRedeemGame.deployableTroops + card.id
+        }
       }
     }
   }
