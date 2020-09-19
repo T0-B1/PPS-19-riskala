@@ -1,4 +1,4 @@
-package org.riskala.model.eventSourcing
+package org.riskala.model.eventsourcing
 
 import org.junit.runner.RunWith
 import org.riskala.model

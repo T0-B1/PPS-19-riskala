@@ -1,4 +1,4 @@
-package org.riskala.model.eventSourcing
+package org.riskala.model.eventsourcing
 
 trait Projection[State, Event] {
   def Update: (State, Event) => State
