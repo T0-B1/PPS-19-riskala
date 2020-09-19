@@ -17,41 +17,41 @@ final case class Attack(from: State,
                         to: State,
                         troops: Int)
                   extends Command {
-  override def execution(state: GameSnapshot): Behavior[Event] = ???
+  override def execution(state: GameSnapshot): Behavior[Event] = e => e
 
-  override def feasibility(state: GameSnapshot): FeasibilityReport = ???
+  override def feasibility(state: GameSnapshot): FeasibilityReport = FeasibilityReport(true, None)
 }
 
 final case class MoveTroops(from: State,
                             to: State,
                             troops: Int)
                   extends Command {
-  override def execution(state: GameSnapshot): Behavior[Event] = ???
+  override def execution(state: GameSnapshot): Behavior[Event] = e => e
 
-  override def feasibility(state: GameSnapshot): FeasibilityReport = ???
+  override def feasibility(state: GameSnapshot): FeasibilityReport = FeasibilityReport(true, None)
 }
 
 final case class Deploy(to: State,
                         troops: Int)
                   extends Command {
-  override def execution(state: GameSnapshot): Behavior[Event] = ???
+  override def execution(state: GameSnapshot): Behavior[Event] = e => e
 
-  override def feasibility(state: GameSnapshot): FeasibilityReport = ???
+  override def feasibility(state: GameSnapshot): FeasibilityReport = FeasibilityReport(true, None)
 }
 
 final case class RedeemBonus(player: Player,
                              cardBonus: Cards)
                   extends Command {
-  override def execution(state: GameSnapshot): Behavior[Event] = ???
+  override def execution(state: GameSnapshot): Behavior[Event] = e => e
 
-  override def feasibility(state: GameSnapshot): FeasibilityReport = ???
+  override def feasibility(state: GameSnapshot): FeasibilityReport = FeasibilityReport(true, None)
 }
 
 final case class EndTurn(player: Player)
                   extends Command {
-  override def execution(state: GameSnapshot): Behavior[Event] = ???
+  override def execution(state: GameSnapshot): Behavior[Event] = e => e
 
-  override def feasibility(state: GameSnapshot): FeasibilityReport = ???
+  override def feasibility(state: GameSnapshot): FeasibilityReport = FeasibilityReport(true, None)
 }
 
 
