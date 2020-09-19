@@ -44,6 +44,11 @@ object FromClientMessages {
 
   final case class LeaveMessage()
 
+  /**
+   * @param from Name of the starting state
+   * @param to Name of the state that the player decided to attack
+   * @param troops Number of troops used to do an attack
+   * */
   final case class ActionAttackMessage(from: String,
                                  to: String,
                                  troops: Int)
@@ -52,6 +57,11 @@ object FromClientMessages {
       casecodec3(ActionAttackMessage.apply,ActionAttackMessage.unapply)("from", "to", "troops")
   }
 
+  /**
+   * @param from Name of the starting state
+   * @param to Name of the state in which the player decided to deploy
+   * @param troops Number of troops to deploy
+   * */
   final case class ActionDeployMessage(from: String,
                                  to: String,
                                  troops: Int)
@@ -60,6 +70,11 @@ object FromClientMessages {
       casecodec3(ActionDeployMessage.apply,ActionDeployMessage.unapply)("from", "to", "troops")
   }
 
+  /**
+   * @param from Name of the starting state
+   * @param to Name of the state of the the player in which move the troops
+   * @param troops Number of troops moved
+   * */
   final case class ActionMoveMessage(from: String,
                                  to: String,
                                  troops: Int)

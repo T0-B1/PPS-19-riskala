@@ -7,7 +7,6 @@ import org.riskala.controller.actors.PlayerMessages._
 import org.riskala.model.ModelMessages._
 import org.riskala.model.lobby.LobbyMessages.{EmptyRoom, StartGame, Subscribe, UpdateRoomInfo}
 
-import scala.collection.immutable.{HashMap, HashSet}
 import monocle.Lens
 import monocle.macros.GenLens
 import org.riskala.model.Player
@@ -85,7 +84,7 @@ object RoomManager {
           lobby ! Subscribe(actor)
           if(newSubscribers.isEmpty && newReady.isEmpty){
             lobby ! EmptyRoom(roomInfo.basicInfo.name)
-            context.log.info("Everybody leaved the room - Behavior stopped")
+            context.log.info("Everybody left the room - Behavior stopped")
             Behaviors.stopped
           } else {
             updateBehavior(updatedSub = newSubscribers, updatedReady = newReady, updatedRoomInfo = newRoomInfo)

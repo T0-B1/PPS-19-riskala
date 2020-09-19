@@ -22,6 +22,5 @@ class GameFacade extends js.Object {
   def addNeighbor(neighbor: String, checked: Boolean): Unit = js.native
   def setStateInfo(state: String, owner: String, troops: Int, region: String): Unit = js.native
   def setCurrentPlayer(player: String): Unit = js.native
-
-  def updateInfo(playerTurn: String): Unit = js.native //Cosa devo prendere?
+  def setWinner(winner: String): Unit = js.native
 }
