@@ -50,5 +50,5 @@ object Geopolitics {
   implicit def states2geopolitics(states: Set[PlayerState]): Geopolitics = Geopolitics(states)
 
   implicit def geopolitics2states(geopolitics: Geopolitics): Set[PlayerState] = geopolitics.states
-  
+
 }
