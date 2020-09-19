@@ -38,7 +38,10 @@ final case class TroopsDeployed(to: State,
 final case class CardDrawn(player: Player,
                       card: Cards)
                   extends Event {
-  override def happen(game: GameSnapshot): GameSnapshot = game
+  override def happen(game: GameSnapshot): GameSnapshot = {
+    val playerCards = game.cards.getOrElse(player, Seq.empty[Cards]) :+ card
+    game.copy(cards = game.cards + (player -> playerCards))
+  }
 }
 
 final case class BonusRedeemed(player: Player,
