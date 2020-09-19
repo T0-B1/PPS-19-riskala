@@ -15,5 +15,31 @@ class EventTest extends AnyWordSpec {
       assert(initialSnapshot.equals(GameInitialized(initialSnapshot).happen(initialSnapshot)))
     }
   }
+  
+  "A battle event" should {
+    "decrease the number of troops present in the attacking state of an amount equal to the attacking troops" in {
+
+    }
+  }
+
+  "A battle event" when {
+    "victorious" should {
+      "result in the attacked state to change ownership" in {
+
+      }
+      "result in the attacked state to have an amount of troops equal to the attackingPassed" in {
+
+      }
+    }
+    "not victorious" should {
+      "not result in the attacked state to change ownership" in {
+
+      }
+      "result in the attacked state to have an amount of troops decreased by an amount equal to defendingCasualties" in {
+
+      }
+    }
+
+  }
 
 }
