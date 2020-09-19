@@ -34,9 +34,7 @@ class EventTest extends AnyWordSpec {
       val passed = 0
       val dead = 0
       val postBattleGame = Battle(attackingState, defendingState, attackers, passed, dead).happen(preBattleGame)
-      val atkState = postBattleGame.geopolitics.collectFirst({
-        case s if s.state.equals(attackingState) => s
-      }).get
+      val atkState = getPlayerStateByName(attackingState, postBattleGame)
       "decrease the number of troops present in the attacking state of an amount equal to the attacking troops" in {
         assert(atkState.troops.equals(attackingPlayerState.troops - attackers))
       }
@@ -47,10 +45,8 @@ class EventTest extends AnyWordSpec {
       val passed = 3
       val dead = 5
       val postBattleGame = Battle(attackingState, defendingState, attackers, passed, dead).happen(preBattleGame)
-      val lostState = postBattleGame.geopolitics.collectFirst({
-        case s if s.state.equals(defendingState) => s
-      }).get
-      "result in the attacked state to be conquered" in {
+      val lostState = getPlayerStateByName(defendingState, postBattleGame)
+        "result in the attacked state to be conquered" in {
         assert(lostState.owner.equals(attackingPlayerState.owner))
       }
       "result in the attacked state to have an amount of troops equal to the attackingPassed" in {
@@ -63,9 +59,7 @@ class EventTest extends AnyWordSpec {
       val passed = 0
       val dead = 4
       val postBattleGame = Battle(attackingState, defendingState, attackers, passed, dead).happen(preBattleGame)
-      val heldState = postBattleGame.geopolitics.collectFirst({
-        case s if s.state.equals(defendingState) => s
-      }).get
+      val heldState = getPlayerStateByName(defendingState, postBattleGame)
       "not result in the attacked state to be conquered" in {
         assert(heldState.owner.equals(defendingPlayerState.owner))
       }
