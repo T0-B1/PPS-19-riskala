@@ -14,6 +14,10 @@ case class Geopolitics(states: Set[PlayerState]) {
     states.collectFirst({ case p if p.state.equals(state) => p })
   }
 
+  def getPlayerStates(player: Player): Set[PlayerState] = {
+    states.filter(ps => ps.owner.equals(player))
+  }
+
   def updateStateOwner(state: State, newOwner: Player): Geopolitics = {
     val ps = getPlayerState(state)
     if(ps.isEmpty)
