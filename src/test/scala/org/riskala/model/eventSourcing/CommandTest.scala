@@ -3,7 +3,7 @@ package org.riskala.model.eventSourcing
 
 import org.junit.runner.RunWith
 import org.riskala.model
-import org.riskala.model.{Cards, Player}
+import org.riskala.model.{Cards, Geopolitics, Player}
 import org.riskala.utils.MapLoader
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.junit.JUnitRunner
@@ -17,9 +17,12 @@ class CommandTest extends AnyWordSpec {
   val players = Seq(p1, p2, p3)
   val scenario: model.Map = MapLoader.loadMap("italy").get
   val initialSnapshot: GameSnapshot = GameSnapshot.newGame(players, scenario)
-  val game = initialSnapshot.copy(nowPlaying = p1)
+  val game = initialSnapshot.copy(nowPlaying = p1, cards = Map.empty + (p1 -> Seq.fill(3)(Cards.Artillery)))
   val attackingState = "Emilia-Romagna"
   val defendingState = "Toscana"
+  var geopolitics = game.geopolitics
+  geopolitics = Geopolitics.updateStateOwner(attackingState, p1, geopolitics)
+  geopolitics = Geopolitics.updateStateOwner(defendingState, p2, geopolitics)
 
   "No command except EndTurn" should {
     "be feasible" when {
@@ -45,12 +48,12 @@ class CommandTest extends AnyWordSpec {
   "An attack" should {
     "not be feasible" when {
       "attacking state does not have enough troops" in {
-
+        assert(!Attack(attackingState, defendingState, Int.MaxValue).feasibility(game).feasible)
       }
     }
     "be feasible" when {
       "having enough troops during own turn" in {
-
+        assert(!Attack(attackingState, defendingState, 1).feasibility(game).feasible)
       }
     }
   }
@@ -58,15 +61,15 @@ class CommandTest extends AnyWordSpec {
   "Moving troops" should {
     "not be feasible" when {
       "origin state does not have enough troops" in {
-
+        assert(!MoveTroops(attackingState, defendingState, Int.MaxValue).feasibility(game).feasible)
       }
       "you don't own the destination state" in {
-
+        assert(!MoveTroops(defendingState, attackingState, 1).feasibility(game).feasible)
       }
     }
     "be feasible" when {
       "having enough troops during own turn" in {
-
+        assert(MoveTroops(attackingState, defendingState, 1).feasibility(game).feasible)
       }
     }
   }
@@ -74,15 +77,15 @@ class CommandTest extends AnyWordSpec {
   "Deploy troops" should {
     "not be feasible" when {
       "a player does not have enough troops to deploy" in {
-
+        assert(!Deploy(attackingState,Int.MaxValue).feasibility(game).feasible)
       }
       "you don't own the destination state" in {
-
+        assert(!Deploy(defendingState,0).feasibility(game).feasible)
       }
     }
     "be feasible" when {
       "having enough troops during own turn" in {
-
+        assert(Deploy(attackingState,1).feasibility(game).feasible)
       }
     }
   }
@@ -90,12 +93,12 @@ class CommandTest extends AnyWordSpec {
   "Redeem bonus" should {
     "not be feasible" when {
       "a player does not have enough cards of the same type" in {
-
+        assert(!RedeemBonus(p1, Cards.Infantry).feasibility(game).feasible)
       }
     }
     "be feasible" when {
       "having enough cards during own turn" in {
-
+        assert(RedeemBonus(p1, Cards.Artillery).feasibility(game).feasible)
       }
     }
   }
