@@ -73,7 +73,9 @@ final case class MoveTroops(from: State,
 final case class Deploy(to: State,
                         troops: Int)
                   extends SelfCheckingCommand {
-  override def checkedExecution(game: GameSnapshot): Behavior[Event] = Seq.empty
+  override def checkedExecution(game: GameSnapshot): Behavior[Event] = {
+    Seq(TroopsDeployed(to, troops))
+  }
 
   override def feasibility(game: GameSnapshot): FeasibilityReport = {
     val toPS = game.geopolitics.getPlayerState(to)
