@@ -10,16 +10,16 @@ case class Geopolitics(states: Set[PlayerState]) {
     Geopolitics(states.filterNot(p => p.state.equals(state.state)) + state)
   }
 
-  def getPlayerState(state: State): Option[PlayerState] = {
+  def getPlayerStateByName(state: State): Option[PlayerState] = {
     states.collectFirst({ case p if p.state.equals(state) => p })
   }
 
-  def getPlayerStates(player: Player): Set[PlayerState] = {
-    states.filter(ps => ps.owner.equals(player))
+  def getStatesOfPlayer(player: Player): Set[State] = {
+    states.collect({case ps if ps.owner.equals(player) => ps.state})
   }
 
   def updateStateOwner(state: State, newOwner: Player): Geopolitics = {
-    val ps = getPlayerState(state)
+    val ps = getPlayerStateByName(state)
     if(ps.isEmpty)
       this
     else
@@ -35,7 +35,7 @@ case class Geopolitics(states: Set[PlayerState]) {
   }
 
   private def alterStateTroops(state: State, troops: Int, additive: Boolean): Geopolitics = {
-    val ps = getPlayerState(state)
+    val ps = getPlayerStateByName(state)
     if(ps.isEmpty)
       this
     else {

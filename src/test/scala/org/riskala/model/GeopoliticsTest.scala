@@ -19,7 +19,7 @@ class GeopoliticsTest extends AnyWordSpec {
   "A state owner" should {
     "be correctly updated" in {
       assert(geopolitics.updateStateOwner(state, p2)
-        .getPlayerState(state).get.owner.equals(p2))
+        .getPlayerStateByName(state).get.owner.equals(p2))
     }
   }
 
@@ -27,12 +27,12 @@ class GeopoliticsTest extends AnyWordSpec {
     "be correctly updated" in {
       assertResult(playerState.troops + troopsDelta) {
         geopolitics.modifyStateTroops(state, troopsDelta)
-            .getPlayerState(state).get.troops
+            .getPlayerStateByName(state).get.troops
       }
 
       assertResult(troopsValue) {
         geopolitics.setStateTroops(state, troopsValue)
-          .getPlayerState(state).get.troops
+          .getPlayerStateByName(state).get.troops
       }
     }
   }
