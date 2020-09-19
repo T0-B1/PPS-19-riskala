@@ -11,6 +11,17 @@ sealed trait Command{
   def feasibility(game: GameSnapshot): FeasibilityReport
 }
 
+trait SelfCheckingCommand extends Command {
+  override def execution(game: GameSnapshot): Behavior[Event] = {
+    val feasibilityReport = feasibility(game)
+    if(!feasibilityReport.feasible)
+      return _ => Seq.empty
+    checkedExecution(game)
+  }
+
+  def checkedExecution(game: GameSnapshot): Behavior[Event]
+}
+
 case class FeasibilityReport(feasible: Boolean = true, error: Option[String] = None)
 
 final case class Attack(from: State,
