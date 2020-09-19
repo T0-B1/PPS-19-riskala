@@ -20,6 +20,11 @@ object GameSnapshot {
     val nowPlaying: Player = Utils.randomSetElement(players.toSet)
     val cards: Map[Player, Seq[Cards]] = players.map(p => (p, Seq.empty[Cards])).toMap
     val objectives: Map[Player, Objective] = players.map(p => (p, Objectives.generateRandomObjective(scenario, players.size))).toMap
-    GameSnapshot(players, scenario, geopolitics, nowPlaying, 0, cards, objectives)
+    val deployable = statesOwned(nowPlaying, geopolitics)
+    GameSnapshot(players, scenario, geopolitics, nowPlaying, deployable, cards, objectives)
   }
+
+  def statesOwned(player: Player, states: Set[PlayerState]) : Int =
+    states.count(s => s.owner.equals(player))
+
 }
