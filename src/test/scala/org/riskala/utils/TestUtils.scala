@@ -3,6 +3,15 @@ package org.riskala.utils
 import java.io.FileNotFoundException
 import java.util.Properties
 
+import akka.http.scaladsl.model.StatusCodes
+import akka.stream.scaladsl.Flow
+import org.junit.runner.RunWith
+import org.riskala.controller.routes.WebsocketRoute
+import org.scalatest.Matchers
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
+import org.scalatestplus.junit.JUnitRunner
+
 import scala.io.Source
 
 object TestUtils {
@@ -19,29 +28,4 @@ object TestUtils {
     properties
   }
 
-}
-
-import akka.actor.{ActorSystem, Scheduler}
-import akka.actor.testkit.typed.scaladsl.{ActorTestKit, ActorTestKitBase}
-import akka.http.scaladsl.testkit.ScalatestRouteTest
-import org.scalatest.Suite
-import akka.util.Timeout
-import akka.actor.typed.scaladsl.adapter._
-
-trait ScalatestTypedActorHttpRoute extends ScalatestRouteTest { this: Suite =>
-  import akka.actor.typed.scaladsl.adapter._
-
-  var typedTestKit:ActorTestKit = _ //val init causes createActorSystem() to cause NPE when typedTestKit.system is called in createActorSystem().
-  implicit def timeout: Timeout = typedTestKit.timeout
-  implicit def scheduler = typedTestKit.system.classicSystem.scheduler
-
-  protected override def createActorSystem(): ActorSystem = {
-    typedTestKit = ActorTestKit(ActorTestKitBase.testNameFromCallStack())
-    typedTestKit.system.classicSystem
-  }
-
-  override def cleanUp(): Unit = {
-    super.cleanUp()
-    typedTestKit.shutdownTestKit()
-  }
 }
