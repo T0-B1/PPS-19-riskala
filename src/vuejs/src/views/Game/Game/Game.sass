@@ -36,9 +36,10 @@
           width: fit-content
           margin-left: .5%
           padding: 1% 
-          .listPlayers
-            text-align: justify
-            list-style-type: none
+          #listPlayers
+            text-align: left
+            list-style: none
+            padding: 1%
         .buttonDiv
           display: flex
           flex-direction: column
@@ -55,12 +56,14 @@
         border-radius: 10px
         padding: 1%
         width: 25%
-        .buttons
-          .btns
-            margin: 2% auto
-            display: flex
-            justify-content: space-between
-    #svgMapContainer
-      margin: -20% auto auto auto
+        .textInfo
+          test-align: left
     .leaveBtn
       margin: 1%
+      display: flex
+      justify-content: left
+    #svgMapContainer
+      position: absolute
+      top: 25%
+      left: 20%
+    
