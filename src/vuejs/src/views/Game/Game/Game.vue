@@ -11,7 +11,8 @@
             <h5> Turn of: </h5>
             <ul id="listPlayers">
               <li v-for="(player,index) in players" :key="index">
-                <label v-bind:style="[player.My_Turn ? {color: getRandomColor(player.Name_Player)} : {color: "black"}]">
+                <label v-bind:style="[player.My_Turn ? {'color': getRandomColor(player.Name_Player), 'font-weight':'bold'} : 
+                {'color': 'black', 'font-weight': 'normal'}]">
                   {{player.Name_Player}}</label>
               </li>
             </ul>
@@ -19,17 +20,17 @@
           </div>
           <hr/>
           <div class="buttonDiv" >
-            <button :disabled='isInfEnable' class="submitBtn" type="submit" @click="redeemBonus('Infantry')" 
+            <button class="submitBtn" type="submit" @click="redeemBonus('Infantry')" 
             v-bind:style="[isInfEnable ? opacity = 1 : opacity = 0.4]">
               <img id="submitBtnI" src="@/assets/buttonsImg/infantry.png" width="50" height="50" alt="submit" />
             </button>
             <span>{{infantryCards}}</span>
-            <button :disabled="isCavEnable" class="submitBtn" type="submit" @click="redeemBonus('Cavalry')"
+            <button class="submitBtn" type="submit" @click="redeemBonus('Cavalry')"
             v-bind:style="[isCavEnable ? opacity = 1 : opacity = 0.4]">
               <img id="submitBtnC" src="@/assets/buttonsImg/cavalry.png" width="50" height="50" alt="submit" />
             </button>
             <span>{{cavalryCards}}</span>
-            <button :disabled="isArtEnable" class="submitBtn" type="submit" @click="redeemBonus('Artillery')"
+            <button class="submitBtn" type="submit" @click="redeemBonus('Artillery')"
             v-bind:style="[isArtEnable ? opacity = 1 : opacity = 0.4]">
               <img id="submitBtnA" src="@/assets/buttonsImg/artillery.png" width="50" height="50" alt="submit" />
             </button>
@@ -55,7 +56,7 @@
           <div v-if="visible == true" class="action">
             <h4> Choose one state </h4>
             <div v-for="(neighbor,index) in neighbors" :key="index" class="form-check">
-              <input type="radio" :id="neighbor.id" :checked:"neighbor.checked">
+              <input type="radio" :id="neighbor.id" :checked="neighbor.checked">
               <label v-model="selectedNeighbor" :for="neighbor.id">{{neighbor.neighbor_name}}</label>
             </div>
             <h4> How many troops? </h4>
@@ -64,9 +65,8 @@
           </div>
         </div>
       </div>
-      <div id="svgMapContainer"></div>
-      <hr/>
       <b-button class="leaveBtn" variant="outline-danger" @click="leave">Leave Game</b-button>
+      <div id="svgMapContainer"></div>
     </div>
     <b-modal id="modal-error" auto-focus-button="ok" ok-only title="Error Message">
       <p class="my-4"><i>{{this.error}}</i></p>
@@ -89,12 +89,13 @@ export default {
       troops: '',
       objective: '',
       infantryCards: 0,
-      cavalryCards: 4,
+      cavalryCards: 0,
       artilleryCards: 0,
       region: '',
       neighbors: [],
       visible: false,
       troopsToDeploy: '',
+      maxAvailableTroops: 0,
       nameActionBtn: '',
       troopsDeployed: '',
       selectedNeighbor: '',
@@ -102,17 +103,6 @@ export default {
       isEnded: false
     }
   },
-  computed: {
-    isInfEnable: function() {
-      return (this.infantryCards>=3)
-    },
-    isCavEnable: function() {
-      return (this.cavalryCards>=3)
-    },
-    isArtEnable: function() {
-      return (this.artilleryCards>=3)
-    }
-  },  
   mounted() {
     console.log("MOUNTED OF GAME")
     var vue = this
@@ -143,9 +133,7 @@ export default {
       this.$store.state.websocket.send(ClientGame.getEmptyMsgWrapped("LeaveMessage"))
     },    
     addPlayer(player, myTurn){
-      console.log("addPlayer")
       this.players.push({Name_Player: player, My_Turn: myTurn})
-      console.log(this.players)
     },
     setCurrentPlayer(player){
       this.players.forEach(pl => pl.My_Turn = false)
@@ -155,23 +143,29 @@ export default {
     },
     setCardInfo(infantry, cavalry, artillery){
       this.infantryCards = infantry
-      //this.checkCardCounter("submitBtnoI")
-      this.cavalryCards = cavalry
-      //this.checkCardCounter("submitBtnoC")
-      this.artilleryCards = artillery
-      //this.checkCardCounter("submitBtnoA")
-    },
-    /*checkCardCounter(btn) {
       if(this.infantryCards >= 3) {
-        document.getElementById(btn).style.opacity = 1
-      } else {
-        document.getElementById(btn).style.opacity = 0.4
+         document.getElementById('submitBtnI').style.opacity = 1
+      } else{
+        document.getElementById('submitBtnI').style.opacity = 0.4
       }
-    },*/
+      this.cavalryCards = cavalry
+      if(this.cavalryCards >= 3) {
+         document.getElementById('submitBtnC').style.opacity = 1
+      } else{
+        document.getElementById('submitBtnC').style.opacity = 0.4
+      }
+      this.artilleryCards = artillery
+      if(this.artilleryCards >= 3) {
+         document.getElementById('submitBtnA').style.opacity = 1
+      } else{
+        document.getElementById('submitBtnA').style.opacity = 0.4
+      }
+    },
     setObjective(obj) {
       this.objective = obj
     },
     setStateInfo(nameState, owner, troops, region){
+      console.log("inside set state info vue")
       this.state = nameState
       this.owner = owner
       this.troops = troops
@@ -208,6 +202,8 @@ export default {
         el.onclick = function(){
           if(vue.state !== 'Select a state'){
             document.getElementById(vue.state).style.opacity = 1
+            vue.neighbors.splice(0)
+            vue.setStateInfo('', '', '', '')
           }
           if(el.id !== 'Select a state'){
             document.getElementById(el.id).style.opacity = 0.5
