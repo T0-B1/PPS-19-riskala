@@ -61,7 +61,7 @@
               <label v-model="selectedNeighbor" :for="neighbor.id">{{neighbor.neighbor_name}}</label>
             </div>
             <h4> How many troops? </h4>
-            <input type="number" value="0" :max="maxAvailableTroops" v-model="troopsDeployed" @focusout="handleFocus" number></br></br>
+            <input id="inputTroop" type="number" :max="maxAvailableTroops" v-model="troopsDeployed" @focusout="handleFocus" number></br></br>
             <b-button @click="actionOnMap">{{nameActionBtn}}</b-button>
           </div>
         </div>
@@ -101,7 +101,7 @@ export default {
       troopsDeployed: 0,
       selectedNeighbor: '',
       winnerPlayer: '',
-      isEnded: false
+      isEnded: false,
     }
   },
   mounted() {
@@ -128,8 +128,6 @@ export default {
       ClientGame.neighborClick(this.selectedNeighbor, localStorage.riskalaUser, this.state, this)
     },
     handleFocus(){
-      console.log("troopsDeployed: "+this.troopsDeployed)
-      console.log("maxAvailableTroops: "+this.maxAvailableTroops)
       if(this.troopsDeployed > this.maxAvailableTroops)
         this.troopsDeployed = this.maxAvailableTroops
     },
@@ -251,12 +249,10 @@ export default {
       });
     },
     actionOnMap(){
-      console.log("action map vue: "+this.nameActionBtn)
-      console.log("action map vue: "+this.state)
-      console.log("action map vue: "+this.selectedNeighbor)
-      console.log("action map vue: "+this.troopsDeployed)
       this.$store.state.websocket.send(
         ClientGame.getActionMsgWrapped(this.nameActionBtn, this.state, this.selectedNeighbor, parseInt(this.troopsDeployed)))
+      //document.getElementById("inputTroop").value = "0"
+      this.troopsDeployed = 0
     },
     setWinner(winner){
       this.isEnded = true

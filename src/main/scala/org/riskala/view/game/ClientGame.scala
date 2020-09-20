@@ -106,6 +106,7 @@ object ClientGame {
     myTroopsToDeploy = game.troopsToDeploy
     myActualPlayer = game.actualPlayer
     myIsDeployOnly = game.isDeployOnly
+    println("SCALAJS SETUP GAME IS DEPLOY ONLY " + myIsDeployOnly)
 
     game.players.foreach(pl => gameFacade.addPlayer(pl, game.actualPlayer == pl))
     playerStates.foreach(ps => gameFacade.setPlayerState(ps.state, ps.owner.nickname, ps.troops))
@@ -142,6 +143,8 @@ object ClientGame {
         myTroopsToDeploy = gameUpdate.troopsToDeploy
         myActualPlayer = gameUpdate.actualPlayer
         myIsDeployOnly = gameUpdate.isDeployOnly
+        gameFacade.maxAvailableTroops = gameUpdate.troopsToDeploy
+        println("SCALAJS UPDATE GAME IS DEPLOY ONLY " + myIsDeployOnly)
         gameFacade.setCurrentPlayer(gameUpdate.actualPlayer)
         gameFacade.troopsToDeploy = gameUpdate.troopsToDeploy
         val cardOccurrence = gameUpdate.personalInfo.cards.groupBy(identity).mapValues(_.size)
