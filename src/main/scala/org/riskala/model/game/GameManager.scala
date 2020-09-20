@@ -86,18 +86,17 @@ object GameManager {
           nextBehavior(eventStore = newEventStore, gameSnapshot = newSnapshot)
 
         case GetFullInfo(playerName, actor) =>
-          val player = Player(playerName,"")
-          val starterGame = GameSnapshot.newGame(players.toSeq,MapLoader.loadMap("italy").get)
-          val personalInfo =
-            if(players.contains(player)) GamePersonalInfo(starterGame.objectives(player),starterGame.cards(player).toList)
-            else GamePersonalInfo()
-          val gameInfo = GameInfoMessage(starterGame.players.map(_.nickname).toSet,
-            starterGame.nowPlaying.nickname,
-            starterGame.deployableTroops,
-            starterGame.scenario,
-            starterGame.geopolitics,
+          val askingPlayer: Player = getPlayerByName(gameSnapshot.players.toSet, playerName).get
+          val personalInfo: GamePersonalInfo = GamePersonalInfo(
+            gameSnapshot.objectives(askingPlayer),
+            gameSnapshot.cards(askingPlayer).toList)
+          val gameInfoMessage: GameInfoMessage = GameInfoMessage(gameSnapshot.players.map(p=>p.nickname).toSet,
+            gameSnapshot.nowPlaying.nickname,
+            gameSnapshot.deployableTroops,
+            gameSnapshot.scenario,
+            gameSnapshot.geopolitics,
             personalInfo)
-          actor ! gameInfo
+          actor ! gameInfoMessage
           nextBehavior()
 
         case EndTurn(playerName) =>
