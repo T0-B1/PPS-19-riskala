@@ -20,4 +20,9 @@ object Utils{
     Await.result(response, 3.seconds).serviceInstances(serviceKey)
   }
 
+  def randomSetElement[T](s: Set[T]): T = {
+    val n = util.Random.nextInt(s.size)
+    s.iterator.drop(n).next
+  }
+
 }

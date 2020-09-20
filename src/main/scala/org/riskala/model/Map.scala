@@ -11,9 +11,9 @@ object State {
 
 trait Map {
   val name: String
-  val regions: List[Region]
-  val states: List[State]
-  val bridges: List[Bridge]
+  val regions: Set[Region]
+  val states: Set[State]
+  val bridges: Set[Bridge]
 
   /**
    * Defines all the neighbor of a state
@@ -21,7 +21,7 @@ trait Map {
    * @param state the state of wich we need to know his neighbors
    * @return a list of state that are neighbor with our state
    */
-  def getNeighbors(state:State): List[State]
+  def getNeighbors(state:State): Set[State]
 
   /**
    * check if two state are neighbors

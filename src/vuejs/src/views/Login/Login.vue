@@ -45,11 +45,11 @@
         </div>
       </b-form>
       <hr />
-      <span class="disabled">Non sei ancora registrato?</span>
+      <span class="disabled">Not registered?</span>
       <router-link to='registration' aria-label="registration"
         class="text-center buttonsDiv" style="text-decoration:none; margin-bottom:30px;">
         <b-button role="button" variant="outline-primary">
-          Registrati
+          Register
         </b-button>
       </router-link>
     </b-card>
@@ -67,6 +67,14 @@ export default {
         password: '',
       },
     };
+  },
+  mounted(){
+    var token = localStorage.riskalaToken
+    if(token !== 'InvalidToken'){
+      this.$store.commit('login', { token: token, user: localStorage.riskalaUser });
+      this.openSocket(token)
+      this.$router.push('/')
+    }
   },
   methods: {
     onSubmit(evt) {
@@ -101,7 +109,6 @@ export default {
       mySocket.onmessage = function(evt) { onMessage(evt) };
       mySocket.onerror = function(evt) { onError(evt) };
       this.$store.commit('openWebsocket', mySocket)
-      //Window.socket = mySocket
 
       function onOpen(vue) {
         console.log("CONNECTED");
