@@ -60,7 +60,7 @@ object ClientGame {
       playerState.owner.nickname,
       playerState.troops,
       map.regions.find(_.states.contains(playerState.state)).map(_.name).getOrElse(""))
-      val neighbors =  map.getNeighbors(playerState.state)
+    val neighbors =  map.getNeighbors(playerState.state)
     if(myState && myTurn){
       gameFacade.visible = true
       if(myIsDeployOnly) {
@@ -68,6 +68,7 @@ object ClientGame {
           gameFacade.addNeighbor(playerState.state, true)
           gameFacade.maxAvailableTroops = myTroopsToDeploy
           gameFacade.selectedNeighbor = playerState.state
+          neighborClick(playerState.state,gameFacade.myName,playerState.state,gameFacade)
         } else {
           gameFacade.visible = false
         }
@@ -77,6 +78,7 @@ object ClientGame {
           neighbors.foreach(gameFacade.addNeighbor(_, false))
           gameFacade.maxAvailableTroops = myTroopsToDeploy
           gameFacade.selectedNeighbor = playerState.state
+          neighborClick(playerState.state,gameFacade.myName,playerState.state,gameFacade)
         } else {
           val mySelection = neighbors.collectFirst({case s => s}).get
           val remainingNeighbors = neighbors.filterNot(_ == mySelection)
@@ -84,6 +86,7 @@ object ClientGame {
           remainingNeighbors.foreach(gameFacade.addNeighbor(_, false))
           gameFacade.maxAvailableTroops = playerState.troops - 1
           gameFacade.selectedNeighbor = mySelection
+          neighborClick(mySelection,gameFacade.myName,playerState.state,gameFacade)
         }
       }
     } else {
@@ -148,6 +151,8 @@ object ClientGame {
         gameFacade.setCardInfo(cardOccurrence.getOrElse(Infantry, 0),
           cardOccurrence.getOrElse(Cavalry, 0),
           cardOccurrence.getOrElse(Artillery, 0))
+        if(gameFacade.state!="Select a state")
+          clickedState(gameFacade.state,gameFacade.myName,gameFacade)
 
       case "GameEnd" =>
         val winner =
