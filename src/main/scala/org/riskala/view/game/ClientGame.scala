@@ -25,12 +25,12 @@ object ClientGame {
 
   @JSExport
   def getActionMsgWrapped(actionType: String, from: String, to: String, troops: Int): String =  {
-    val action = actionType match {
-      case "Attack" =>  ActionAttackMessage(from, to, troops).asJson.pretty(nospace)
-      case "Move" =>  ActionMoveMessage(from, to, troops).asJson.pretty(nospace)
-      case "Deploy" =>  ActionDeployMessage(from, to, troops).asJson.pretty(nospace)
+    val (msg,action) = actionType match {
+      case "Attack" => ("ActionAttackMessage", ActionAttackMessage(from, to, troops).asJson.pretty(nospace))
+      case "Move" => ("ActionMoveMessage", ActionMoveMessage(from, to, troops).asJson.pretty(nospace))
+      case "Deploy" => ("ActionDeployMessage", ActionDeployMessage(from, to, troops).asJson.pretty(nospace))
     }
-    WrappedMessage("ActionMessage", action).asJson.pretty(nospace)
+    WrappedMessage(msg, action).asJson.pretty(nospace)
   }
 
   @JSExport
@@ -127,6 +127,7 @@ object ClientGame {
         println("Ended parser retrieve message")
 
         playerStates = gameUpdate.playerStates
+        playerStates.foreach(ps => gameFacade.setPlayerState(ps.state, ps.owner.nickname, ps.troops))
         gameFacade.setCurrentPlayer(gameUpdate.actualPlayer)
         gameFacade.troopsToDeploy = gameUpdate.troopsToDeploy
         val cardOccurrence = gameUpdate.personalInfo.cards.groupBy(identity).mapValues(_.size)

@@ -72,14 +72,14 @@ object PlayerGameBehavior {
             context.log.info("PlayerGameActor failed to retrieve message, IGNORED")
             nextBehavior()
           }
-        case GameInfoMessage(players, actualPlayer, troopsToDeploy, map, playerState, personalInfo) =>
+        case GameInfoMessage(players, actualPlayer, troopsToDeploy, map, isDeployOnly, playerState, personalInfo) =>
           context.log.info(s"PlayerGameActor of $username received GameInfoMessage")
-          val fullInfo = GameFullInfo(players, actualPlayer, troopsToDeploy, map, playerState, personalInfo)
+          val fullInfo = GameFullInfo(players, actualPlayer, troopsToDeploy, isDeployOnly, map, playerState, personalInfo)
           socket ! TextMessage(Parser.wrap("GameFullInfo",fullInfo,GameFullInfo.GameFullInfoCodecJson.Encoder))
           nextBehavior()
-        case GameUpdateMessage(actualPlayer, troopsToDeploy, playerStates, personalInfo) =>
+        case GameUpdateMessage(actualPlayer, troopsToDeploy, isDeployOnly, playerStates, personalInfo) =>
           context.log.info(s"PlayerGameActor of $username received GameUpdateMessage")
-          val updateInfo = GameUpdate(actualPlayer, troopsToDeploy, playerStates, personalInfo)
+          val updateInfo = GameUpdate(actualPlayer, troopsToDeploy, isDeployOnly, playerStates, personalInfo)
           socket ! TextMessage(Parser.wrap("GameUpdate",updateInfo,GameUpdate.GameUpdateCodecJson.Encoder))
           nextBehavior()
         case GameEndMessage(winner) =>

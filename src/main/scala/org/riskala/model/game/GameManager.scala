@@ -67,6 +67,7 @@ object GameManager {
       def notifyUpdate(gameSnapshot: GameSnapshot): Unit = {
         val msgFromPersonalInfo = (personalInfo:GamePersonalInfo) => GameUpdateMessage(gameSnapshot.nowPlaying.nickname,
           gameSnapshot.deployableTroops,
+          (gameSnapshot.turn/players.size)==0,
           gameSnapshot.geopolitics,
           personalInfo)
         subscribers.foreach(sub => {
@@ -122,6 +123,7 @@ object GameManager {
             gameSnapshot.nowPlaying.nickname,
             gameSnapshot.deployableTroops,
             gameSnapshot.scenario,
+            (gameSnapshot.turn/players.size)==0,
             gameSnapshot.geopolitics,
             personalInfo)
           actor ! gameInfoMessage
