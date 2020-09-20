@@ -7,7 +7,7 @@ import org.riskala.model.ModelMessages.{GameMessage, LobbyMessage, Logout}
 import org.riskala.model.{Player, eventsourcing}
 import org.riskala.model.eventsourcing.{Command, Deploy, Event, EventStore, GameInitialized, GameSnapshot, SnapshotGenerator}
 import org.riskala.model.game.GameMessages._
-import org.riskala.model.lobby.LobbyMessages.Subscribe
+import org.riskala.model.lobby.LobbyMessages.{EndGame, Subscribe}
 import org.riskala.utils.MapLoader
 import org.riskala.view.messages.ToClientMessages.{GameFullInfo, GamePersonalInfo, RoomInfo}
 import org.riskala.model._
@@ -70,15 +70,19 @@ object GameManager {
           gameSnapshot.turn<=players.size,
           gameSnapshot.geopolitics,
           personalInfo)
+        val handleWin =
+          gameSnapshot.winner
+            .fold((_:ActorRef[PlayerMessage])=>{})(p=>(a:ActorRef[PlayerMessage])=>{a ! GameEndMessage(p)})
         subscribers.foreach(sub => {
           sub ! msgFromPersonalInfo(GamePersonalInfo())
-          gameSnapshot.winner.foreach(winner => sub ! GameEndMessage(winner))
+          handleWin(sub)
         })
         participants.foreach(part => {
           val playerOpt = players.find(_==part._1)
           part._2 ! msgFromPersonalInfo(getPersonalInfo(playerOpt,gameSnapshot))
-          gameSnapshot.winner.foreach(winner => part._2 ! GameEndMessage(winner))
+          handleWin(part._2)
         })
+        gameSnapshot.winner.foreach(_ => lobby ! EndGame(gameName,context.self))
 
       }
 
