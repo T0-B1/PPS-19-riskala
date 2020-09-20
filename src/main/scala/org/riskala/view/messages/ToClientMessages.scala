@@ -77,10 +77,11 @@ object ToClientMessages {
                           isDeployOnly: Boolean,
                           map:MapGeography,
                           playerStates: Set[PlayerState],
-                          personalInfo:GamePersonalInfo)
+                          personalInfo:GamePersonalInfo,
+                          winner: Option[Player])
   object GameFullInfo {
     implicit def GameFullInfoCodecJson =
-      casecodec7(GameFullInfo.apply,GameFullInfo.unapply)("players","actualPlayer","troopsToDeploy","isDeployOnly","map","playerStates","personalInfo")
+      casecodec8(GameFullInfo.apply,GameFullInfo.unapply)("players","actualPlayer","troopsToDeploy","isDeployOnly","map","playerStates","personalInfo","winner")
   }
 
   /**

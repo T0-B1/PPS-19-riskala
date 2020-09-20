@@ -78,9 +78,9 @@ object PlayerGameBehavior {
             Behaviors.same
           }
 
-        case GameInfoMessage(players, actualPlayer, troopsToDeploy, map, isDeployOnly, playerState, personalInfo) =>
+        case GameInfoMessage(players, actualPlayer, troopsToDeploy, map, isDeployOnly, playerState, personalInfo, winner) =>
           context.log.info(s"PlayerGameActor of $username received GameInfoMessage")
-          val fullInfo = GameFullInfo(players, actualPlayer, troopsToDeploy, isDeployOnly, map, playerState, personalInfo)
+          val fullInfo = GameFullInfo(players, actualPlayer, troopsToDeploy, isDeployOnly, map, playerState, personalInfo, winner)
           socket ! TextMessage(Parser.wrap("GameFullInfo",fullInfo,GameFullInfo.GameFullInfoCodecJson.Encoder))
           Behaviors.same
 
