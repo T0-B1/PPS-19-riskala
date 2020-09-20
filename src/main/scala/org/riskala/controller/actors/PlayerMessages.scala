@@ -24,17 +24,19 @@ object PlayerMessages {
 
   final case class LobbyInfoMessage(lobbyInfo: LobbyInfo) extends PlayerMessage
 
-  final case class GameInfoMessage(players:Set[String],
-                                   actualPlayer:String,
-                                   troopsToDeploy:Int,
-                                   map:MapGeography,
+  final case class GameInfoMessage(players: Set[String],
+                                   actualPlayer: String,
+                                   troopsToDeploy: Int,
+                                   map: MapGeography,
+                                   isDeployOnly: Boolean,
                                    playerStates: Set[PlayerState],
-                                   personalInfo:GamePersonalInfo) extends PlayerMessage
+                                   personalInfo: GamePersonalInfo) extends PlayerMessage
 
-  final case class GameUpdateMessage(actualPlayer:String,
-                                     troopsToDeploy:Int,
+  final case class GameUpdateMessage(actualPlayer: String,
+                                     troopsToDeploy: Int,
+                                     isDeployOnly: Boolean,
                                      playerStates: Set[PlayerState],
-                                     personalInfo:GamePersonalInfo) extends PlayerMessage
+                                     personalInfo: GamePersonalInfo) extends PlayerMessage
 
   final case class GameEndMessage(winner: Player) extends PlayerMessage
 

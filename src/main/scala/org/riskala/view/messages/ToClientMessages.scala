@@ -74,12 +74,13 @@ object ToClientMessages {
   case class GameFullInfo(players:Set[String],
                           actualPlayer:String,
                           troopsToDeploy:Int,
+                          isDeployOnly: Boolean,
                           map:MapGeography,
                           playerStates: Set[PlayerState],
                           personalInfo:GamePersonalInfo)
   object GameFullInfo {
     implicit def GameFullInfoCodecJson =
-      casecodec6(GameFullInfo.apply,GameFullInfo.unapply)("players","actualPlayer","troopsToDeploy","map","playerStates","personalInfo")
+      casecodec7(GameFullInfo.apply,GameFullInfo.unapply)("players","actualPlayer","troopsToDeploy","isDeployOnly","map","playerStates","personalInfo")
   }
 
   /**
@@ -87,10 +88,10 @@ object ToClientMessages {
    * @param troopsToDeploy The number of troops that the player can deploy
    * @param personalInfo Personal info about objective and cards
    * */
-  case class GameUpdate(actualPlayer:String, troopsToDeploy:Int, playerStates: Set[PlayerState],personalInfo:GamePersonalInfo)
+  case class GameUpdate(actualPlayer:String, troopsToDeploy:Int, isDeployOnly: Boolean, playerStates: Set[PlayerState],personalInfo:GamePersonalInfo)
   object GameUpdate {
     implicit def GameUpdateCodecJson =
-      casecodec4(GameUpdate.apply,GameUpdate.unapply)("actualPlayer","troopsToDeploy","playerState","personalInfo")
+      casecodec5(GameUpdate.apply,GameUpdate.unapply)("actualPlayer","troopsToDeploy","isDeployOnly","playerState","personalInfo")
   }
 
   case class GameEnd(winner: Player)
