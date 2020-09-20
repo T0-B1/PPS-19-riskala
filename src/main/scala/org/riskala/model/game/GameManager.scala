@@ -126,9 +126,9 @@ object GameManager {
             gameSnapshot.scenario,
             gameSnapshot.turn<=players.size,
             gameSnapshot.geopolitics,
-            personalInfo)
+            personalInfo,
+            gameSnapshot.winner)
           actor ! gameInfoMessage
-          gameSnapshot.winner.foreach(winner => actor ! GameEndMessage(winner))
           nextBehavior(updatedSub = newSubs,updatedParticipants = newParticipants)
 
         case EndTurn(playerName) =>
