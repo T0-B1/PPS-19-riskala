@@ -23,7 +23,7 @@ object GameSnapshot {
     val cards: Map[Player, Seq[Cards]] = players.map(p => (p, Seq.empty[Cards])).toMap
     val objectives: Map[Player, Objective] = players.map(p => (p, Objectives.generateRandomObjective(scenario, players.size))).toMap
     val deployable = statesOwned(nowPlaying, geopolitics)
-    GameSnapshot(players, scenario, geopolitics, nowPlaying, 0, deployable, cards, objectives)
+    GameSnapshot(players, scenario, geopolitics, nowPlaying, 1, deployable, cards, objectives)
   }
 
   def newGame(players: Seq[Player],

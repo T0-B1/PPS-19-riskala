@@ -167,11 +167,18 @@ class EventTest extends AnyWordSpec {
     val nextTurn = TurnEnded(curPlayer).happen(game)
     "ended" should {
       "update the current player to be the next in the sequence" in {
-        assert(nextTurn.nowPlaying.equals(nextPlayer))
+        assertResult(nextPlayer) {
+          nextTurn.nowPlaying
+        }
       }
       "update the deployable troops" in {
         assertResult(nextDeployableTroops) {
           nextTurn.deployableTroops
+        }
+      }
+      "update the turn number" in {
+        assertResult(game.turn + 1) {
+          nextTurn.turn
         }
       }
     }
