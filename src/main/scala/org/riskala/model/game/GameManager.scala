@@ -8,11 +8,7 @@ import org.riskala.model.{Player, eventsourcing}
 import org.riskala.model.eventsourcing.{Command, Deploy, Event, EventStore, GameInitialized, GameSnapshot, SnapshotGenerator}
 import org.riskala.model.game.GameMessages._
 import org.riskala.model.lobby.LobbyMessages.{EndGame, Subscribe}
-import org.riskala.utils.MapLoader
-import org.riskala.view.messages.ToClientMessages.{GameFullInfo, GamePersonalInfo, RoomInfo}
-import org.riskala.model._
-
-import scala.collection.immutable.{HashMap, HashSet}
+import org.riskala.view.messages.ToClientMessages.GamePersonalInfo
 
 object GameManager {
   def apply(gameName: String,
@@ -83,7 +79,6 @@ object GameManager {
           handleWin(part._2)
         })
         gameSnapshot.winner.foreach(_ => lobby ! EndGame(gameName,context.self))
-
       }
 
       context.log.info(s"GameManager $gameName: $message")
