@@ -1,9 +1,15 @@
 package org.riskala.view.messages
 
 import argonaut.Argonaut._
+import org.riskala.model.Cards.Cards
+import org.riskala.model.Objectives.Objective
+import org.riskala.model.{MapGeography, Player, PlayerState}
 
 import scala.scalajs.js.annotation.JSExportAll
 
+/**
+ * Structure of messages that are sent to client
+ * */
 @JSExportAll
 object ToClientMessages {
 
@@ -24,7 +30,7 @@ object ToClientMessages {
    * @param basicInfo               Object containing basic information of a room
    * @param scenario                Name of the game map
    * */
-  case class RoomInfo(basicInfo: RoomBasicInfo, players: Set[String], scenario: String)
+  case class RoomInfo(basicInfo: RoomBasicInfo, players: Set[Player], scenario: String)
   object RoomInfo {
     implicit def RoomInfoCodecJson =
       casecodec3(RoomInfo.apply,RoomInfo.unapply)("basicInfo","players","scenario")
@@ -47,6 +53,56 @@ object ToClientMessages {
       casecodec3(LobbyInfo.apply,LobbyInfo.unapply)("rooms","games","terminatedGames")
   }
 
+  /**
+   * @param objective Personal goal of the player during a game
+   * @param cards The list of cards that the player has
+   * */
+  case class GamePersonalInfo(objective: Objective = Objective(), cards: List[Cards] = List.empty[Cards])
+  object GamePersonalInfo {
+    implicit def GamePersonalInfoCodecJson =
+      casecodec2(GamePersonalInfo.apply, GamePersonalInfo.unapply)("objective", "cards")
+  }
+
+  /**
+   * @param players List of players into the game
+   * @param actualPlayer The player who is playing
+   * @param troopsToDeploy The number of troops that the player can deploy
+   * @param map The map on which players will play
+   * @param playerStates The states that the player owns
+   * @param personalInfo Personal info about objective and cards
+   * */
+  case class GameFullInfo(players:Set[String],
+                          actualPlayer:String,
+                          troopsToDeploy:Int,
+                          isDeployOnly: Boolean,
+                          map:MapGeography,
+                          playerStates: Set[PlayerState],
+                          personalInfo:GamePersonalInfo)
+  object GameFullInfo {
+    implicit def GameFullInfoCodecJson =
+      casecodec7(GameFullInfo.apply,GameFullInfo.unapply)("players","actualPlayer","troopsToDeploy","isDeployOnly","map","playerStates","personalInfo")
+  }
+
+  /**
+   * @param actualPlayer The new player who is playing
+   * @param troopsToDeploy The number of troops that the player can deploy
+   * @param personalInfo Personal info about objective and cards
+   * */
+  case class GameUpdate(actualPlayer:String, troopsToDeploy:Int, isDeployOnly: Boolean, playerStates: Set[PlayerState],personalInfo:GamePersonalInfo)
+  object GameUpdate {
+    implicit def GameUpdateCodecJson =
+      casecodec5(GameUpdate.apply,GameUpdate.unapply)("actualPlayer","troopsToDeploy","isDeployOnly","playerState","personalInfo")
+  }
+
+  case class GameEnd(winner: Player)
+  object GameEnd {
+    implicit def GameEndCodecJson =
+      casecodec1(GameEnd.apply,GameEnd.unapply)("winner")
+  }
+
+  /**
+   * @param error The error occurred
+   * */
   final case class ErrorMessage(error: String)
   object ErrorMessage {
     implicit def ErrorCodecJson =

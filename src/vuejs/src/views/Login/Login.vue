@@ -121,11 +121,11 @@ export default {
       }
 
       function onMessage(evt) {
-        console.log('LOGIN - MSG recv: ' + evt.data);
+        console.log('LOGIN - MSG received');
       }
 
       function onError(evt) {
-        console.log('WS ERROR' + evt.data);
+        console.log('WS ERROR');
       }
     },
     changeType() {

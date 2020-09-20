@@ -43,6 +43,10 @@
         ClientLobby.handleLobbyMessage(evt.data, vue)
       }
       this.$store.commit('changeHandler', newHandler)
+
+      if(this.$store.state.lobbyInfo !== ''){
+        ClientLobby.setupLobby(this.$store.state.lobbyInfo, this)
+      }
     },
     methods: {
       readSocketMessage() {
@@ -78,8 +82,14 @@
         }
       },
       goToRoom(newRoom){
+        this.$store.commit('changeLobbyInfo', '')
         this.$store.commit('changeRoomInfo', newRoom)
         this.$router.push('/room')
+      },
+      goToGame(newGame){
+        this.$store.commit('changeLobbyInfo', '')
+        this.$store.commit('changeGameInfo', newGame)
+        this.$router.push('/game')
       },
       notifyError(error) {
         console.log(error)

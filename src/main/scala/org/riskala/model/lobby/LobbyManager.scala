@@ -91,9 +91,12 @@ object LobbyManager {
           }
 
         case StartGame(info, players, roomSubscribers) =>
+          context.log.info("info -> "+info)
+          context.log.info("players -> "+players)
+          context.log.info("roomSubscribers -> "+roomSubscribers)
           val newRooms = rooms - info.basicInfo.name
-          //TODO: pass info to GM (roomInfo + subscribers+ players)
-          val game = context.spawn(GameManager(), "GameManager-"+info.basicInfo.name)
+          val game = context.spawn(GameManager(info.basicInfo.name, roomSubscribers, players,
+            players.keySet, info.scenario, context.self), "GameManager-"+info.basicInfo.name)
           val newGames = games + (info.basicInfo.name -> game)
           notifyAllSubscribers(getInfo(nextRooms = newRooms,nextGames = newGames))
           nextBehavior(nextRooms = newRooms,nextGames = newGames)

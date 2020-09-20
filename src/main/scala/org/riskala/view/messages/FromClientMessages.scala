@@ -1,22 +1,41 @@
 package org.riskala.view.messages
 
 import argonaut.Argonaut._
+import org.riskala.model.Cards.Cards
 
 import scala.scalajs.js.annotation.JSExportAll
 
+/**
+ * Structure of messages that client sends to server
+ * */
 @JSExportAll
 object FromClientMessages {
 
+  /**
+   * @param name Name of the room or game or terminatedGame that the player wants to join
+   * */
   final case class JoinMessage(name: String)
   object JoinMessage {
     implicit def JoinCodecJson =
       casecodec1(JoinMessage.apply,JoinMessage.unapply)("name")
   }
 
-  final case class ReadyMessage()
+  /**
+   * @param color color associated to a player
+   * */
+  final case class ReadyMessage(color: String)
+  object ReadyMessage {
+    implicit def ReadyMessageCodecJson =
+      casecodec1(ReadyMessage.apply,ReadyMessage.unapply)("color")
+  }
 
   final case class UnReadyMessage()
 
+  /**
+   * @param name Name of the room that the player creates
+   * @param maxPlayer Max number of player into the created room
+   * @param scenario Name of the map chosen to play
+   * */
   final case class CreateMessage(name: String, maxPlayer: Int, scenario: String)
   object CreateMessage {
     implicit def CreateCodecJson =
@@ -25,17 +44,49 @@ object FromClientMessages {
 
   final case class LeaveMessage()
 
-  final case class ActionMessage(from: String,
+  /**
+   * @param from Name of the starting state
+   * @param to Name of the state that the player decided to attack
+   * @param troops Number of troops used to do an attack
+   * */
+  final case class ActionAttackMessage(from: String,
                                  to: String,
-                                 attacking: Int,
-                                 defending: Int,
-                                 invading: Int)
-  object ActionMessage {
-    implicit def ActionCodecJson =
-      casecodec5(ActionMessage.apply,ActionMessage.unapply)("from", "to", "attacking","defending","invading")
+                                 troops: Int)
+  object ActionAttackMessage {
+    implicit def ActionAttackMessageCodecJson =
+      casecodec3(ActionAttackMessage.apply,ActionAttackMessage.unapply)("from", "to", "troops")
   }
 
-  final case class RedeemBonusMessage(cardType: String)
+  /**
+   * @param from Name of the starting state
+   * @param to Name of the state in which the player decided to deploy
+   * @param troops Number of troops to deploy
+   * */
+  final case class ActionDeployMessage(from: String,
+                                 to: String,
+                                 troops: Int)
+  object ActionDeployMessage {
+    implicit def ActionDeployMessageCodecJson =
+      casecodec3(ActionDeployMessage.apply,ActionDeployMessage.unapply)("from", "to", "troops")
+  }
+
+  /**
+   * @param from Name of the starting state
+   * @param to Name of the state of the the player in which move the troops
+   * @param troops Number of troops moved
+   * */
+  final case class ActionMoveMessage(from: String,
+                                 to: String,
+                                 troops: Int)
+  object ActionMoveMessage {
+    implicit def ActionMoveMessageCodecJson =
+      casecodec3(ActionMoveMessage.apply,ActionMoveMessage.unapply)("from", "to", "troops")
+  }
+
+  /**
+   * @param card the random card redeemed
+   * */
+  final case class RedeemBonusMessage(card: Cards)
   object RedeemBonusMessage {
     implicit def RedeemBonusCodecJson =
       casecodec1(RedeemBonusMessage.apply,RedeemBonusMessage.unapply)("cardType")
