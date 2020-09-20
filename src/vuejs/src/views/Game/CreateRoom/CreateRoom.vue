@@ -52,13 +52,12 @@ export default {
       selectedScenario: null,
       error: '',
       passed: false,
-      options: [{value: 'Europe', text: 'Europe'}],
+      options: [{value: 'italy', text: 'Italy'}],
     }
   },
   mounted() {
     var vue = this
     var newHandler = function(evt) {
-      console.log('CREATEROOM - Receive message: ' + evt.data);
       ClientCreateRoom.handleCreateMessage(evt.data, vue)
     }
     this.$store.commit('changeHandler', newHandler)
@@ -95,6 +94,9 @@ export default {
     goToRoom(newRoom){
       this.$store.commit('changeRoomInfo', newRoom)
       this.$router.push('/room')
+    },
+    updateLobby(lobby){
+      this.$store.commit('changeLobbyInfo', lobby)
     },
     createRoom() {
       this.checkForm();
