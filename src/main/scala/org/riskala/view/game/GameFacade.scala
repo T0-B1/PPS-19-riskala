@@ -12,6 +12,7 @@ class GameFacade extends js.Object {
   var troopsToDeploy: Int = js.native
   var visible: Boolean = js.native
   var nameActionBtn: String = js.native
+  var selectedNeighbor: String = js.native
 
   def addPlayer(player:String, myTurn: Boolean): Unit = js.native
   def setPlayerState(playerState: String, owner: String, troops: Int): Unit = js.native
@@ -23,4 +24,5 @@ class GameFacade extends js.Object {
   def setStateInfo(state: String, owner: String, troops: Int, region: String): Unit = js.native
   def setCurrentPlayer(player: String): Unit = js.native
   def setWinner(winner: String): Unit = js.native
+  def goToLobby(lobbyInfo: String): Unit = js.native
 }
