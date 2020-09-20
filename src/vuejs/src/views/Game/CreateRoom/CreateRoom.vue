@@ -58,7 +58,6 @@ export default {
   mounted() {
     var vue = this
     var newHandler = function(evt) {
-      console.log('CREATEROOM - Receive message: ' + evt.data);
       ClientCreateRoom.handleCreateMessage(evt.data, vue)
     }
     this.$store.commit('changeHandler', newHandler)

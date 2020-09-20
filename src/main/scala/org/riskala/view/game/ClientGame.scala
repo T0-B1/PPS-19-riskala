@@ -122,9 +122,7 @@ object ClientGame {
 
   @JSExport
   def handleGameMessage(message: String, gameFacade: GameFacade): Unit = {
-    println(s"inside handleGame. Message = $message")
     val wrappedMsg = Parser.retrieveWrapped(message).get
-    println(s"wrappedMessage = $wrappedMsg")
     wrappedMsg.classType match {
       case "ErrorMessage" => {
         println("received error message")

@@ -59,7 +59,6 @@ export default {
     this.myRng = seedRandom(this.roomName)
     var vue = this
     var newHandler = function(evt) {
-      console.log('ROOM - Receive message: ' + evt.data);
       ClientRoom.handleRoomMessage(evt.data, vue)
     }
     this.$store.commit('changeHandler', newHandler)
@@ -93,7 +92,6 @@ export default {
       })
     },
     goToGame(newGame){
-      console.log("GO TO GAME FROM LOBBY")
       this.$store.commit('changeGameInfo', newGame)
       this.$router.push('/game')
     },

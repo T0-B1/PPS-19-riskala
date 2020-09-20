@@ -132,12 +132,12 @@ export default {
         this.troopsDeployed = this.maxAvailableTroops
     },
     endTurn(){
-      console.log("endTurn")
       this.visible = false
       this.$store.state.websocket.send(ClientGame.getEmptyMsgWrapped("EndTurnMessage"))
+      this.selectedNeighbor = ""
+      this.neighbors.splice(0)
     },
     leave(){
-      console.log("leave")
       this.$store.state.websocket.send(ClientGame.getEmptyMsgWrapped("LeaveMessage"))
     },    
     addPlayer(player, myTurn){
@@ -179,7 +179,6 @@ export default {
       this.objective = obj
     },
     setStateInfo(nameState, owner, troops, region){
-      console.log("inside set state info vue")
       this.state = nameState
       this.owner = owner
       this.troops = troops
@@ -257,6 +256,9 @@ export default {
     setWinner(winner){
       this.isEnded = true
       this.winnerPlayer = winner
+      document.getElementsByTagName("button").forEach(function(input) {
+        input.disabled = true
+      })
     },
     goToLobby(lobbyInfo){
       this.$store.commit('changeLobbyInfo', lobbyInfo)
