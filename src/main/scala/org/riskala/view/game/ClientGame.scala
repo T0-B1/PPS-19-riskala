@@ -15,6 +15,8 @@ object ClientGame {
 
   private var map: MapGeography = _
   private var playerStates: Set[PlayerState] = _
+  private var myTroopsToDeploy: Int = 0
+  private var myActualPlayer: String = ""
 
   @JSExport
   def getEmptyMsgWrapped(typeMessage: String): String =  {
@@ -52,19 +54,19 @@ object ClientGame {
     }
   }
 
-  private def setStateInfo(playerState:PlayerState, gameFacade: GameFacade, myState: Boolean): Unit = {
-    println("setStateInfo")
+  private def myStateInfo(playerState:PlayerState, gameFacade: GameFacade, myState: Boolean, myTurn: Boolean): Unit = {
+    println("SCALAJS setStateInfo")
     gameFacade.setStateInfo(playerState.state,
       playerState.owner.nickname,
       playerState.troops,
       map.regions.find(_.states.contains(playerState.state)).map(_.name).getOrElse(""))
 
-    if(myState){
+    if(myState && myTurn){
       gameFacade.visible = true
-      if(gameFacade.troopsToDeploy > 0){
+      if(myTroopsToDeploy > 0){
         gameFacade.addNeighbor(playerState.state, true)
         map.getNeighbors(playerState.state).foreach(gameFacade.addNeighbor(_, false))
-        gameFacade.maxAvailableTroops = gameFacade.troopsToDeploy
+        gameFacade.maxAvailableTroops = myTroopsToDeploy
       } else {
         map.getNeighbors(playerState.state).foreach(gameFacade.addNeighbor(_, true))
         gameFacade.maxAvailableTroops = playerState.troops - 1
@@ -76,11 +78,9 @@ object ClientGame {
 
   @JSExport
   def clickedState(nameState: String, namePlayer: String, gameFacade: GameFacade): Unit = {
-    println("nameState: "+ nameState)
-    println("namePlayer: "+ namePlayer)
-    println("playerStates " + playerStates)
+    println("CLICKED STATE "+ nameState)
     playerStates.find(_.state == nameState)
-      .foreach(ps => setStateInfo(ps, gameFacade, ps.owner.nickname == namePlayer))
+      .foreach(ps => myStateInfo(ps, gameFacade, ps.owner.nickname == namePlayer, myActualPlayer == namePlayer))
   }
 
   @JSExport
@@ -90,8 +90,13 @@ object ClientGame {
     val gameOpt = Parser.retrieveMessage(gameInfo, GameFullInfo.GameFullInfoCodecJson.Decoder)
     println(if(gameOpt.isDefined) "PARSED GAMEINFO" else "FAILED TO PARSE GAMEINFO")
     val game = gameOpt.get
+    println("ACTUAL PLAYER"+game.actualPlayer)
+    println("TROOPS TO DEPLOY"+game.troopsToDeploy)
+    println("PERSONAL INFO"+game.personalInfo)
     map = game.map
     playerStates = game.playerStates
+    myTroopsToDeploy = game.troopsToDeploy
+    myActualPlayer = game.actualPlayer
 
     game.players.foreach(pl => gameFacade.addPlayer(pl, game.actualPlayer == pl))
     playerStates.foreach(ps => gameFacade.setPlayerState(ps.state, ps.owner.nickname, ps.troops))
