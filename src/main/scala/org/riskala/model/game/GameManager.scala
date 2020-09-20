@@ -2,7 +2,7 @@ package org.riskala.model.game
 
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.actor.typed.scaladsl.Behaviors
-import org.riskala.controller.actors.PlayerMessages.{GameInfoMessage, GameReferent, GameUpdateMessage, PlayerMessage}
+import org.riskala.controller.actors.PlayerMessages.{GameEndMessage, GameInfoMessage, GameReferent, GameUpdateMessage, PlayerMessage}
 import org.riskala.model.ModelMessages.{GameMessage, LobbyMessage, Logout}
 import org.riskala.model.{Player, eventsourcing}
 import org.riskala.model.eventsourcing.{Command, Deploy, Event, EventStore, GameInitialized, GameSnapshot, SnapshotGenerator}
@@ -72,10 +72,12 @@ object GameManager {
           personalInfo)
         subscribers.foreach(sub => {
           sub ! msgFromPersonalInfo(GamePersonalInfo())
+          gameSnapshot.winner.foreach(winner => sub ! GameEndMessage(winner))
         })
         participants.foreach(part => {
           val playerOpt = players.find(_==part._1)
           part._2 ! msgFromPersonalInfo(getPersonalInfo(playerOpt,gameSnapshot))
+          gameSnapshot.winner.foreach(winner => part._2 ! GameEndMessage(winner))
         })
 
       }
@@ -127,6 +129,7 @@ object GameManager {
             gameSnapshot.geopolitics,
             personalInfo)
           actor ! gameInfoMessage
+          gameSnapshot.winner.foreach(winner => actor ! GameEndMessage(winner))
           nextBehavior(updatedSub = newSubs,updatedParticipants = newParticipants)
 
         case EndTurn(playerName) =>
