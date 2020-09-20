@@ -23,10 +23,6 @@ object PlayerGameBehavior {
                                  game: ActorRef[GameMessage],
                                  socket: actor.ActorRef): Behavior[PlayerMessage] =
     Behaviors.receive { (context, message) =>
-      def nextBehavior(nextUsername: String = username,
-                       nextGame: ActorRef[GameMessage] = game,
-                       nextSocket: actor.ActorRef = socket): Behavior[PlayerMessage] =
-        playerGameBehavior(nextUsername,nextGame,nextSocket)
 
       message match {
 
@@ -41,35 +37,35 @@ object PlayerGameBehavior {
                 context.log.info("PlayerGameActor received ActionAttackMessage")
                 val action = Parser.retrieveMessage(wrapped.payload,ActionAttackMessage.ActionAttackMessageCodecJson.Decoder)
                 action.foreach(a => game ! ActionAttack(username,a.from,a.to,a.troops))
-                nextBehavior()
+                Behaviors.same
 
               case "ActionMoveMessage" =>
                 context.log.info("PlayerGameActor received ActionMoveMessage")
                 val action = Parser.retrieveMessage(wrapped.payload,ActionMoveMessage.ActionMoveMessageCodecJson.Decoder)
                 action.foreach(a => game ! ActionMove(username,a.from,a.to,a.troops))
-                nextBehavior()
+                Behaviors.same
 
               case "ActionDeployMessage" =>
                 context.log.info("PlayerGameActor received ActionMessage")
                 val action = Parser.retrieveMessage(wrapped.payload,ActionDeployMessage.ActionDeployMessageCodecJson.Decoder)
                 action.foreach(a => game ! ActionDeploy(username,a.from,a.to,a.troops))
-                nextBehavior()
+                Behaviors.same
 
               case "RedeemBonusMessage" =>
                 context.log.info("PlayerGameActor received RedeemBonusMessage")
                 val redeem = Parser.retrieveMessage(wrapped.payload,RedeemBonusMessage.RedeemBonusCodecJson.Decoder)
                 redeem.foreach(r => game ! RedeemBonus(username,r.card))
-                nextBehavior()
+                Behaviors.same
 
               case "EndTurnMessage" =>
                 context.log.info("PlayerGameActor received RedeemBonusMessage")
                 game ! EndTurn(username)
-                nextBehavior()
+                Behaviors.same
 
               case "LeaveMessage" =>
                 context.log.info("PlayerGameActor received LeaveMessage")
                 game ! Leave(context.self)
-                nextBehavior()
+                Behaviors.same
 
               case "LogoutMessage" =>
                 context.log.info("PlayerGameActor received RedeemBonusMessage")
@@ -79,25 +75,25 @@ object PlayerGameBehavior {
             }
           } else {
             context.log.info("PlayerGameActor failed to retrieve message, IGNORED")
-            nextBehavior()
+            Behaviors.same
           }
 
         case GameInfoMessage(players, actualPlayer, troopsToDeploy, map, isDeployOnly, playerState, personalInfo) =>
           context.log.info(s"PlayerGameActor of $username received GameInfoMessage")
           val fullInfo = GameFullInfo(players, actualPlayer, troopsToDeploy, isDeployOnly, map, playerState, personalInfo)
           socket ! TextMessage(Parser.wrap("GameFullInfo",fullInfo,GameFullInfo.GameFullInfoCodecJson.Encoder))
-          nextBehavior()
+          Behaviors.same
 
         case GameUpdateMessage(actualPlayer, troopsToDeploy, isDeployOnly, playerStates, personalInfo) =>
           context.log.info(s"PlayerGameActor of $username received GameUpdateMessage")
           val updateInfo = GameUpdate(actualPlayer, troopsToDeploy, isDeployOnly, playerStates, personalInfo)
           socket ! TextMessage(Parser.wrap("GameUpdate",updateInfo,GameUpdate.GameUpdateCodecJson.Encoder))
-          nextBehavior()
+          Behaviors.same
 
         case GameEndMessage(winner) =>
           context.log.info(s"PlayerGameActor of $username received EndGameMessage")
           socket ! TextMessage(Parser.wrap("GameEnd",GameEnd(winner),GameEnd.GameEndCodecJson.Encoder))
-          nextBehavior()
+          Behaviors.same
 
         case LobbyReferent(lobby) =>
           context.log.info(s"PlayerGameActor of $username received LobbyReferent")
@@ -109,7 +105,7 @@ object PlayerGameBehavior {
           socket ! TextMessage(Parser.wrap("ErrorMessage",
             clientError,
             ToClientMessages.ErrorMessage.ErrorCodecJson.Encoder))
-          nextBehavior()
+          Behaviors.same
       }
     }
 }
