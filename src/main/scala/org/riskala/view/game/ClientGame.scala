@@ -135,7 +135,6 @@ object ClientGame {
         val gameUpdate =
           Parser.retrieveMessage(wrappedMsg.payload, GameUpdate.GameUpdateCodecJson.Decoder).get
         println("Ended parser retrieve message")
-
         playerStates = gameUpdate.playerStates
         playerStates.foreach(ps => gameFacade.setPlayerState(ps.state, ps.owner.nickname, ps.troops))
         myTroopsToDeploy = gameUpdate.troopsToDeploy

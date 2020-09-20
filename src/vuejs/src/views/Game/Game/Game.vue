@@ -136,6 +136,8 @@ export default {
       this.$store.state.websocket.send(ClientGame.getEmptyMsgWrapped("EndTurnMessage"))
       this.selectedNeighbor = ""
       this.neighbors.splice(0)
+      document.getElementById(this.state).style.opacity = 1
+      this.setStateInfo('Select a state', '', '', '')
     },
     leave(){
       this.$store.state.websocket.send(ClientGame.getEmptyMsgWrapped("LeaveMessage"))
@@ -215,7 +217,7 @@ export default {
           if(vue.state !== 'Select a state'){
             document.getElementById(vue.state).style.opacity = 1
             vue.neighbors.splice(0)
-            vue.setStateInfo('', '', '', '')
+            vue.setStateInfo('Select a state', '', '', '')
           }
           if(el.id !== 'Select a state'){
             document.getElementById(el.id).style.opacity = 0.5
@@ -225,7 +227,7 @@ export default {
             vue.state = "Select a state"
             vue.visible = false
             vue.neighbors.splice(0)
-            vue.setStateInfo('', '', '', '')
+            vue.setStateInfo(vue.state, '', '', '')
           }
         };
       })
@@ -250,7 +252,6 @@ export default {
     actionOnMap(){
       this.$store.state.websocket.send(
         ClientGame.getActionMsgWrapped(this.nameActionBtn, this.state, this.selectedNeighbor, parseInt(this.troopsDeployed)))
-      //document.getElementById("inputTroop").value = "0"
       this.troopsDeployed = 0
     },
     setWinner(winner){
@@ -259,6 +260,7 @@ export default {
       document.getElementsByTagName("button").forEach(function(input) {
         input.disabled = true
       })
+      document.getElementById("loginLogout").disabled = false
     },
     goToLobby(lobbyInfo){
       this.$store.commit('changeLobbyInfo', lobbyInfo)
