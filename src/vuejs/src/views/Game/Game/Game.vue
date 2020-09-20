@@ -250,7 +250,12 @@ export default {
       });
     },
     actionOnMap(){
-      this.$store.state.websocket.send(ClientGame.getActionMsgWrapped(this.nameActionBtn, this.state, this.selectedNeighbor,this.troopsDeployed))
+      console.log("action map vue: "+this.nameActionBtn)
+      console.log("action map vue: "+this.state)
+      console.log("action map vue: "+this.selectedNeighbor)
+      console.log("action map vue: "+this.troopsDeployed)
+      this.$store.state.websocket.send(
+        ClientGame.getActionMsgWrapped(this.nameActionBtn, this.state, this.selectedNeighbor, parseInt(this.troopsDeployed)))
     },
     setWinner(winner){
       this.isEnded = true
