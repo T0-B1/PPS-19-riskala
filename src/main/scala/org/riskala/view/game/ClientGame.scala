@@ -5,7 +5,7 @@ import org.riskala.model.Cards._
 import org.riskala.model.{Cards, MapGeography, PlayerState}
 import org.riskala.utils.Parser
 import org.riskala.view.messages.FromClientMessages.{ActionAttackMessage, ActionDeployMessage, ActionMoveMessage, RedeemBonusMessage}
-import org.riskala.view.messages.ToClientMessages.{ErrorMessage, GameEnd, GameFullInfo, GameUpdate, LobbyInfo}
+import org.riskala.view.messages.ToClientMessages.{ErrorMessage, GameEnd, GameFullInfo, GameUpdate}
 import org.riskala.view.messages.WrappedMessage
 
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
@@ -43,7 +43,7 @@ object ClientGame {
   def neighborClick(clickedState: String, namePlayer: String, mapSelectedState: String, gameFacade: GameFacade): Unit = {
     if(clickedState equals mapSelectedState) {
       gameFacade.nameActionBtn = "Deploy"
-      gameFacade.maxAvailableTroops = gameFacade.troopsToDeploy
+      gameFacade.maxAvailableTroops = myTroopsToDeploy
     } else{
       playerStates.find(_.state == clickedState)
         .foreach(ps => {
@@ -55,21 +55,25 @@ object ClientGame {
   }
 
   private def myStateInfo(playerState:PlayerState, gameFacade: GameFacade, myState: Boolean, myTurn: Boolean): Unit = {
-    println("SCALAJS setStateInfo")
     gameFacade.setStateInfo(playerState.state,
       playerState.owner.nickname,
       playerState.troops,
       map.regions.find(_.states.contains(playerState.state)).map(_.name).getOrElse(""))
-
+      val neighbors =  map.getNeighbors(playerState.state)
     if(myState && myTurn){
       gameFacade.visible = true
       if(myTroopsToDeploy > 0){
         gameFacade.addNeighbor(playerState.state, true)
-        map.getNeighbors(playerState.state).foreach(gameFacade.addNeighbor(_, false))
+        neighbors.foreach(gameFacade.addNeighbor(_, false))
         gameFacade.maxAvailableTroops = myTroopsToDeploy
+        gameFacade.selectedNeighbor = playerState.state
       } else {
-        map.getNeighbors(playerState.state).foreach(gameFacade.addNeighbor(_, true))
+        val mySelection = neighbors.collectFirst({case s => s}).get
+        val remainingNeighbors = neighbors.filterNot(_ == mySelection)
+        gameFacade.addNeighbor(mySelection, true)
+        remainingNeighbors.foreach(gameFacade.addNeighbor(_, false))
         gameFacade.maxAvailableTroops = playerState.troops - 1
+        gameFacade.selectedNeighbor = mySelection
       }
     } else {
       gameFacade.visible = false
@@ -78,21 +82,15 @@ object ClientGame {
 
   @JSExport
   def clickedState(nameState: String, namePlayer: String, gameFacade: GameFacade): Unit = {
-    println("CLICKED STATE "+ nameState)
     playerStates.find(_.state == nameState)
       .foreach(ps => myStateInfo(ps, gameFacade, ps.owner.nickname == namePlayer, myActualPlayer == namePlayer))
   }
 
   @JSExport
   def setupGame(gameInfo: String, gameFacade: GameFacade): Unit = {
-    println("SCALAJS SETUP GAME")
     println(gameInfo)
     val gameOpt = Parser.retrieveMessage(gameInfo, GameFullInfo.GameFullInfoCodecJson.Decoder)
-    println(if(gameOpt.isDefined) "PARSED GAMEINFO" else "FAILED TO PARSE GAMEINFO")
     val game = gameOpt.get
-    println("ACTUAL PLAYER"+game.actualPlayer)
-    println("TROOPS TO DEPLOY"+game.troopsToDeploy)
-    println("PERSONAL INFO"+game.personalInfo)
     map = game.map
     playerStates = game.playerStates
     myTroopsToDeploy = game.troopsToDeploy
@@ -140,6 +138,10 @@ object ClientGame {
         val winner =
           Parser.retrieveMessage(wrappedMsg.payload, GameEnd.GameEndCodecJson.Decoder).get.winner
         gameFacade.setWinner(winner.nickname)
+
+      case "LobbyInfo" =>
+        println("SCALAJS received lobbyInfo")
+        gameFacade.goToLobby(wrappedMsg.payload)
     }
   }
 }
