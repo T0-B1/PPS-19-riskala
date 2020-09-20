@@ -33,32 +33,37 @@ object PlayerLobbyBehavior {
         playerActor(newUsername, newLobby, newSocket)
 
       message match {
+
         case SocketMessage(payload) =>
           context.log.info(s"PlayerActor of $username received socket payload: $payload")
-
           val wrappedOpt = Parser.retrieveWrapped(payload)
           if(wrappedOpt.isDefined) {
             val wrapped = wrappedOpt.get
             wrapped.classType match {
+
               case "JoinMessage" =>
                 context.log.info("PlayerLobbyActor received JoinMessage")
                 Parser.retrieveMessage(wrapped.payload, JoinMessage.JoinCodecJson.Decoder)
                   .foreach(j => lobby ! JoinTo(context.self, j.name))
                 nextBehavior()
+
               case "CreateMessage" =>
                 context.log.info("PlayerLobbyActor received CreateMessage")
                 Parser.retrieveMessage(wrapped.payload, CreateMessage.CreateCodecJson.Decoder)
                   .foreach(r =>
                     lobby ! CreateRoom(context.self, RoomInfo(RoomBasicInfo(r.name, 0, r.maxPlayer), Set.empty, r.scenario)))
                 nextBehavior()
+
               case "LogoutMessage" =>
                 context.log.info("PlayerLobbyActor received LogoutMessage")
                 lobby ! Logout(context.self)
                 //TODO: close socket
                 Behaviors.stopped
+
               case _ =>
                 context.log.info("PlayerLobbyActor received an unhandled message, IGNORED")
                 nextBehavior()
+
             }
           } else {
             context.log.info("PlayerLobbyActor failed to retrieve message, IGNORED")
@@ -69,6 +74,7 @@ object PlayerLobbyBehavior {
           context.log.info(s"PlayerActor of $username received LobbyInfoMessage")
           socket ! TextMessage(Parser.wrap("LobbyInfo",lobbyInfo,LobbyInfo.LobbyInfoCodecJson.Encoder))
           nextBehavior()
+
         case errorMessage: PlayerMessages.ErrorMessage =>
           context.log.info(s"PlayerActor of $username received ErrorMessage")
           val clientError = ToClientMessages.ErrorMessage(errorMessage.error)
@@ -76,18 +82,23 @@ object PlayerLobbyBehavior {
             clientError,
             ToClientMessages.ErrorMessage.ErrorCodecJson.Encoder))
           nextBehavior()
+
         case RegisterSocket(newSocketActor) =>
           context.log.info("registering new socket")
           nextBehavior(newSocket = newSocketActor)
+
         case RoomReferent(room) =>
           context.log.info(s"PlayerActor of $username received RoomReferent")
           PlayerRoomBehavior(username,room,socket)
+
         case GameReferent(game) =>
           context.log.info(s"PlayerActor of $username received GameReferent")
           PlayerGameBehavior(username,game,socket)
+
         case x =>
           context.log.info(s"PlayerActor of $username received "+ x +", IGNORED")
           nextBehavior()
+
       }
     }
   }
