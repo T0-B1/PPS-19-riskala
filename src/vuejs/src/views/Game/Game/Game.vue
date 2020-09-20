@@ -135,6 +135,7 @@ export default {
     },
     endTurn(){
       console.log("endTurn")
+      this.visible = false
       this.$store.state.websocket.send(ClientGame.getEmptyMsgWrapped("EndTurnMessage"))
     },
     leave(){

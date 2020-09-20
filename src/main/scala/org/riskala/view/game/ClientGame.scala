@@ -62,18 +62,28 @@ object ClientGame {
       val neighbors =  map.getNeighbors(playerState.state)
     if(myState && myTurn){
       gameFacade.visible = true
-      if(myTroopsToDeploy > 0){
-        gameFacade.addNeighbor(playerState.state, true)
-        neighbors.foreach(gameFacade.addNeighbor(_, false))
-        gameFacade.maxAvailableTroops = myTroopsToDeploy
-        gameFacade.selectedNeighbor = playerState.state
+      if(isDeployOnly) {
+        if(myTroopsToDeploy > 0) {
+          gameFacade.addNeighbor(playerState.state, true)
+          gameFacade.maxAvailableTroops = myTroopsToDeploy
+          gameFacade.selectedNeighbor = playerState.state
+        } else {
+          gameFacade.visible = false
+        }
       } else {
-        val mySelection = neighbors.collectFirst({case s => s}).get
-        val remainingNeighbors = neighbors.filterNot(_ == mySelection)
-        gameFacade.addNeighbor(mySelection, true)
-        remainingNeighbors.foreach(gameFacade.addNeighbor(_, false))
-        gameFacade.maxAvailableTroops = playerState.troops - 1
-        gameFacade.selectedNeighbor = mySelection
+        if(myTroopsToDeploy > 0){
+          gameFacade.addNeighbor(playerState.state, true)
+          neighbors.foreach(gameFacade.addNeighbor(_, false))
+          gameFacade.maxAvailableTroops = myTroopsToDeploy
+          gameFacade.selectedNeighbor = playerState.state
+        } else {
+          val mySelection = neighbors.collectFirst({case s => s}).get
+          val remainingNeighbors = neighbors.filterNot(_ == mySelection)
+          gameFacade.addNeighbor(mySelection, true)
+          remainingNeighbors.foreach(gameFacade.addNeighbor(_, false))
+          gameFacade.maxAvailableTroops = playerState.troops - 1
+          gameFacade.selectedNeighbor = mySelection
+        }
       }
     } else {
       gameFacade.visible = false
@@ -128,6 +138,8 @@ object ClientGame {
 
         playerStates = gameUpdate.playerStates
         playerStates.foreach(ps => gameFacade.setPlayerState(ps.state, ps.owner.nickname, ps.troops))
+        myTroopsToDeploy = gameUpdate.troopsToDeploy
+        myActualPlayer = gameUpdate.actualPlayer
         gameFacade.setCurrentPlayer(gameUpdate.actualPlayer)
         gameFacade.troopsToDeploy = gameUpdate.troopsToDeploy
         val cardOccurrence = gameUpdate.personalInfo.cards.groupBy(identity).mapValues(_.size)
