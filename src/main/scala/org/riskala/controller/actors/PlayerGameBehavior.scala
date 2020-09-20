@@ -96,7 +96,7 @@ object PlayerGameBehavior {
 
         case GameEndMessage(winner) =>
           context.log.info(s"PlayerGameActor of $username received EndGameMessage")
-          socket ! TextMessage(Parser.wrap("GameUpdate",GameEnd(winner),GameEnd.GameEndCodecJson.Encoder))
+          socket ! TextMessage(Parser.wrap("GameEnd",GameEnd(winner),GameEnd.GameEndCodecJson.Encoder))
           nextBehavior()
 
         case LobbyReferent(lobby) =>
