@@ -17,6 +17,7 @@ object ClientGame {
   private var playerStates: Set[PlayerState] = _
   private var myTroopsToDeploy: Int = 0
   private var myActualPlayer: String = ""
+  private var myIsDeployOnly: Boolean = true
 
   @JSExport
   def getEmptyMsgWrapped(typeMessage: String): String =  {
@@ -62,7 +63,7 @@ object ClientGame {
       val neighbors =  map.getNeighbors(playerState.state)
     if(myState && myTurn){
       gameFacade.visible = true
-      if(isDeployOnly) {
+      if(myIsDeployOnly) {
         if(myTroopsToDeploy > 0) {
           gameFacade.addNeighbor(playerState.state, true)
           gameFacade.maxAvailableTroops = myTroopsToDeploy
@@ -99,12 +100,12 @@ object ClientGame {
   @JSExport
   def setupGame(gameInfo: String, gameFacade: GameFacade): Unit = {
     println(gameInfo)
-    val gameOpt = Parser.retrieveMessage(gameInfo, GameFullInfo.GameFullInfoCodecJson.Decoder)
-    val game = gameOpt.get
+    val game = Parser.retrieveMessage(gameInfo, GameFullInfo.GameFullInfoCodecJson.Decoder).get
     map = game.map
     playerStates = game.playerStates
     myTroopsToDeploy = game.troopsToDeploy
     myActualPlayer = game.actualPlayer
+    myIsDeployOnly = game.isDeployOnly
 
     game.players.foreach(pl => gameFacade.addPlayer(pl, game.actualPlayer == pl))
     playerStates.foreach(ps => gameFacade.setPlayerState(ps.state, ps.owner.nickname, ps.troops))
@@ -140,6 +141,7 @@ object ClientGame {
         playerStates.foreach(ps => gameFacade.setPlayerState(ps.state, ps.owner.nickname, ps.troops))
         myTroopsToDeploy = gameUpdate.troopsToDeploy
         myActualPlayer = gameUpdate.actualPlayer
+        myIsDeployOnly = gameUpdate.isDeployOnly
         gameFacade.setCurrentPlayer(gameUpdate.actualPlayer)
         gameFacade.troopsToDeploy = gameUpdate.troopsToDeploy
         val cardOccurrence = gameUpdate.personalInfo.cards.groupBy(identity).mapValues(_.size)
