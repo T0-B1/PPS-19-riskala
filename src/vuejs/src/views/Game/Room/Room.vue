@@ -26,21 +26,26 @@
             <b-button v-if="this.ready === true" class="readyBtn" variant="outline-primary"  v-on:click="unready">Unready</b-button>
           </div>
           <hr class="divider"/>
-          <div id="svgMapContainer">
+          <div class="preview">
+            <h3>Preview map game</h3> 
+            <img id="svgMapContainer" src="@/assets/maps/italy.svg" />
+            <b-button id="joinBtn" variant="outline-danger" @click="leaveRoom">Leave room</b-button>
           </div>
-          <b-button id="joinBtn" variant="outline-danger" @click="leaveRoom">Leave room</b-button>
         </b-card>
-      </div>    
+      </div>
+      <b-modal id="modal-error" auto-focus-button="ok" ok-only title="Error Message">
+        <p class="my-4"><i>{{this.error}}</i></p>
+      </b-modal>
   </div>
 </template>
 
 <script>
 import * as d3 from 'd3'
 var seedRandom = require('seedrandom')
+
 export default {
   data(){
    return {
-     srcMap:'https://raw.githubusercontent.com/raddrick/risk-map-svg/master/risk.svg',
      titleTable: [
        {prima_colonna: "Name of Player", seconda_colonna: "Color"}
      ],
@@ -52,15 +57,12 @@ export default {
   },
   mounted() {
     this.myRng = seedRandom(this.roomName)
-    console.log(this.myRng())
     var vue = this
     var newHandler = function(evt) {
-      console.log('ROOM - Receive message: ' + evt.data);
       ClientRoom.handleRoomMessage(evt.data, vue)
     }
     this.$store.commit('changeHandler', newHandler)
 
-    this.loadSvg();
     if(this.$store.state.roomInfo !== ''){
       ClientRoom.setupRoom(this.$store.state.roomInfo, this)
     }
@@ -89,24 +91,29 @@ export default {
         el.onclick = function(){ alert(el.id); };
       })
     },
-    loadSvg(){
-      d3.xml(this.srcMap)
-      .then(data => {
-        d3.select("#svgMapContainer").node().append(data.documentElement);
-      }); 
+    goToGame(newGame){
+      this.$store.commit('changeGameInfo', newGame)
+      this.$router.push('/game')
     },
     readyClick() {
       this.ready=true
-      this.$store.state.websocket.send(ClientRoom.getReadyMsgWrapped())
+      this.$store.state.websocket.send(ClientRoom.getReadyMsgWrapped("ReadyMessage", this.getRandomColor(localStorage.riskalaUser)))
     },
     unready(){
       this.ready=false
-      this.$store.state.websocket.send(ClientRoom.getUnReadyMsgWrapped())
+      this.$store.state.websocket.send(ClientRoom.getMsgWrapped("UnReadyMessage"))
     },
     leaveRoom(){
-      this.$store.state.websocket.send(ClientRoom.getLeaveMsgWrapped())
+      this.$store.state.websocket.send(ClientRoom.getMsgWrapped("LeaveMessage"))
+    },
+    goToLobby(lobby){
+      this.$store.commit('changeLobbyInfo', lobby)
+      this.$store.commit('changeRoomInfo', '')
       this.$router.push('/')
-      this.$store.state.roomInfo = ''
+    },
+    notifyError(error){
+      this.error = error
+      this.$bvModal.show('modal-error')
     }
   }
 }
@@ -115,6 +122,10 @@ export default {
 <style lang="sass">
 .readyBtn
   margin: 0 auto
-svg
-  width: 50%
+.preview
+  display: flex
+  flex-direction: column
+  #svgMapContainer, #joinBtn
+    max-width: 30%
+    margin: 0 auto
 </style>

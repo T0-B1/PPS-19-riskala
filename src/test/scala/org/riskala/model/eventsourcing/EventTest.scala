@@ -4,7 +4,7 @@ import org.junit.runner.RunWith
 import org.riskala.model
 import org.riskala.model.Cards.Cards
 import org.riskala.model.State.State
-import org.riskala.model.{Cards, Geopolitics, Player, PlayerState}
+import org.riskala.model.{Cards, Geopolitics, MapGeography, Player, PlayerState}
 import org.riskala.utils.MapLoader
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.junit.JUnitRunner
@@ -16,7 +16,7 @@ class EventTest extends AnyWordSpec {
   val p2: Player = Player("p2", "blue")
   val p3: Player = Player("p3", "red")
   val players = Seq(p1, p2, p3)
-  val scenario: model.Map = MapLoader.loadMap("italy").get
+  val scenario: MapGeography = MapLoader.loadMap("italy").get
   val initialSnapshot: GameSnapshot = GameSnapshot.newGame(players, scenario)
 
   "An initialization event" should {
@@ -167,11 +167,18 @@ class EventTest extends AnyWordSpec {
     val nextTurn = TurnEnded(curPlayer).happen(game)
     "ended" should {
       "update the current player to be the next in the sequence" in {
-        assert(nextTurn.nowPlaying.equals(nextPlayer))
+        assertResult(nextPlayer) {
+          nextTurn.nowPlaying
+        }
       }
       "update the deployable troops" in {
         assertResult(nextDeployableTroops) {
           nextTurn.deployableTroops
+        }
+      }
+      "update the turn number" in {
+        assertResult(game.turn + 1) {
+          nextTurn.turn
         }
       }
     }

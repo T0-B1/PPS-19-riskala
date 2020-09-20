@@ -11,5 +11,6 @@ class LobbyFacade extends js.Object {
   def addGame(name: String): Unit = js.native
   def addTerminated(name: String): Unit = js.native
   def goToRoom(roomInfo: String): Unit = js.native
+  def goToGame(gameInfo: String): Unit = js.native
   def notifyError(error: String): Unit = js.native
 }

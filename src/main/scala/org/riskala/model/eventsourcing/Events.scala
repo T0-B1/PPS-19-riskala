@@ -77,7 +77,8 @@ final case class TurnEnded(player: Player)
     val currentPlayerIndex = game.players.indexOf(game.nowPlaying)
     val nextIndex = (currentPlayerIndex + 1) % game.players.size
     val nextPlayer = game.players(nextIndex)
-    game.copy(nowPlaying = nextPlayer, deployableTroops = game.geopolitics.count(p => p.owner.equals(nextPlayer)))
+    val nextTurn = game.turn + 1
+    game.copy(nowPlaying = nextPlayer, turn = nextTurn, deployableTroops = game.geopolitics.count(p => p.owner.equals(nextPlayer)))
   }
 }
 
