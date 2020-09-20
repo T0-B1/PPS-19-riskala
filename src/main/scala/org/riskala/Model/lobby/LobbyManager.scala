@@ -1,56 +1,71 @@
 package org.riskala.model.lobby
 
+import akka.actor.typed.receptionist.{Receptionist, ServiceKey}
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}
 import org.riskala.controller.actors.PlayerMessages._
 import org.riskala.model.ModelMessages._
 import org.riskala.model.game.GameManager
+import org.riskala.model.game.GameMessages.JoinGame
 import org.riskala.model.lobby.LobbyMessages._
 import org.riskala.model.room.RoomManager
-import org.riskala.model.room.RoomMessages.{Join, RoomBasicInfo}
-
-import scala.collection.immutable.{HashMap, HashSet}
+import org.riskala.model.room.RoomMessages.Join
+import org.riskala.view.messages.ToClientMessages.{LobbyInfo, RoomBasicInfo, RoomNameInfo}
 
 object LobbyManager {
 
-  def apply(): Behavior[LobbyMessage] = lobbyManager(HashSet.empty,HashMap.empty,HashMap.empty,HashMap.empty)
+  def apply(): Behavior[LobbyMessage] = setupLobbyManager()
 
-  private def lobbyManager(subscribers: HashSet[ActorRef[PlayerMessage]],
-                   rooms: HashMap[String, (ActorRef[RoomMessage], RoomBasicInfo)],
-                   games: HashMap[String, ActorRef[GameMessage]],
-                   terminatedGames: HashMap[String, (ActorRef[GameMessage], Boolean)]): Behavior[LobbyMessage] =
+  val lobbyServiceKey: ServiceKey[LobbyMessage] = ServiceKey[LobbyMessage]("LobbyManager")
+
+  private def setupLobbyManager(): Behavior[LobbyMessage] = {
+    Behaviors.setup { context =>
+      context.system.receptionist ! Receptionist.register(lobbyServiceKey, context.self)
+      context.log.info("SetupLobbyManager")
+      lobbyManager(Set.empty,Map.empty,Map.empty,Map.empty)
+    }
+  }
+
+  private def lobbyManager(subscribers: Set[ActorRef[PlayerMessage]],
+                   rooms: Map[String, (ActorRef[RoomMessage], RoomBasicInfo)],
+                   games: Map[String, ActorRef[GameMessage]],
+                   terminatedGames: Map[String, (ActorRef[GameMessage], Boolean)]): Behavior[LobbyMessage] =
     Behaviors.receive { (context, message) => {
-
-      def nextBehavior(nextSubscribers: HashSet[ActorRef[PlayerMessage]] = subscribers,
-                       nextRooms: HashMap[String, (ActorRef[RoomMessage], RoomBasicInfo)] = rooms,
-                       nextGames: HashMap[String, ActorRef[GameMessage]] = games,
-                       nextTerminatedGames: HashMap[String, (ActorRef[GameMessage], Boolean)] = terminatedGames
+      
+      def nextBehavior(nextSubscribers: Set[ActorRef[PlayerMessage]] = subscribers,
+                       nextRooms: Map[String, (ActorRef[RoomMessage], RoomBasicInfo)] = rooms,
+                       nextGames: Map[String, ActorRef[GameMessage]] = games,
+                       nextTerminatedGames: Map[String, (ActorRef[GameMessage], Boolean)] = terminatedGames
                       ): Behavior[LobbyMessage] = lobbyManager(nextSubscribers,nextRooms,nextGames,nextTerminatedGames)
 
-      def getInfo(nextRooms: HashMap[String, (ActorRef[RoomMessage], RoomBasicInfo)] = rooms,
-                  nextGames: HashMap[String, ActorRef[GameMessage]] = games,
-                  nextTerminatedGames: HashMap[String, (ActorRef[GameMessage], Boolean)] = terminatedGames
+      def getInfo(nextRooms: Map[String, (ActorRef[RoomMessage], RoomBasicInfo)] = rooms,
+                  nextGames: Map[String, ActorRef[GameMessage]] = games,
+                  nextTerminatedGames: Map[String, (ActorRef[GameMessage], Boolean)] = terminatedGames
                  ): PlayerMessage = {
-        val roomList: List[String] = nextRooms.map(kv => kv._1 + " "
-          + kv._2._2.actualNumberOfPlayer
-          + " / " + kv._2._2.maxNumberOfPlayer).toList
-        val gameList: List[String] = nextGames.keys.toList
-        val terminatedGameList: List[String] = nextTerminatedGames.keys.toList
+        val roomList: Set[RoomNameInfo] = nextRooms.map(kv => RoomNameInfo(kv._1,
+          kv._2._2.actualNumberOfPlayer + "/" + kv._2._2.maxNumberOfPlayer)).toSet
+        val gameList: Set[String] = nextGames.keys.toSet
+        val terminatedGameList: Set[String] = nextTerminatedGames.keys.toSet
         LobbyInfoMessage(LobbyInfo(roomList, gameList, terminatedGameList))
       }
 
       def notifyAllSubscribers(info: PlayerMessage,
-                               subs: HashSet[ActorRef[PlayerMessage]] = subscribers): Unit = {
+                               subs: Set[ActorRef[PlayerMessage]] = subscribers): Unit = {
         subs.foreach(s => s ! info)
       }
 
       message match {
         case Subscribe(subscriber) =>
+          subscriber ! LobbyReferent(context.self)
           subscriber ! getInfo()
+          context.log.info(s"Subscribe from $subscriber")
+          println(getInfo())
           nextBehavior(nextSubscribers = subscribers + subscriber)
 
         case CreateRoom(creator, roomInfo) =>
-          if (!rooms.contains(roomInfo.basicInfo.name)) {
+          if(!games.contains(roomInfo.basicInfo.name) &&
+            !terminatedGames.contains(roomInfo.basicInfo.name) &&
+            !rooms.contains(roomInfo.basicInfo.name)) {
             val room = context.spawn(RoomManager(roomInfo, context.self),
               "RoomManager-" + roomInfo.basicInfo.name)
             room ! Join(creator)
@@ -59,20 +74,22 @@ object LobbyManager {
             notifyAllSubscribers(getInfo(nextRooms = newRooms),newSubs)
             nextBehavior(nextSubscribers = newSubs,nextRooms = newRooms)
           } else {
-            creator ! RoomAlreadyExistsMessage()
+            creator ! ErrorMessage("Room already exists")
             nextBehavior()
           }
 
         case JoinTo(actor, name) =>
-          if (rooms.contains(name)) {
+          if(rooms.contains(name) || games.contains(name) || terminatedGames.contains(name)){
             val newSubs = subscribers - actor
-            rooms.get(name).head._1 ! Join(actor)
+            rooms.get(name).foreach(_._1 ! Join(actor))
+            games.get(name).foreach(_ ! JoinGame(actor))
+            terminatedGames.get(name).filter(_._2).foreach(_._1 ! JoinGame(actor))
             nextBehavior(nextSubscribers = newSubs)
           } else {
-            actor ! RoomNotFoundMessage()
+            actor ! ErrorMessage("Room not found")
             nextBehavior()
           }
-          
+
         case StartGame(info, players, roomSubscribers) =>
           val newRooms = rooms - info.basicInfo.name
           //TODO: pass info to GM (roomInfo + subscribers+ players)

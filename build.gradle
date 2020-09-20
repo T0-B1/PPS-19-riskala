@@ -5,7 +5,7 @@ plugins {
     id 'org.scoverage' version '4.0.2'
 }
 
-version '0.0.0'
+version '0.3.0'
 mainClassName = 'org.riskala.controller.Main'
 sourceCompatibility = 1.8
 
@@ -36,6 +36,7 @@ dependencies {
         [group: "org.slf4j", name: "slf4j-simple", version: "1.7.25"],
         [group: "com.github.julien-truffaut", name: "monocle-core_$scalaMajor", version: "2.1.0"],
         [group: "com.github.julien-truffaut", name: "monocle-macro_$scalaMajor", version: "2.1.0"],
+        [group: "com.github.pathikrit", name: "better-files_$scalaMajor", version: "3.9.1"],
         [group: "org.scala-js", name: "scalajs-library_2.12", version: "0.6.15"],
         [group: "com.lihaoyi", name: "scalatags_sjs0.6_2.12", version: "0.6.3"]
     )
@@ -61,9 +62,13 @@ task provideSourcesToScalajs(type: Copy) {
     //"org/riskala/model/lobby/**/*",
     //"org/riskala/model/room/**/*"]
 
-    def scalaJsClasses = ["org/riskala/model/*.scala"]
-    def scalaJsIgnore = ["org/riskala/model/ModelMessages.scala"]
-    from "$projectDir/src/main/scala/" 
+    def scalaJsClasses = ["org/riskala/model/*.scala",
+                          "org/riskala/view/**/*.scala",
+                          "org/riskala/utils/Parser.scala"]
+    def scalaJsIgnore = ["org/riskala/model/ModelMessages.scala",
+                         "org/riskala/view/SocketActor.scala"]
+    delete "$projectDir/src/scalajs/src"
+    from "$projectDir/src/main/scala/"
     include scalaJsClasses 
     exclude scalaJsIgnore
     into "$projectDir/src/scalajs/src/main/scala/"

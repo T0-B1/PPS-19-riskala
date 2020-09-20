@@ -13,9 +13,9 @@ class SerializationTest extends AnyWordSpec{
   val swi: State = "Switzerland"
   val ger: State = "Germany"
   val spa: State = "Spain"
-  val states = List(ita, fra, swi, ger, spa)
-  val regions = List(Region(List(ita,swi),4),Region(List(spa,ger,fra),6))
-  val bridges = List(Bridge(ita,fra,false),
+  val states = Set(ita, fra, swi, ger, spa)
+  val regions = Set(Region("NonEmptyRegion1",Set(ita,swi),4),Region("NonEmptyRegion2",Set(spa,ger,fra),6))
+  val bridges = Set(Bridge(ita,fra,false),
     Bridge(ita,swi,false),
     Bridge(swi,fra,false),
     Bridge(fra,spa,false),
@@ -63,7 +63,7 @@ class SerializationTest extends AnyWordSpec{
   }
 
   "PlayerState" should {
-    val pState = PlayerState(Player("p1","red"),2)
+    val pState = PlayerState("state", Player("p1","red"), 2)
     "be serialized to JSON" in {
       assert(pState.asJson.hasField("owner"))
       assert(pState.asJson.hasField("troops"))

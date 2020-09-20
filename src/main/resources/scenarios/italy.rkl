@@ -1,0 +1,248 @@
+{
+  "name" : "Italy",
+  "regions" : [
+    {
+      "name" : "North",
+      "states" : [
+        "Emilia-Romagna",
+        "Trentino-Alto Adige",
+        "Piemonte",
+        "Lombardia",
+        "Veneto",
+        "Liguria",
+        "Valle d'Aosta",
+        "Friuli-Venezia Giulia"
+      ],
+      "bonus" : 8
+    },
+    {
+      "name" : "Center",
+      "states" : [
+        "Lazio",
+        "Marche",
+        "Toscana",
+        "Umbria"
+      ],
+      "bonus" : 4
+    },
+    {
+      "name" : "South",
+      "states" : [
+        "Campania",
+        "Puglia",
+        "Basilicata",
+        "Calabria",
+        "Molise",
+        "Abruzzo"
+      ],
+      "bonus" : 6
+    },
+    {
+      "name" : "Islands",
+      "states" : [
+        "Sardegna",
+        "Sicilia"
+      ],
+      "bonus" : 2
+    }
+  ],
+  "states" : [
+    "Campania",
+    "Puglia",
+    "Toscana",
+    "Emilia-Romagna",
+    "Trentino-Alto Adige",
+    "Piemonte",
+    "Lombardia",
+    "Umbria",
+    "Basilicata",
+    "Sicilia",
+    "Calabria",
+    "Sardegna",
+    "Veneto",
+    "Lazio",
+    "Liguria",
+    "Valle d'Aosta",
+    "Marche",
+    "Molise",
+    "Abruzzo",
+    "Friuli-Venezia Giulia"
+  ],
+  "bridges" : [
+    {
+      "state1" : "Marche",
+      "state2" : "Umbria",
+      "userCreated" : false
+    },
+    {
+      "state1" : "Abruzzo",
+      "state2" : "Marche",
+      "userCreated" : false
+    },
+    {
+      "state1" : "Emilia-Romagna",
+      "state2" : "Marche",
+      "userCreated" : false
+    },
+    {
+      "state1" : "Campania",
+      "state2" : "Molise",
+      "userCreated" : false
+    },
+    {
+      "state1" : "Basilicata",
+      "state2" : "Campania",
+      "userCreated" : false
+    },
+    {
+      "state1" : "Lazio",
+      "state2" : "Toscana",
+      "userCreated" : false
+    },
+    {
+      "state1" : "Piemonte",
+      "state2" : "Valle d'Aosta",
+      "userCreated" : false
+    },
+    {
+      "state1" : "Basilicata",
+      "state2" : "Puglia",
+      "userCreated" : false
+    },
+    {
+      "state1" : "Lombardia",
+      "state2" : "Piemonte",
+      "userCreated" : false
+    },
+    {
+      "state1" : "Calabria",
+      "state2" : "Sicilia",
+      "userCreated" : false
+    },
+    {
+      "state1" : "Lazio",
+      "state2" : "Umbria",
+      "userCreated" : false
+    },
+    {
+      "state1" : "Abruzzo",
+      "state2" : "Molise",
+      "userCreated" : false
+    },
+    {
+      "state1" : "Basilicata",
+      "state2" : "Calabria",
+      "userCreated" : false
+    },
+    {
+      "state1" : "Lombardia",
+      "state2" : "Trentino-Alto Adige",
+      "userCreated" : false
+    },
+    {
+      "state1" : "Trentino-Alto Adige",
+      "state2" : "Veneto",
+      "userCreated" : false
+    },
+    {
+      "state1" : "Emilia-Romagna",
+      "state2" : "Piemonte",
+      "userCreated" : false
+    },
+    {
+      "state1" : "Lazio",
+      "state2" : "Molise",
+      "userCreated" : false
+    },
+    {
+      "state1" : "Campania",
+      "state2" : "Lazio",
+      "userCreated" : false
+    },
+    {
+      "state1" : "Sardegna",
+      "state2" : "Toscana",
+      "userCreated" : false
+    },
+    {
+      "state1" : "Lombardia",
+      "state2" : "Veneto",
+      "userCreated" : false
+    },
+    {
+      "state1" : "Emilia-Romagna",
+      "state2" : "Veneto",
+      "userCreated" : false
+    },
+    {
+      "state1" : "Abruzzo",
+      "state2" : "Lazio",
+      "userCreated" : false
+    },
+    {
+      "state1" : "Marche",
+      "state2" : "Toscana",
+      "userCreated" : false
+    },
+    {
+      "state1" : "Sardegna",
+      "state2" : "Lazio",
+      "userCreated" : false
+    },
+    {
+      "state1" : "Liguria",
+      "state2" : "Piemonte",
+      "userCreated" : false
+    },
+    {
+      "state1" : "Sardegna",
+      "state2" : "Sicilia",
+      "userCreated" : false
+    },
+    {
+      "state1" : "Liguria",
+      "state2" : "Toscana",
+      "userCreated" : false
+    },
+    {
+      "state1" : "Friuli-Venezia Giulia",
+      "state2" : "Veneto",
+      "userCreated" : false
+    },
+    {
+      "state1" : "Emilia-Romagna",
+      "state2" : "Liguria",
+      "userCreated" : false
+    },
+    {
+      "state1" : "Campania",
+      "state2" : "Puglia",
+      "userCreated" : false
+    },
+    {
+      "state1" : "Molise",
+      "state2" : "Puglia",
+      "userCreated" : false
+    },
+    {
+      "state1" : "Toscana",
+      "state2" : "Umbria",
+      "userCreated" : false
+    },
+    {
+      "state1" : "Emilia-Romagna",
+      "state2" : "Toscana",
+      "userCreated" : false
+    },
+    {
+      "state1" : "Emilia-Romagna",
+      "state2" : "Lombardia",
+      "userCreated" : false
+    },
+    {
+      "state1" : "Lazio",
+      "state2" : "Marche",
+      "userCreated" : false
+    }
+  ]
+}
