@@ -93,6 +93,7 @@ export default {
       })
     },
     goToGame(newGame){
+      console.log("GO TO GAME FROM LOBBY")
       this.$store.commit('changeGameInfo', newGame)
       this.$router.push('/game')
     },

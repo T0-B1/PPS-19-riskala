@@ -31,9 +31,9 @@ object ClientRoom {
 
   @JSExport
   def handleRoomMessage(message: String, roomFacade: RoomFacade): Unit = {
-    println(s"inside handleRoom. Message = $message")
+    println(s"inside handleRoom.")
     val wrappedMsg = Parser.retrieveWrapped(message).get
-    println(s"wrappedMessage = $wrappedMsg")
+    println(s"wrappedMessage")
     wrappedMsg.classType match {
       case "RoomInfo" =>
         println("case roomInfo inside handleLobby")

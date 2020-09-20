@@ -14,7 +14,7 @@ class GameFacade extends js.Object {
   var nameActionBtn: String = js.native
 
   def addPlayer(player:String, myTurn: Boolean): Unit = js.native
-  def setPlayerState(playerState: PlayerState): Unit = js.native
+  def setPlayerState(playerState: String, owner: String, troops: Int): Unit = js.native
   def setStateRegion(state: String, region: String): Unit = js.native
   def setObjective(objective: String): Unit = js.native
   def setCardInfo(infantry: Int, cavalry: Int, artillery: Int): Unit = js.native
