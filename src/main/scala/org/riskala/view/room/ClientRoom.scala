@@ -28,7 +28,7 @@ object ClientRoom {
   }
 
   /**
-   * Initial setup of the room with its information
+   * Initial room setup with its information
    * */
   @JSExport
   def setupRoom(roomInfo: String, roomFacade: RoomFacade): Unit = {

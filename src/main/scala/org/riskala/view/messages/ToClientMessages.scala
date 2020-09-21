@@ -36,13 +36,17 @@ object ToClientMessages {
       casecodec3(RoomInfo.apply,RoomInfo.unapply)("basicInfo","players","scenario")
   }
 
+  /**
+   *@param name The name of the room
+   *@param players The name of the player
+   * */
   case class RoomNameInfo(name: String, players: String)
   object RoomNameInfo {
     implicit def RoomNameInfoCodecJson =
       casecodec2(RoomNameInfo.apply,RoomNameInfo.unapply)("name","players")
   }
 
-  /** Lobby's information
+  /**
    * @param rooms              The list of name of the rooms
    * @param games              The list of name of the games
    * @param terminatedGames    The list of name of the terminated games
@@ -54,6 +58,7 @@ object ToClientMessages {
   }
 
   /**
+   * Information strictly related to a specific player
    * @param objective Personal goal of the player during a game
    * @param cards The list of cards that the player has
    * */
@@ -95,6 +100,9 @@ object ToClientMessages {
       casecodec5(GameUpdate.apply,GameUpdate.unapply)("actualPlayer","troopsToDeploy","isDeployOnly","playerState","personalInfo")
   }
 
+  /**
+   * @param winner The player who won the game
+   * */
   case class GameEnd(winner: Player)
   object GameEnd {
     implicit def GameEndCodecJson =

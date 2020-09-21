@@ -20,7 +20,7 @@ object ClientLobby {
   }
 
   /**
-   * Initial setup of lobby with its information
+   * Initial lobby setup with its information
    * */
   @JSExport
   def setupLobby(lobbyInfoStr: String, lobbyFacade: LobbyFacade): Unit = {
