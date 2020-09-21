@@ -4,7 +4,8 @@ import akka.actor
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.http.scaladsl.model.ws.TextMessage
-import org.riskala.controller.actors.PlayerMessages.{ErrorMessage, GameReferent, LobbyReferent, PlayerMessage, RoomInfoMessage, SocketMessage}
+import org.riskala.controller.actors.PlayerLobbyBehavior.playerActor
+import org.riskala.controller.actors.PlayerMessages.{ErrorMessage, GameReferent, LobbyReferent, PlayerMessage, RegisterSocket, RoomInfoMessage, SocketMessage}
 import org.riskala.model.ModelMessages.{Logout, RoomMessage}
 import org.riskala.model.Player
 import org.riskala.model.room.RoomMessages.{Leave, Ready, UnReady}
@@ -22,6 +23,9 @@ object PlayerRoomBehavior {
                                  room: ActorRef[RoomMessage],
                                  socket: actor.ActorRef): Behavior[PlayerMessage] =
     Behaviors.receive { (context, message) =>
+
+      println("AAAA")
+      println(message)
 
     message match {
         
@@ -77,6 +81,10 @@ object PlayerRoomBehavior {
         context.log.info(s"PlayerActor of $username received GameReferent")
         PlayerGameBehavior(username,game,socket)
 
+      case RegisterSocket(newSocketActor) =>
+        context.log.info(s"PlayerActor of $username registering new socket")
+        playerRoomBehavior(username, room, newSocketActor)
+
       case errorMessage: PlayerMessages.ErrorMessage =>
         context.log.info(s"PlayerActor of $username received ErrorMessage")
         val clientError = ToClientMessages.ErrorMessage(errorMessage.error)
@@ -85,6 +93,9 @@ object PlayerRoomBehavior {
           ToClientMessages.ErrorMessage.ErrorCodecJson.Encoder))
         Behaviors.same
 
+      case x =>
+        context.log.info(s"PlayerActor of $username received "+ x +", IGNORED")
+        Behaviors.same
     }
   }
 }
