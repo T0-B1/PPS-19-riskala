@@ -1,6 +1,5 @@
 package org.riskala.model.eventsourcing
 
-import org.riskala.model.Player
 import org.riskala.model.eventsourcing.EventStore.Behavior
 
 object EventStore {

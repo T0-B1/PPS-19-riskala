@@ -5,8 +5,6 @@ import org.riskala.controller.actors.PlayerMessages.PlayerMessage
 import org.riskala.model.Cards.Cards
 import org.riskala.model.ModelMessages.GameMessage
 
-import scala.collection.immutable.Queue
-
 /**
  * Type of possible messages that GameManager can receive
  * */
