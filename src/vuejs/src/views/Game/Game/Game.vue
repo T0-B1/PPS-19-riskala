@@ -61,7 +61,7 @@
               <label v-model="selectedNeighbor" :for="neighbor.id">{{neighbor.neighbor_name}}</label>
             </div>
             <h4> How many troops? </h4>
-            <input id="inputTroop" type="number" :max="maxAvailableTroops" v-model="troopsDeployed" @focusout="handleFocus" number></br></br>
+            <input id="inputTroop" type="number" :min="minAvailableTroops" :max="maxAvailableTroops" v-model="troopsDeployed" @focusout="handleFocus" number></br></br>
             <span> Troops for {{nameActionBtn.toLowerCase()}}: {{maxAvailableTroops}}</span></br></br>
             <b-button :disabled="isNotMyTurn" @click="actionOnMap">{{nameActionBtn}}</b-button>
           </div>
@@ -103,7 +103,8 @@ export default {
       selectedNeighbor: '',
       winnerPlayer: '',
       isEnded: false,
-      isNotMyTurn: true
+      isNotMyTurn: true,
+      minAvailableTroops: 0
     }
   },
   mounted() {
@@ -132,6 +133,8 @@ export default {
     handleFocus(){
       if(this.troopsDeployed > this.maxAvailableTroops)
         this.troopsDeployed = this.maxAvailableTroops
+      if(this.troopsDeployed < this.minAvailableTroops) 
+        this.troopsDeployed = this.minAvailableTroops
     },
     endTurn(){
       this.visible = false
