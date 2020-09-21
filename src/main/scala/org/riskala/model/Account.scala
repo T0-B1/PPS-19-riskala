@@ -1,6 +1,7 @@
 package org.riskala.model
 
 import argonaut.Argonaut._
+import argonaut.CodecJson
 
 import scala.scalajs.js.annotation.{JSExportAll, JSExportTopLevel}
 
@@ -14,6 +15,6 @@ import scala.scalajs.js.annotation.{JSExportAll, JSExportTopLevel}
 @JSExportAll
 case class Account(username: String, password: String, email: String)
 object Account {
-  implicit def BridgeCodecJson =
+  implicit def BridgeCodecJson: CodecJson[Account] =
     casecodec3(Account.apply,Account.unapply)("username","password","email")
 }

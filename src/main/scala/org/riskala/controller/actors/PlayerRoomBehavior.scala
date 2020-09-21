@@ -6,6 +6,7 @@ import akka.actor.typed.{ActorRef, Behavior}
 import akka.http.scaladsl.model.ws.TextMessage
 import org.riskala.controller.actors.PlayerLobbyBehavior.playerActor
 import org.riskala.controller.actors.PlayerMessages.{ErrorMessage, GameReferent, LobbyReferent, PlayerMessage, RegisterSocket, RoomInfoMessage, SocketMessage}
+import org.riskala.controller.actors.PlayerMessages.{GameReferent, LobbyReferent, PlayerMessage, RoomInfoMessage, SocketMessage}
 import org.riskala.model.ModelMessages.{Logout, RoomMessage}
 import org.riskala.model.Player
 import org.riskala.model.room.RoomMessages.{Leave, Ready, UnReady}
@@ -15,6 +16,14 @@ import org.riskala.view.messages.ToClientMessages.RoomInfo
 import org.riskala.view.messages.ToClientMessages
 
 object PlayerRoomBehavior {
+
+  /**
+   * Creates a PlayerRoomBehavior which handles game messages
+   * @param username Username of the player
+   * @param room The actorRef of the roomManager
+   * @param socket Classic Akka Actor which handles a socket
+   * @return A new PlayerRoomBehavior
+   * */
   def apply(username: String, room: ActorRef[RoomMessage], socket: actor.ActorRef): Behavior[PlayerMessage] = {
     playerRoomBehavior(username, room, socket)
   }
@@ -47,7 +56,6 @@ object PlayerRoomBehavior {
             case "LogoutMessage" =>
               context.log.info("PlayerRoomActor received LogoutMessage")
               room ! Logout(context.self)
-              //TODO: close socket
               Behaviors.stopped
 
             case "UnReadyMessage" =>

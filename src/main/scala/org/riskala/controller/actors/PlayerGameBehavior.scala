@@ -14,6 +14,14 @@ import org.riskala.view.messages.ToClientMessages
 import org.riskala.view.messages.ToClientMessages.{GameEnd, GameFullInfo, GameUpdate}
 
 object PlayerGameBehavior {
+
+  /**
+   * Creates a PlayerGameBehavior which handles game messages
+   * @param username Username of the player
+   * @param game The actorRef of the gameManager
+   * @param socket Classic Akka Actor which handles a socket
+   * @return A new PlayerGameBehavior
+   * */
   def apply(username: String, game: ActorRef[GameMessage], socket: actor.ActorRef): Behavior[PlayerMessage] =
     Behaviors.setup{ context =>
       game ! GetFullInfo(username, context.self)

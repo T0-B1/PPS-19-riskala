@@ -1,7 +1,7 @@
 package org.riskala.model.eventsourcing
 
 import org.riskala.model.Cards.Cards
-import org.riskala.model.{Cards, Geopolitics, Player}
+import org.riskala.model.{Cards, Player}
 import org.riskala.model.State.State
 import org.riskala.model.eventsourcing.EventStore.Behavior
 
@@ -32,13 +32,17 @@ final case class Attack(from: State,
                         to: State,
                         troops: Int)
                   extends SelfCheckingCommand {
-  val rng = new Random()
+
+  private val rng = new Random()
+  private val rndUpperBound: Int = 10
+  private val defenderThreshold: Int = 5
+
   override def checkedExecution(game: GameSnapshot): Behavior[Event] = {
     val defenders = game.geopolitics.getPlayerStateByName(to).get.troops
     var remainingDefenders = defenders
     var remainingAttackers = troops
     while(remainingAttackers > 0 && remainingDefenders > 0) {
-      if(rng.nextInt(10) > 5)
+      if(rng.nextInt(rndUpperBound) > defenderThreshold)
         remainingDefenders = remainingDefenders - 1
       else
         remainingAttackers = remainingAttackers - 1
@@ -64,16 +68,16 @@ final case class Attack(from: State,
   override def feasibility(game: GameSnapshot): FeasibilityReport = {
     val fromPS = game.geopolitics.getPlayerStateByName(from)
     if(fromPS.isEmpty)
-      return FeasibilityReport(false, Some(s"Attacking from an unknown state: $from"))
+      return FeasibilityReport(feasible = false, Some(s"Attacking from an unknown state: $from"))
     val toPS = game.geopolitics.getPlayerStateByName(to)
     if(toPS.isEmpty)
-      return FeasibilityReport(false, Some(s"Attacking an unknown state: $to"))
+      return FeasibilityReport(feasible = false, Some(s"Attacking an unknown state: $to"))
     val turnFeasibility = Command.checkTurn(fromPS.get.owner, game)
     if(!turnFeasibility.feasible)
       return turnFeasibility
     val availableTroops = fromPS.get.troops
     if(availableTroops <= troops)
-      return FeasibilityReport(false, Some(s"Insufficient troops ($availableTroops) for attack with $troops from $from"))
+      return FeasibilityReport(feasible = false, Some(s"Insufficient troops ($availableTroops) for attack with $troops from $from"))
     FeasibilityReport()
   }
 }
@@ -89,16 +93,16 @@ final case class MoveTroops(from: State,
   override def feasibility(game: GameSnapshot): FeasibilityReport = {
     val fromPS = game.geopolitics.getPlayerStateByName(from)
     if(fromPS.isEmpty)
-      return FeasibilityReport(false, Some(s"Moving from an unknown state: $from"))
+      return FeasibilityReport(feasible = false, Some(s"Moving from an unknown state: $from"))
     val toPS = game.geopolitics.getPlayerStateByName(to)
     if(toPS.isEmpty)
-      return FeasibilityReport(false, Some(s"Moving to an unknown state: $to"))
+      return FeasibilityReport(feasible = false, Some(s"Moving to an unknown state: $to"))
     val turnFeasibility = Command.checkTurn(fromPS.get.owner, game)
     if(!turnFeasibility.feasible)
       return turnFeasibility
     val availableTroops = fromPS.get.troops
     if(availableTroops <= troops)
-      return FeasibilityReport(false, Some(s"Insufficient troops ($availableTroops) for attack with $troops from $from"))
+      return FeasibilityReport(feasible = false, Some(s"Insufficient troops ($availableTroops) for attack with $troops from $from"))
     FeasibilityReport()
   }
 }
@@ -113,12 +117,12 @@ final case class Deploy(to: State,
   override def feasibility(game: GameSnapshot): FeasibilityReport = {
     val toPS = game.geopolitics.getPlayerStateByName(to)
     if(toPS.isEmpty)
-      return FeasibilityReport(false, Some(s"Moving to an unknown state: $to"))
+      return FeasibilityReport(feasible = false, Some(s"Moving to an unknown state: $to"))
     val turnFeasibility = Command.checkTurn(toPS.get.owner, game)
     if(!turnFeasibility.feasible)
       return turnFeasibility
     if(troops > game.deployableTroops)
-      return FeasibilityReport(false, Some(s"Not enough troops (${game.deployableTroops}) to deploy $troops to state $to"))
+      return FeasibilityReport(feasible = false, Some(s"Not enough troops (${game.deployableTroops}) to deploy $troops to state $to"))
     FeasibilityReport()
   }
 }
@@ -136,9 +140,9 @@ final case class RedeemBonus(player: Player,
       return turnFeasibility
     val playerCards = game.cards.get(player)
     if(playerCards.isEmpty)
-      return FeasibilityReport(false, Some(s"No deck found"))
+      return FeasibilityReport(feasible = false, Some(s"No deck found"))
     if(playerCards.get.count(c => c.equals(cardBonus)) < 3)
-      return FeasibilityReport(false, Some(s"Not enough cards of type $cardBonus"))
+      return FeasibilityReport(feasible = false, Some(s"Not enough cards of type $cardBonus"))
     FeasibilityReport()
   }
 }
@@ -158,8 +162,8 @@ object Command {
 
   def checkTurn(player: Player, game: GameSnapshot): FeasibilityReport = {
     game.nowPlaying match {
-      case p if p.equals(player) => FeasibilityReport(true, None)
-      case _ => FeasibilityReport(false, Some("Not your turn"))
+      case p if p.equals(player) => FeasibilityReport(feasible = true, None)
+      case _ => FeasibilityReport(feasible = false, Some("Not your turn"))
     }
   }
 

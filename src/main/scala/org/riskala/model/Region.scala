@@ -2,6 +2,7 @@ package org.riskala.model
 
 import org.riskala.model.State.State
 import argonaut.Argonaut._
+import argonaut.CodecJson
 
 import scala.scalajs.js.annotation.{JSExportAll, JSExportTopLevel}
 
@@ -22,5 +23,6 @@ case class Region(name: String, states: Set[State], bonus: Int) {
   def hasState(state: State): Boolean = states.contains(state)
 }
 object Region {
-  implicit def RegionCodecJson = casecodec3(Region.apply,Region.unapply)("name","states","bonus")
+  implicit def RegionCodecJson: CodecJson[Region] =
+    casecodec3(Region.apply,Region.unapply)("name","states","bonus")
 }

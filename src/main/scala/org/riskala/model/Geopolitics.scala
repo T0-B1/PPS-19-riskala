@@ -19,11 +19,7 @@ case class Geopolitics(states: Set[PlayerState]) {
   }
 
   def updateStateOwner(state: State, newOwner: Player): Geopolitics = {
-    val ps = getPlayerStateByName(state)
-    if(ps.isEmpty)
-      this
-    else
-      updateGeopolitics(ps.get.copy(owner = newOwner))
+    getPlayerStateByName(state).fold(this)(ps=>updateGeopolitics(ps.copy(owner = newOwner)))
   }
 
   def modifyStateTroops(state: State, troopsDelta: Int): Geopolitics = {
@@ -35,15 +31,9 @@ case class Geopolitics(states: Set[PlayerState]) {
   }
 
   private def alterStateTroops(state: State, troops: Int, additive: Boolean): Geopolitics = {
-    val ps = getPlayerStateByName(state)
-    if(ps.isEmpty)
-      this
-    else {
-      var t = troops
-      if(additive)
-        t = ps.get.troops + troops
-      updateGeopolitics(ps.get.copy(troops = t))
-    }
+    getPlayerStateByName(state).fold(this)(ps=>{
+      updateGeopolitics(ps.copy(troops = if(additive) ps.troops + troops else troops))
+    })
   }
 
 }

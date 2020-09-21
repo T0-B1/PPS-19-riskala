@@ -1,7 +1,5 @@
 package org.riskala.view.game
 
-import org.riskala.model.{MapGeography, PlayerState}
-
 import scala.scalajs.js
 import scala.scalajs.js.annotation.JSGlobal
 
@@ -10,7 +8,6 @@ import scala.scalajs.js.annotation.JSGlobal
 class GameFacade extends js.Object {
   var myName: String = js.native
   var maxAvailableTroops: Int = js.native
-  var troopsToDeploy: Int = js.native
   var visible: Boolean = js.native
   var nameActionBtn: String = js.native
   var selectedNeighbor: String = js.native

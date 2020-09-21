@@ -1,6 +1,7 @@
 package org.riskala.model
 
 import argonaut.Argonaut._
+import argonaut.CodecJson
 
 import scala.scalajs.js.annotation.{JSExportAll, JSExportTopLevel}
 
@@ -18,6 +19,6 @@ case class Player(nickname: String, color: String){
   }
 }
 object Player {
-  implicit def PlayerCodecJson =
+  implicit def PlayerCodecJson: CodecJson[Player] =
     casecodec2(Player.apply, Player.unapply)("nickname","color")
 }

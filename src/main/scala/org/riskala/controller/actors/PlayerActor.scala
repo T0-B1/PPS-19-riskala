@@ -1,7 +1,7 @@
 package org.riskala.controller.actors
 
 import akka.actor
-import akka.actor.typed.{ActorRef, Behavior}
+import akka.actor.typed.Behavior
 import akka.actor.typed.receptionist.Receptionist
 import akka.actor.typed.scaladsl.Behaviors
 import org.riskala.controller.actors.PlayerMessages.PlayerMessage
@@ -11,6 +11,11 @@ object PlayerActor {
 
   private final case class AdaptedListing(listing: Receptionist.Listing) extends PlayerMessage
 
+  /**
+   * Apply of PlayerActor that returns a playerLobbyBehavior
+   * @param username  Username of the player
+   * @param socket Classic Akka Actor which handles a socket
+   * */
   def apply(username: String, socket: actor.ActorRef): Behavior[PlayerMessage] = {
     discoverLobbyManager(username, socket)
   }
