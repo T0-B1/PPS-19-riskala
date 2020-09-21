@@ -47,18 +47,18 @@ object Utils{
 
   def sendUserTurnNotification(userName: String, gameName: String): Unit = {
     val email = AuthManager.getUserMail(userName)
-    if(email.isEmpty)
-      return
-    val props = loadPropertiesFromResources()
-    val domain = props.get("mailgunDomain").toString
-    val apiKey = props.get("mailgunKey").toString
-    Unirest.post("https://api.mailgun.net/v3/" + domain + "/messages")
-      .basicAuth("api", apiKey)
-      .queryString("from", "Riskala Bot <mailgun@sandbox7d5c8d16a2274c5ab7e6825f4e7c7733.mailgun.org>")
-      .queryString("to", email.get)
-      .queryString("subject", "It's your turn!")
-      .queryString("text", s"Hey $userName!\nIt's your turn to play, $gameName awaits you.")
-      .asJson();
+    if(email.isDefined) {
+      val props = loadPropertiesFromResources()
+      val domain = props.get("mailgunDomain").toString
+      val apiKey = props.get("mailgunKey").toString
+      Unirest.post("https://api.mailgun.net/v3/" + domain + "/messages")
+        .basicAuth("api", apiKey)
+        .queryString("from", "Riskala Bot <mailgun@sandbox7d5c8d16a2274c5ab7e6825f4e7c7733.mailgun.org>")
+        .queryString("to", email.get)
+        .queryString("subject", "It's your turn!")
+        .queryString("text", s"Hey $userName!\nIt's your turn to play, $gameName awaits you.")
+        .asJson()
+    }
   }
 
 }
