@@ -12,10 +12,14 @@ import scala.concurrent.{Await, ExecutionContextExecutor, Future}
 import scala.reflect.ClassTag
 import scala.concurrent.duration._
 import scala.io.Source
+import com.mashape.unirest.http.HttpResponse
+import com.mashape.unirest.http.JsonNode
+import com.mashape.unirest.http.Unirest
+import org.riskala.controller.AuthManager
 
 object Utils{
 
-  val PROPS_PATH = "/test.properties"
+  val PROPS_PATH = "/config.properties"
 
   def loadPropertiesFromResources(): Properties = {
     val properties: Properties = new Properties()
@@ -41,4 +45,22 @@ object Utils{
     s.iterator.drop(n).next
   }
 
+  def sendUserTurnNotification(userName: String, gameName: String): Unit = {
+    val email = AuthManager.getUserMail(userName)
+    if(email.isEmpty)
+      return
+    val props = loadPropertiesFromResources()
+    val domain = props.get("mailgunDomain").toString
+    val apiKey = props.get("mailgunKey").toString
+    Unirest.post("https://api.mailgun.net/v3/" + domain + "/messages")
+      .basicAuth("api", apiKey)
+      .queryString("from", "Riskala Bot <mailgun@sandbox7d5c8d16a2274c5ab7e6825f4e7c7733.mailgun.org>")
+      .queryString("to", email.get)
+      .queryString("subject", "It's your turn!")
+      .queryString("text", s"Hey $userName!\nIt's your turn to play, $gameName awaits you.")
+      .asJson();
+  }
+
 }
+
+
