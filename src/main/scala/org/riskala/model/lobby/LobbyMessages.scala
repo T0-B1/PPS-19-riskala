@@ -11,7 +11,6 @@ import org.riskala.view.messages.ToClientMessages.{RoomBasicInfo, RoomInfo}
  * lobby messages
  */
 object LobbyMessages {
-
   /** Message sent to subscribe to the lobby
    * @param subscriber              The actor who wants to subscribe to the lobby
    * */

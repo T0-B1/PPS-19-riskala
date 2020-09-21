@@ -13,6 +13,15 @@ import org.riskala.utils.Utils
 import org.riskala.view.messages.ToClientMessages.GamePersonalInfo
 
 object GameManager {
+  /**
+   * Creates the GameManeger behavior
+   * @param gameName The name of the new game
+   * @param subscribers Set of players who subscribe to the game
+   * @param participants Map of player who are actually connected to the game
+   * @param players The name of players
+   * @param scenarioName The name of the scenario
+   * @param lobby ActorRef of the lobby
+   * */
   def apply(gameName: String,
             subscribers: Set[ActorRef[PlayerMessage]],
             participants: Map[Player,ActorRef[PlayerMessage]],

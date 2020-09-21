@@ -11,6 +11,11 @@ object PlayerActor {
 
   private final case class AdaptedListing(listing: Receptionist.Listing) extends PlayerMessage
 
+  /**
+   * Apply of PlayerActor that returns a playerLobbyBehavior
+   * @param username  Username of the player
+   * @param socket Classic Akka Actor which handles a socket
+   * */
   def apply(username: String, socket: actor.ActorRef): Behavior[PlayerMessage] = {
     discoverLobbyManager(username, socket)
   }

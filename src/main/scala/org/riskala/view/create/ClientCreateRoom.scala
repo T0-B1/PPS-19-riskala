@@ -11,11 +11,17 @@ import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 @JSExportTopLevel("ClientCreateRoom")
 object ClientCreateRoom {
 
+  /**
+   * Method that gives a wrapped Create message in JSON-format string
+   * */
   @JSExport
   def getCreateMsgWrapped(name: String, maxPlayer: Int, scenario: String): String = {
     WrappedMessage("CreateMessage",CreateMessage(name,maxPlayer,scenario).asJson.pretty(nospace)).asJson.pretty(nospace)
   }
 
+  /**
+   * Method used to menage messages that are sent to createRoom page
+   * */
   @JSExport
   def handleCreateMessage(message: String, createRoomFacade: CreateRoomFacade): Unit = {
     println(s"inside handleCreate. Message = $message")

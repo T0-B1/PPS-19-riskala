@@ -14,6 +14,14 @@ import org.riskala.view.messages.ToClientMessages.RoomInfo
 import org.riskala.view.messages.ToClientMessages
 
 object PlayerRoomBehavior {
+
+  /**
+   * Creates a PlayerRoomBehavior which handles game messages
+   * @param username Username of the player
+   * @param room The actorRef of the roomManager
+   * @param socket Classic Akka Actor which handles a socket
+   * @return A new PlayerRoomBehavior
+   * */
   def apply(username: String, room: ActorRef[RoomMessage], socket: actor.ActorRef): Behavior[PlayerMessage] = {
     playerRoomBehavior(username, room, socket)
   }
