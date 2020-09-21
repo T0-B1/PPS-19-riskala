@@ -30,7 +30,8 @@ object PlayerMessages {
                                    map: MapGeography,
                                    isDeployOnly: Boolean,
                                    playerStates: Set[PlayerState],
-                                   personalInfo: GamePersonalInfo) extends PlayerMessage
+                                   personalInfo: GamePersonalInfo,
+                                   winner: Option[Player]) extends PlayerMessage
 
   final case class GameUpdateMessage(actualPlayer: String,
                                      troopsToDeploy: Int,

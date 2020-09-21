@@ -8,11 +8,13 @@ import scala.scalajs.js.annotation.JSGlobal
 @js.native
 @JSGlobal
 class GameFacade extends js.Object {
+  var myName: String = js.native
   var maxAvailableTroops: Int = js.native
   var troopsToDeploy: Int = js.native
   var visible: Boolean = js.native
   var nameActionBtn: String = js.native
   var selectedNeighbor: String = js.native
+  var state: String = js.native
 
   def addPlayer(player:String, myTurn: Boolean): Unit = js.native
   def setPlayerState(playerState: String, owner: String, troops: Int): Unit = js.native
