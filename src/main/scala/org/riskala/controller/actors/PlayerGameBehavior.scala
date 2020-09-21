@@ -5,6 +5,7 @@ import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.http.scaladsl.model.ws.TextMessage
 import org.riskala.controller.actors.PlayerMessages._
+import org.riskala.controller.actors.PlayerRoomBehavior.playerRoomBehavior
 import org.riskala.model.ModelMessages.{GameMessage, Logout}
 import org.riskala.model.game.GameMessages.{ActionAttack, ActionDeploy, ActionMove, EndTurn, GetFullInfo, Leave, RedeemBonus}
 import org.riskala.utils.Parser
@@ -114,6 +115,15 @@ object PlayerGameBehavior {
             clientError,
             ToClientMessages.ErrorMessage.ErrorCodecJson.Encoder))
           Behaviors.same
+
+        case RegisterSocket(newSocketActor) =>
+          context.log.info(s"PlayerActor of $username registering new socket")
+          PlayerGameBehavior(username, game, newSocketActor)
+
+        case x =>
+          context.log.info(s"PlayerActor of $username received "+ x +", IGNORED")
+          Behaviors.same
+
       }
     }
 }

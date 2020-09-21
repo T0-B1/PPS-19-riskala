@@ -72,7 +72,6 @@ export default {
     var token = localStorage.riskalaToken
     if(token !== 'InvalidToken'){
       this.$store.commit('login', { token: token, user: localStorage.riskalaUser });
-      this.openSocket(token)
       this.$router.push('/')
     }
   },
@@ -81,13 +80,12 @@ export default {
       evt.preventDefault();
       const username = this.form.username;
       const psw = this.form.password;
-
       if(username.length != 0 && psw.length != 0 ) {
         this.$store.state.http.post('login', { username: username, password: psw })
         .then((response) => {
           const t = response.data;
           this.$store.commit('login', { token: t, user: username });
-          this.openSocket(t)
+          this.$router.push('/')
         }).catch((error) => {
           this.$store.commit('logout');
           if (error.response) {
@@ -98,34 +96,6 @@ export default {
             }
           }
         });
-      }
-    },
-    openSocket(token){
-      var vue = this
-      var HOST = location.origin.replace(/^http/, 'ws')
-      var mySocket = new WebSocket(HOST + "/websocket?token=" + token)
-      mySocket.onopen = function() { onOpen(vue) };
-      mySocket.onclose = function() { onClose() };
-      mySocket.onmessage = function(evt) { onMessage(evt) };
-      mySocket.onerror = function(evt) { onError(evt) };
-      this.$store.commit('openWebsocket', mySocket)
-
-      function onOpen(vue) {
-        console.log("CONNECTED");
-        vue.$router.push('/')
-      }
-
-      function onClose() {
-        console.log("DISCONNECTED");
-        token = "InvalidToken"
-      }
-
-      function onMessage(evt) {
-        console.log('LOGIN - MSG received');
-      }
-
-      function onError(evt) {
-        console.log('WS ERROR');
       }
     },
     changeType() {

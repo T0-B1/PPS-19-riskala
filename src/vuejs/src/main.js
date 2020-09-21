@@ -11,6 +11,42 @@ Vue.use(Vuex);
 
 Vue.config.productionTip = false
 
+function openSocket(oldSocket, token){
+  console.log(oldSocket)
+  if(oldSocket != null && oldSocket.readyState === WebSocket.OPEN) {
+    console.log("Socket already open")
+    console.log(oldSocket)
+    return oldSocket
+  }
+  console.log("Opening socket")
+  var vue = this
+  var HOST = location.origin.replace(/^http/, 'ws')
+  var mySocket = new WebSocket(HOST + "/websocket?token=" + token)
+  mySocket.onopen = function() { onOpen() };
+  mySocket.onclose = function() { onClose() };
+  mySocket.onmessage = function(evt) { onMessage(evt) };
+  mySocket.onerror = function(evt) { onError(evt) };
+
+  function onOpen() {
+    console.log("CONNECTED");
+  }
+
+  function onClose() {
+    console.log("DISCONNECTED");
+    token = "InvalidToken"
+  }
+
+  function onMessage(evt) {
+    console.log('MSG received');
+  }
+
+  function onError(evt) {
+    console.log('WS ERROR');
+  }
+
+  return mySocket
+}
+
 const store = new Vuex.Store({
   state: {
     websocket: null,
@@ -37,17 +73,19 @@ const store = new Vuex.Store({
       state.isLogged = false;
       localStorage.riskalaToken = 'InvalidToken';
       localStorage.riskalaUser = '';
+      state.websocket = null;
       state.http = Axios.create({
         timeout: 10000,
         headers: { token: 'InvalidToken' },
       })
     },
-    openWebsocket(state, newWebsocket) {
-      state.websocket = newWebsocket;
+    openWebsocket(state, token) {
+      state.websocket = openSocket(state.websocket, token);
       // For debug purposes
-      Window.websocket = newWebsocket;
+      Window.websocket = state.websocket;
     },
     changeHandler(state, newHandler) {
+      state.websocket = openSocket(state.websocket, localStorage.riskalaToken);
       state.websocket.onmessage = newHandler;
     },
     changeRoomInfo(state, newRoom){
