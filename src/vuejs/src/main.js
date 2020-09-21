@@ -125,13 +125,10 @@ router.beforeEach((to, from, next) => {
   const loggedRoute = ['/create_room', '/room', '/game', '/'];
   const p = to.path;
   if (!realRoute.includes(p)) {
-    console.log("goin to "+to+" redirect /")
     next('/');
   } else if (loggedRoute.includes(p) && !store.state.isLogged) {
-    console.log("goin to "+to+" redirect /login")
     next('/login');
   } else {
-    console.log("goin to "+to)
     next();
   }
 });
