@@ -35,7 +35,7 @@ export default {
           const token = response.data;
           const user = dataToStore.username;
           this.$store.commit('login', { token: token, user: user });
-          this.openSocket(token)
+          this.$router.push('/')
         }).catch((error) => {
           this.$store.commit('logout');
           if (error.response) {
@@ -46,34 +46,6 @@ export default {
             }
           }
         });
-      }
-    },
-    openSocket(token){
-      var vue = this
-      var HOST = location.origin.replace(/^http/, 'ws')
-      var mySocket = new WebSocket(HOST + "/websocket?token=" + token)
-      mySocket.onopen = function() { onOpen(vue) };
-      mySocket.onclose = function() { onClose() };
-      mySocket.onmessage = function(evt) { onMessage(evt) };
-      mySocket.onerror = function(evt) { onError(evt) };
-      this.$store.commit('openWebsocket', mySocket)
-
-      function onOpen(vue) {
-        console.log("CONNECTED");
-        vue.$router.push('/')
-      }
-
-      function onClose() {
-        console.log("DISCONNECTED");
-        token = "InvalidToken"
-      }
-
-      function onMessage(evt) {
-        console.log('LOGIN - MSG received');
-      }
-
-      function onError(evt) {
-        console.log('WS ERROR');
       }
     },
     onBlurUser() {
