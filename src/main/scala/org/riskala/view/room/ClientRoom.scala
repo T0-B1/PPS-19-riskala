@@ -39,7 +39,7 @@ object ClientRoom {
   }
 
   /**
-   * Method used to menage messages that are sent to room
+   * Method used to menage messages that are sent to room page
    * */
   @JSExport
   def handleRoomMessage(message: String, roomFacade: RoomFacade): Unit = {

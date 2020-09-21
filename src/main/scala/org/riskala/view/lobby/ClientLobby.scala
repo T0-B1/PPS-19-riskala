@@ -12,7 +12,7 @@ import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 object ClientLobby {
 
   /**
-   * ethod that gives a wrapped join message in JSON-format string
+   * Method that gives a wrapped join message in JSON-format string
    * */
   @JSExport
   def getJoinMsgWrapped(roomName: String): String = {
@@ -40,7 +40,7 @@ object ClientLobby {
   }
 
   /**
-   * Method used to menage messages that are sent to lobby
+   * Method used to menage messages that are sent to lobby page
    * */
   @JSExport
   def handleLobbyMessage(message: String, lobbyFacade: LobbyFacade): Unit = {
