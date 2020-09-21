@@ -60,7 +60,7 @@ object ClientGame {
       playerState.owner.nickname,
       playerState.troops,
       map.regions.find(_.states.contains(playerState.state)).map(_.name).getOrElse(""))
-      val neighbors =  map.getNeighbors(playerState.state)
+    val neighbors =  map.getNeighbors(playerState.state)
     if(myState && myTurn){
       gameFacade.visible = true
       if(myIsDeployOnly) {
@@ -68,6 +68,7 @@ object ClientGame {
           gameFacade.addNeighbor(playerState.state, true)
           gameFacade.maxAvailableTroops = myTroopsToDeploy
           gameFacade.selectedNeighbor = playerState.state
+          neighborClick(playerState.state,gameFacade.myName,playerState.state,gameFacade)
         } else {
           gameFacade.visible = false
         }
@@ -77,6 +78,7 @@ object ClientGame {
           neighbors.foreach(gameFacade.addNeighbor(_, false))
           gameFacade.maxAvailableTroops = myTroopsToDeploy
           gameFacade.selectedNeighbor = playerState.state
+          neighborClick(playerState.state,gameFacade.myName,playerState.state,gameFacade)
         } else {
           val mySelection = neighbors.collectFirst({case s => s}).get
           val remainingNeighbors = neighbors.filterNot(_ == mySelection)
@@ -84,6 +86,7 @@ object ClientGame {
           remainingNeighbors.foreach(gameFacade.addNeighbor(_, false))
           gameFacade.maxAvailableTroops = playerState.troops - 1
           gameFacade.selectedNeighbor = mySelection
+          neighborClick(mySelection,gameFacade.myName,playerState.state,gameFacade)
         }
       }
     } else {
@@ -99,25 +102,21 @@ object ClientGame {
 
   @JSExport
   def setupGame(gameInfo: String, gameFacade: GameFacade): Unit = {
-    println(gameInfo)
     val game = Parser.retrieveMessage(gameInfo, GameFullInfo.GameFullInfoCodecJson.Decoder).get
     map = game.map
     playerStates = game.playerStates
     myTroopsToDeploy = game.troopsToDeploy
     myActualPlayer = game.actualPlayer
     myIsDeployOnly = game.isDeployOnly
-    println("SCALAJS SETUP GAME IS DEPLOY ONLY " + myIsDeployOnly)
-
     game.players.foreach(pl => gameFacade.addPlayer(pl, game.actualPlayer == pl))
     playerStates.foreach(ps => gameFacade.setPlayerState(ps.state, ps.owner.nickname, ps.troops))
     map.regions.foreach(r => r.states.foreach(s => gameFacade.setStateRegion(s,r.name)))
-
     gameFacade.setObjective(game.personalInfo.objective.info)
-
     val cardOccurrence = game.personalInfo.cards.groupBy(identity).mapValues(_.size)
     gameFacade.setCardInfo(cardOccurrence.getOrElse(Infantry, 0),
       cardOccurrence.getOrElse(Cavalry, 0),
       cardOccurrence.getOrElse(Artillery, 0))
+    game.winner.foreach(winner => gameFacade.setWinner(winner.nickname))
   }
 
   @JSExport
@@ -135,20 +134,20 @@ object ClientGame {
         val gameUpdate =
           Parser.retrieveMessage(wrappedMsg.payload, GameUpdate.GameUpdateCodecJson.Decoder).get
         println("Ended parser retrieve message")
-
         playerStates = gameUpdate.playerStates
         playerStates.foreach(ps => gameFacade.setPlayerState(ps.state, ps.owner.nickname, ps.troops))
         myTroopsToDeploy = gameUpdate.troopsToDeploy
         myActualPlayer = gameUpdate.actualPlayer
         myIsDeployOnly = gameUpdate.isDeployOnly
         gameFacade.maxAvailableTroops = gameUpdate.troopsToDeploy
-        println("SCALAJS UPDATE GAME IS DEPLOY ONLY " + myIsDeployOnly)
         gameFacade.setCurrentPlayer(gameUpdate.actualPlayer)
         gameFacade.troopsToDeploy = gameUpdate.troopsToDeploy
         val cardOccurrence = gameUpdate.personalInfo.cards.groupBy(identity).mapValues(_.size)
         gameFacade.setCardInfo(cardOccurrence.getOrElse(Infantry, 0),
           cardOccurrence.getOrElse(Cavalry, 0),
           cardOccurrence.getOrElse(Artillery, 0))
+        if(gameFacade.state!="Select a state")
+          clickedState(gameFacade.state,gameFacade.myName,gameFacade)
 
       case "GameEnd" =>
         val winner =
