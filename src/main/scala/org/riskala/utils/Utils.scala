@@ -12,8 +12,6 @@ import scala.concurrent.{Await, ExecutionContextExecutor, Future}
 import scala.reflect.ClassTag
 import scala.concurrent.duration._
 import scala.io.Source
-import com.mashape.unirest.http.HttpResponse
-import com.mashape.unirest.http.JsonNode
 import com.mashape.unirest.http.Unirest
 import org.riskala.controller.AuthManager
 
