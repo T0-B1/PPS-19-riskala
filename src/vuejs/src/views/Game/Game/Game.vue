@@ -62,6 +62,7 @@
             </div>
             <h4> How many troops? </h4>
             <input id="inputTroop" type="number" :max="maxAvailableTroops" v-model="troopsDeployed" @focusout="handleFocus" number></br></br>
+            <span> Troops for {{nameActionBtn.toLowerCase()}}: {{maxAvailableTroops}}</span></br></br>
             <b-button :disabled="isNotMyTurn" @click="actionOnMap">{{nameActionBtn}}</b-button>
           </div>
         </div>
@@ -96,7 +97,6 @@ export default {
       region: '',
       neighbors: [],
       visible: false,
-      troopsToDeploy: '',
       maxAvailableTroops: '',
       nameActionBtn: 'Deploy',
       troopsDeployed: 0,
