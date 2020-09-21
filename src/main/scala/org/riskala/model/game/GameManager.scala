@@ -2,13 +2,14 @@ package org.riskala.model.game
 
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.actor.typed.scaladsl.Behaviors
+import org.riskala.controller.AuthManager
 import org.riskala.controller.actors.PlayerMessages.{GameEndMessage, GameInfoMessage, GameReferent, GameUpdateMessage, PlayerMessage}
 import org.riskala.model.ModelMessages.{GameMessage, LobbyMessage, Logout}
 import org.riskala.model.{Player, eventsourcing}
 import org.riskala.model.eventsourcing.{Command, Deploy, Event, EventStore, GameInitialized, GameSnapshot, SnapshotGenerator}
 import org.riskala.model.game.GameMessages._
 import org.riskala.model.lobby.LobbyMessages.Subscribe
-import org.riskala.utils.MapLoader
+import org.riskala.utils.{MapLoader, Utils}
 import org.riskala.view.messages.ToClientMessages.{GameFullInfo, GamePersonalInfo, RoomInfo}
 import org.riskala.model._
 
@@ -136,8 +137,10 @@ object GameManager {
           val player = getPlayerByName(players, playerName).get
           val (newEventStore, newSnapshot) = evolveEventStore(eventsourcing.EndTurn(player))
           notifyUpdate(newSnapshot)
+          val nextPlayer = newSnapshot.nowPlaying
+          if(!participants.contains(nextPlayer))
+            Utils.sendUserTurnNotification(nextPlayer.nickname, gameName)
           nextBehavior(eventStore = newEventStore, gameSnapshot = newSnapshot)
-
         case Logout(actor) =>
           val newSubs = subscribers-actor
           val newPart = participants.filterNot(kv=>kv._2==actor)
