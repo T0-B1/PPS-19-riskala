@@ -30,6 +30,7 @@ dependencies {
         [group: "com.typesafe.akka", name: "akka-stream-typed_$scalaMajor", version: "$akkaVersion"],
         [group: "com.typesafe.akka", name: "akka-http_$scalaMajor", version: "$akkaHttpVersion"],
         [group: "com.typesafe.akka", name: "akka-http-spray-json_$scalaMajor", version: "$akkaHttpVersion"],
+        [group: "com.mashape.unirest", name: "unirest-java", version: "1.4.9"],
         [group: "io.spray", name: "spray-json_$scalaMajor", version: "1.3.5"],
         [group: "com.pauldijou", name: "jwt-core_$scalaMajor", version: "4.3.0"],
         [group: "io.argonaut", name: "argonaut_$scalaMajor", version: "6.3.0"],

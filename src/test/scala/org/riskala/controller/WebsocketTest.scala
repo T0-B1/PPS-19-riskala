@@ -8,7 +8,7 @@ import akka.stream.scaladsl.Flow
 import org.junit.runner.RunWith
 import org.riskala.controller.actors.PlayerMessages.PlayerMessage
 import org.riskala.controller.routes.WebsocketRoute
-import org.riskala.utils.{TestUtils, Utils}
+import org.riskala.utils.Utils
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.junit.JUnitRunner
@@ -17,7 +17,7 @@ import akka.actor.typed.scaladsl.adapter._
 @RunWith(classOf[JUnitRunner])
 class WebsocketTest extends AnyWordSpec with Matchers with ScalatestRouteTest {
 
-  val properties: Properties = TestUtils.loadPropertiesFromResources()
+  val properties: Properties = Utils.loadPropertiesFromResources()
   def socketUri(token: String) = s"/websocket?token=$token"
 
   "A user" should{
