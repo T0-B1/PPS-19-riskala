@@ -63,8 +63,11 @@ final case class CardDrawn(player: Player,
 final case class BonusRedeemed(player: Player,
                                card: Cards)
                   extends Event {
+
+  private val numberOfCopies: Int = 3
+
   override def happen(game: GameSnapshot): GameSnapshot = {
-    val toRemove = Seq.fill(3)(card)
+    val toRemove = Seq.fill(numberOfCopies)(card)
     val playerCards = game.cards.getOrElse(player, Seq.empty[Cards]) diff toRemove
     val bonus = card.id
     game.copy(cards = game.cards + (player -> playerCards), deployableTroops = game.deployableTroops + bonus)

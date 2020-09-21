@@ -27,11 +27,7 @@ object RestRoutes {
         token => complete(200,token)
       } ~ entity(as[Login]) {
         l => {
-          val optToken = AuthManager.login(l)
-          if (optToken.nonEmpty)
-            complete(200, optToken.get)
-          else
-            complete(404, "User not found")
+          AuthManager.login(l).fold(complete(404, "User not found"))(t=>complete(200, t))
         }
       }
     }
@@ -41,11 +37,7 @@ object RestRoutes {
     path("register") {
       entity(as[Register]) {
         r => {
-          val optToken = AuthManager.register(r)
-          if (optToken.nonEmpty)
-            complete(200, optToken.get)
-          else
-            complete(400, "User already exists")
+          AuthManager.register(r).fold(complete(400, "User already exists"))(t=>complete(200, t))
         }
       }
     }

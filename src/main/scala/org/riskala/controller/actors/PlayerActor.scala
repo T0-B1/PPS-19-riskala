@@ -1,7 +1,7 @@
 package org.riskala.controller.actors
 
 import akka.actor
-import akka.actor.typed.{ActorRef, Behavior}
+import akka.actor.typed.Behavior
 import akka.actor.typed.receptionist.Receptionist
 import akka.actor.typed.scaladsl.Behaviors
 import org.riskala.controller.actors.PlayerMessages.PlayerMessage

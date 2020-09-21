@@ -30,7 +30,7 @@ object GameManager {
             lobby: ActorRef[LobbyMessage]): Behavior[GameMessage] =
     Behaviors.setup { context =>
       subscribers.foreach(_ ! GameReferent(context.self))
-      participants.foreach(kv => kv._2 ! GameReferent(context.self))
+      participants.values.foreach(_ ! GameReferent(context.self))
       val gameSnapshot: GameSnapshot = GameSnapshot.newGame(players.toSeq, scenarioName)
       val eventStore: EventStore[Event] = EventStore(Seq(GameInitialized(gameSnapshot)))
       gameManager(gameName, subscribers, participants, players, scenarioName, lobby, eventStore, gameSnapshot)

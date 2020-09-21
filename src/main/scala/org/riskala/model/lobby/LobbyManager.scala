@@ -59,7 +59,6 @@ object LobbyManager {
           subscriber ! LobbyReferent(context.self)
           subscriber ! getInfo()
           context.log.info(s"Subscribe from $subscriber")
-          println(getInfo())
           nextBehavior(nextSubscribers = subscribers + subscriber)
 
         case CreateRoom(creator, roomInfo) =>

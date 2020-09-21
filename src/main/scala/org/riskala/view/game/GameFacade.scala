@@ -1,7 +1,5 @@
 package org.riskala.view.game
 
-import org.riskala.model.{MapGeography, PlayerState}
-
 import scala.scalajs.js
 import scala.scalajs.js.annotation.JSGlobal
 

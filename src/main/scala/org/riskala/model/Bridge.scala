@@ -3,6 +3,7 @@ package org.riskala.model
 import scala.scalajs.js.annotation.JSExportAll
 import scala.scalajs.js.annotation.JSExportTopLevel
 import argonaut.Argonaut._
+import argonaut.CodecJson
 import org.riskala.model.State.State
 
 /** Bridge implementation
@@ -29,7 +30,7 @@ case class Bridge(state1: State,
 
 }
 object Bridge {
-  implicit def BridgeCodecJson =
+  implicit def BridgeCodecJson: CodecJson[Bridge] =
     casecodec3(Bridge.apply,Bridge.unapply)("state1","state2","userCreated")
 }
 

@@ -43,8 +43,8 @@ object RoomManager {
       def notifyUpdateRoomInfo(newSubscribers: Set[ActorRef[PlayerMessage]],
                                newReady: Map[Player,ActorRef[PlayerMessage]],
                                newRoomInfo: RoomInfo): Unit = {
-        newReady.foreach(rp => rp._2 ! RoomInfoMessage(newRoomInfo))
-        newSubscribers. foreach(s => s ! RoomInfoMessage(newRoomInfo))
+        newReady.values.foreach(_ ! RoomInfoMessage(newRoomInfo))
+        newSubscribers.foreach(_ ! RoomInfoMessage(newRoomInfo))
         lobby ! UpdateRoomInfo(newRoomInfo.basicInfo)
       }
 
@@ -74,7 +74,7 @@ object RoomManager {
           var newReady = readyPlayerMap
           var newSubscribers = subscribersRoom
           var newRoomInfo = roomInfo
-          if(readyPlayerMap.toList.exists(kv => kv._2 == actor)){
+          if(readyPlayerMap.values.exists(_ == actor)){
             newReady = readyPlayerMap.filter(kv => kv._2 != actor)
             newRoomInfo = decreaseActualPlayer(roomInfo,newReady.keySet)
             notifyUpdateRoomInfo(subscribersRoom, newReady, newRoomInfo)
@@ -118,7 +118,7 @@ object RoomManager {
           var newReady = readyPlayerMap
           var newSubscribers = subscribersRoom
           var newRoomInfo = roomInfo
-          if(readyPlayerMap.toList.exists(kv => kv._2 == actor)){
+          if(readyPlayerMap.values.exists(_ == actor)){
             newReady = readyPlayerMap.filter(kv => kv._2 != actor)
             newRoomInfo = decreaseActualPlayer(roomInfo,newReady.keySet)
             notifyUpdateRoomInfo(newSubscribers, newReady, newRoomInfo)

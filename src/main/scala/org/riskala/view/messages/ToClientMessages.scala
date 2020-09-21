@@ -1,6 +1,7 @@
 package org.riskala.view.messages
 
 import argonaut.Argonaut._
+import argonaut.CodecJson
 import org.riskala.model.Cards.Cards
 import org.riskala.model.Objectives.Objective
 import org.riskala.model.{MapGeography, Player, PlayerState}
@@ -22,7 +23,7 @@ object ToClientMessages {
                            actualNumberOfPlayer: Int,
                            maxNumberOfPlayer: Int)
   object RoomBasicInfo {
-    implicit def RoomBasicInfoCodecJson =
+    implicit def RoomBasicInfoCodecJson: CodecJson[RoomBasicInfo] =
       casecodec3(RoomBasicInfo.apply,RoomBasicInfo.unapply)("name","actualNumberOfPlayer", "maxNumberOfPlayer")
   }
 
@@ -32,7 +33,7 @@ object ToClientMessages {
    * */
   case class RoomInfo(basicInfo: RoomBasicInfo, players: Set[Player], scenario: String)
   object RoomInfo {
-    implicit def RoomInfoCodecJson =
+    implicit def RoomInfoCodecJson: CodecJson[RoomInfo] =
       casecodec3(RoomInfo.apply,RoomInfo.unapply)("basicInfo","players","scenario")
   }
 
@@ -42,7 +43,7 @@ object ToClientMessages {
    * */
   case class RoomNameInfo(name: String, players: String)
   object RoomNameInfo {
-    implicit def RoomNameInfoCodecJson =
+    implicit def RoomNameInfoCodecJson: CodecJson[RoomNameInfo] =
       casecodec2(RoomNameInfo.apply,RoomNameInfo.unapply)("name","players")
   }
 
@@ -53,7 +54,7 @@ object ToClientMessages {
    * */
   case class LobbyInfo(rooms: Set[RoomNameInfo], games: Set[String], terminatedGames: Set[String])
   object LobbyInfo {
-    implicit def LobbyInfoCodecJson =
+    implicit def LobbyInfoCodecJson: CodecJson[LobbyInfo] =
       casecodec3(LobbyInfo.apply,LobbyInfo.unapply)("rooms","games","terminatedGames")
   }
 
@@ -64,7 +65,7 @@ object ToClientMessages {
    * */
   case class GamePersonalInfo(objective: Objective = Objective(), cards: List[Cards] = List.empty[Cards])
   object GamePersonalInfo {
-    implicit def GamePersonalInfoCodecJson =
+    implicit def GamePersonalInfoCodecJson: CodecJson[GamePersonalInfo] =
       casecodec2(GamePersonalInfo.apply, GamePersonalInfo.unapply)("objective", "cards")
   }
 
@@ -85,7 +86,7 @@ object ToClientMessages {
                           personalInfo:GamePersonalInfo,
                           winner: Option[Player])
   object GameFullInfo {
-    implicit def GameFullInfoCodecJson =
+    implicit def GameFullInfoCodecJson: CodecJson[GameFullInfo] =
       casecodec8(GameFullInfo.apply,GameFullInfo.unapply)("players","actualPlayer","troopsToDeploy","isDeployOnly","map","playerStates","personalInfo","winner")
   }
 
@@ -96,7 +97,7 @@ object ToClientMessages {
    * */
   case class GameUpdate(actualPlayer:String, troopsToDeploy:Int, isDeployOnly: Boolean, playerStates: Set[PlayerState],personalInfo:GamePersonalInfo)
   object GameUpdate {
-    implicit def GameUpdateCodecJson =
+    implicit def GameUpdateCodecJson: CodecJson[GameUpdate] =
       casecodec5(GameUpdate.apply,GameUpdate.unapply)("actualPlayer","troopsToDeploy","isDeployOnly","playerState","personalInfo")
   }
 
@@ -105,7 +106,7 @@ object ToClientMessages {
    * */
   case class GameEnd(winner: Player)
   object GameEnd {
-    implicit def GameEndCodecJson =
+    implicit def GameEndCodecJson: CodecJson[GameEnd] =
       casecodec1(GameEnd.apply,GameEnd.unapply)("winner")
   }
 
@@ -114,7 +115,7 @@ object ToClientMessages {
    * */
   final case class ErrorMessage(error: String)
   object ErrorMessage {
-    implicit def ErrorCodecJson =
+    implicit def ErrorCodecJson: CodecJson[ErrorMessage] =
       casecodec1(ErrorMessage.apply,ErrorMessage.unapply)("error")
   }
 }

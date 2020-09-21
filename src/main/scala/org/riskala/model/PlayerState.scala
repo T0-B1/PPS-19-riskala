@@ -1,6 +1,7 @@
 package org.riskala.model
 
 import argonaut.Argonaut._
+import argonaut.CodecJson
 import org.riskala.model.State.State
 
 import scala.scalajs.js.annotation.{JSExportAll, JSExportTopLevel}
@@ -15,7 +16,7 @@ import scala.scalajs.js.annotation.{JSExportAll, JSExportTopLevel}
 @JSExportAll
 case class PlayerState(state: State, owner: Player, troops: Int)
 object PlayerState {
-  implicit def PlayerStateCodecJson =
+  implicit def PlayerStateCodecJson: CodecJson[PlayerState] =
     casecodec3(PlayerState.apply, PlayerState.unapply)("name", "owner", "troops")
 }
 

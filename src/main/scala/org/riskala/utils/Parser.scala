@@ -22,9 +22,8 @@ object Parser {
    * Method used to retrieve a typed message from a JSON-format string
    * */
   def unwrap(message: String): TypedMessage = {
-    val parsedMsg: WrappedMessage = retrieveWrapped(message).get
-    val classType = Class.forName(parsedMsg.classType)
-    TypedMessage(classType, parsedMsg.payload)
+    val WrappedMessage(classType,payload) = retrieveWrapped(message).get
+    TypedMessage(Class.forName(classType), payload)
   }
 
   /**

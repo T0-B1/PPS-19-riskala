@@ -1,6 +1,7 @@
 package org.riskala.view.messages
 
 import argonaut.Argonaut._
+import argonaut.CodecJson
 import org.riskala.model.Cards.Cards
 
 import scala.scalajs.js.annotation.JSExportAll
@@ -16,7 +17,7 @@ object FromClientMessages {
    * */
   final case class JoinMessage(name: String)
   object JoinMessage {
-    implicit def JoinCodecJson =
+    implicit def JoinCodecJson: CodecJson[JoinMessage] =
       casecodec1(JoinMessage.apply,JoinMessage.unapply)("name")
   }
 
@@ -25,7 +26,7 @@ object FromClientMessages {
    * */
   final case class ReadyMessage(color: String)
   object ReadyMessage {
-    implicit def ReadyMessageCodecJson =
+    implicit def ReadyMessageCodecJson: CodecJson[ReadyMessage] =
       casecodec1(ReadyMessage.apply,ReadyMessage.unapply)("color")
   }
 
@@ -38,7 +39,7 @@ object FromClientMessages {
    * */
   final case class CreateMessage(name: String, maxPlayer: Int, scenario: String)
   object CreateMessage {
-    implicit def CreateCodecJson =
+    implicit def CreateCodecJson: CodecJson[CreateMessage] =
       casecodec3(CreateMessage.apply,CreateMessage.unapply)("name", "maxPlayer", "scenario")
   }
 
@@ -53,7 +54,7 @@ object FromClientMessages {
                                  to: String,
                                  troops: Int)
   object ActionAttackMessage {
-    implicit def ActionAttackMessageCodecJson =
+    implicit def ActionAttackMessageCodecJson: CodecJson[ActionAttackMessage] =
       casecodec3(ActionAttackMessage.apply,ActionAttackMessage.unapply)("from", "to", "troops")
   }
 
@@ -66,7 +67,7 @@ object FromClientMessages {
                                  to: String,
                                  troops: Int)
   object ActionDeployMessage {
-    implicit def ActionDeployMessageCodecJson =
+    implicit def ActionDeployMessageCodecJson: CodecJson[ActionDeployMessage] =
       casecodec3(ActionDeployMessage.apply,ActionDeployMessage.unapply)("from", "to", "troops")
   }
 
@@ -79,7 +80,7 @@ object FromClientMessages {
                                  to: String,
                                  troops: Int)
   object ActionMoveMessage {
-    implicit def ActionMoveMessageCodecJson =
+    implicit def ActionMoveMessageCodecJson: CodecJson[ActionMoveMessage] =
       casecodec3(ActionMoveMessage.apply,ActionMoveMessage.unapply)("from", "to", "troops")
   }
 
@@ -88,7 +89,7 @@ object FromClientMessages {
    * */
   final case class RedeemBonusMessage(card: Cards)
   object RedeemBonusMessage {
-    implicit def RedeemBonusCodecJson =
+    implicit def RedeemBonusCodecJson: CodecJson[RedeemBonusMessage] =
       casecodec1(RedeemBonusMessage.apply,RedeemBonusMessage.unapply)("cardType")
   }
 
