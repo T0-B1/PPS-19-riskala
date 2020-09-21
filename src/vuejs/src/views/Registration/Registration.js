@@ -82,7 +82,6 @@ export default {
         document.getElementById('input-username').className = 'form-control';
       if (u.length < 0) {
         this.correctUser = false;
-        // invalid user
         document.getElementById('input-username').className = 'form-control regUserError';
       }
     },
@@ -99,21 +98,17 @@ export default {
       const pwd = this.form.password;
       this.correctPsw = true;
       document.getElementById('input-password').className = 'form-control';
-      // check psw: length 8--20, no-space
       if (pwd.length < 8 || pwd.length > 20 || /\s/.test(pwd)) {
-        // invalid psw
         this.correctPsw = false;
         document.getElementById('input-password').className = 'form-control regPswError';
       }
     },
     onBlurRePsw() {
-      // check repsw
       const pwd = this.form.password;
       const repwd = this.form.repassword;
       this.correctRePsw = true;
       document.getElementById('re-input-password').className = 'form-control';
       if (pwd !== repwd) {
-        // repsw no match
         this.correctRePsw = false;
         document.getElementById('re-input-password').className = 'form-control regRePswError';
       }
