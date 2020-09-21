@@ -1,6 +1,7 @@
 package org.riskala.model
 
 import argonaut.Argonaut._
+import argonaut.CodecJson
 import org.riskala.model.State.State
 
 import scala.scalajs.js.annotation.{JSExportAll, JSExportTopLevel}
@@ -37,8 +38,9 @@ case class MapGeography(name:String,
    */
   def areNeighbor(state1: State, state2: State): Boolean =
     bridges.exists(_ == Bridge(state1, state2, false))
+  //IMPORTANT! Set.contains is abstract and depends on concrete implementation, had to use exists
 }
 object MapGeography {
-  implicit def MapGeographyCodecJson =
+  implicit def MapGeographyCodecJson: CodecJson[MapGeography] =
     casecodec4(MapGeography.apply,MapGeography.unapply)("name","regions","states","bridges")
 }
