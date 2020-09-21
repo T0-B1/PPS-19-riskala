@@ -174,7 +174,6 @@ object ClientGame {
         myIsDeployOnly = gameUpdate.isDeployOnly
         gameFacade.maxAvailableTroops = gameUpdate.troopsToDeploy
         gameFacade.setCurrentPlayer(gameUpdate.actualPlayer)
-        gameFacade.troopsToDeploy = gameUpdate.troopsToDeploy
         val cardOccurrence = gameUpdate.personalInfo.cards.groupBy(identity).mapValues(_.size)
         gameFacade.setCardInfo(cardOccurrence.getOrElse(Infantry, 0),
           cardOccurrence.getOrElse(Cavalry, 0),
