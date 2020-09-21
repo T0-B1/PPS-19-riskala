@@ -33,7 +33,7 @@ class AuthTest extends AnyWordSpec with Matchers with ScalatestRouteTest {
       "be able to retrieve his username from the token" in {
         val username = properties.get("testAccountUsername").toString
         val token = AuthTest.login(username, properties.get("testAccountPassword").toString)
-        Some(username) shouldBe AuthManager.getUser(token)
+        Some(username) shouldBe AuthManager.getUserName(token)
       }
     }
   }
