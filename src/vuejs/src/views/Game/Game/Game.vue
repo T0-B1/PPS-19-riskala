@@ -16,7 +16,7 @@
                   {{player.Name_Player}}</label>
               </li>
             </ul>
-            <b-button variant="danger" @click="endTurn"> End Turn </b-button>
+            <b-button :disabled="isNotMyTurn" variant="danger" @click="endTurn"> End Turn </b-button>
           </div>
           <hr/>
           <div class="buttonDiv" >
@@ -62,11 +62,11 @@
             </div>
             <h4> How many troops? </h4>
             <input id="inputTroop" type="number" :max="maxAvailableTroops" v-model="troopsDeployed" @focusout="handleFocus" number></br></br>
-            <b-button @click="actionOnMap">{{nameActionBtn}}</b-button>
+            <b-button :disabled="isNotMyTurn" @click="actionOnMap">{{nameActionBtn}}</b-button>
           </div>
         </div>
       </div>
-      <b-button class="leaveBtn" variant="outline-danger" @click="leave">Leave Game</b-button>
+      <b-button id="leaveButton" class="leaveBtn" variant="outline-danger" @click="leave">Leave Game</b-button>
       <div id="svgMapContainer"></div>
     </div>
     <b-modal id="modal-error" auto-focus-button="ok" ok-only title="Error Message">
@@ -84,6 +84,7 @@ const mapsExt = '.svg';
 export default {
   data(){
     return {
+      myName: localStorage.riskalaUser,
       players: [],
       state: 'Select a state',
       owner: '',
@@ -102,6 +103,7 @@ export default {
       selectedNeighbor: '',
       winnerPlayer: '',
       isEnded: false,
+      isNotMyTurn: true
     }
   },
   mounted() {
@@ -136,18 +138,28 @@ export default {
       this.$store.state.websocket.send(ClientGame.getEmptyMsgWrapped("EndTurnMessage"))
       this.selectedNeighbor = ""
       this.neighbors.splice(0)
+      document.getElementById(this.state).style.opacity = 1
+      this.setStateInfo('Select a state', '', '', '')
     },
     leave(){
       this.$store.state.websocket.send(ClientGame.getEmptyMsgWrapped("LeaveMessage"))
     },    
     addPlayer(player, myTurn){
       this.players.push({Name_Player: player, My_Turn: myTurn})
+      if(player === this.myName){
+        this.isNotMyTurn = !myTurn
+      } 
     },
     setCurrentPlayer(player){
       this.players.forEach(pl => pl.My_Turn = false)
       this.players.find( function(p){
         return p.Name_Player === player
       }).My_Turn = true
+      if(player === this.myName){
+        this.isNotMyTurn = false
+      }else{
+        this.isNotMyTurn = true
+      }
     },
     setCardInfo(infantry, cavalry, artillery){
       this.infantryCards = infantry
@@ -171,6 +183,14 @@ export default {
          document.getElementById('submitBtnA').style.opacity = 1
          document.getElementById('btnArt').disabled = false
       } else{
+        document.getElementById('submitBtnA').style.opacity = 0.4
+        document.getElementById('btnArt').disabled = true
+      }
+      if(this.isNotMyTurn){
+        document.getElementById('submitBtnI').style.opacity = 0.4
+        document.getElementById('btnInf').disabled = true
+        document.getElementById('submitBtnC').style.opacity = 0.4
+        document.getElementById('btnCav').disabled = true
         document.getElementById('submitBtnA').style.opacity = 0.4
         document.getElementById('btnArt').disabled = true
       }
@@ -215,7 +235,7 @@ export default {
           if(vue.state !== 'Select a state'){
             document.getElementById(vue.state).style.opacity = 1
             vue.neighbors.splice(0)
-            vue.setStateInfo('', '', '', '')
+            vue.setStateInfo('Select a state', '', '', '')
           }
           if(el.id !== 'Select a state'){
             document.getElementById(el.id).style.opacity = 0.5
@@ -225,7 +245,7 @@ export default {
             vue.state = "Select a state"
             vue.visible = false
             vue.neighbors.splice(0)
-            vue.setStateInfo('', '', '', '')
+            vue.setStateInfo(vue.state, '', '', '')
           }
         };
       })
@@ -250,8 +270,9 @@ export default {
     actionOnMap(){
       this.$store.state.websocket.send(
         ClientGame.getActionMsgWrapped(this.nameActionBtn, this.state, this.selectedNeighbor, parseInt(this.troopsDeployed)))
-      //document.getElementById("inputTroop").value = "0"
       this.troopsDeployed = 0
+      this.selectedNeighbor = ""
+      this.neighbors.splice(0)
     },
     setWinner(winner){
       this.isEnded = true
@@ -259,6 +280,8 @@ export default {
       document.getElementsByTagName("button").forEach(function(input) {
         input.disabled = true
       })
+      document.getElementById("loginLogout").disabled = false
+      document.getElementById("leaveButton").disabled = false
     },
     goToLobby(lobbyInfo){
       this.$store.commit('changeLobbyInfo', lobbyInfo)
