@@ -11,11 +11,17 @@ import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 @JSExportTopLevel("ClientLobby")
 object ClientLobby {
 
+  /**
+   * ethod that gives a wrapped join message in JSON-format string
+   * */
   @JSExport
   def getJoinMsgWrapped(roomName: String): String = {
     WrappedMessage("JoinMessage",JoinMessage(roomName).asJson.pretty(nospace)).asJson.pretty(nospace)
   }
 
+  /**
+   * Initial setup of lobby with its information
+   * */
   @JSExport
   def setupLobby(lobbyInfoStr: String, lobbyFacade: LobbyFacade): Unit = {
     val lobbyInfoMsg =
@@ -33,6 +39,9 @@ object ClientLobby {
     lobbyInfoMsg.terminatedGames.foreach(t=>lobbyFacade.addTerminated(t))
   }
 
+  /**
+   * Method used to menage messages that are sent to lobby
+   * */
   @JSExport
   def handleLobbyMessage(message: String, lobbyFacade: LobbyFacade): Unit = {
     println(s"inside handleLobby. Message = $message")
