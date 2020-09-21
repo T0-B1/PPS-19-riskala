@@ -13,7 +13,7 @@ object Parser {
   }
 
   def unwrap(message: String): TypedMessage = {
-    val (classType,payload):(String,String) = retrieveWrapped(message).get
+    val WrappedMessage(classType,payload) = retrieveWrapped(message).get
     TypedMessage(Class.forName(classType), payload)
   }
 
