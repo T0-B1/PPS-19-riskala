@@ -28,8 +28,9 @@ object AuthManager {
   private val lines: String = scala.io.Source.fromInputStream( stream ).getLines().foldLeft("")(_+_)
   private val accountList: List[Account] = lines.decodeOption[List[Account]].getOrElse(List.empty)
 
-  private var credential: HashMap[String,Account] = HashMap()
+  private var credential: Map[String,Account] = HashMap()
   accountList.foreach(acc=> credential = credential+(acc.username->acc))
+
   def login(l: Login): Option[String] = {
     credential get l.username flatMap(acc => if(acc.password == l.password) Some(genToken(l)) else None)
   }
@@ -57,7 +58,7 @@ object AuthManager {
   def getUserName(token: String): Option[String] = {
     Jwt.decodeRawAll(token, secretKey, Seq(jwtAlgorithm)) match {
       case Success(tuple) => tuple match {
-        case (header, claim, signature) =>
+        case (_, claim, _) =>
             Try(JsonParser(claim).convertTo[Login](LoginJsonSupport.LoginFormats)) match {
               case Success(login) => Some(login.username)
               case _ => None
