@@ -17,7 +17,6 @@ export default {
   },
   methods: {
     onSubmit(evt) {
-    
       if (this.form.email.trim().length === 0) this.correctEmail = false;
       
       if (this.form.username.trim().length === 0) this.correctUser = false;
@@ -36,9 +35,7 @@ export default {
           const token = response.data;
           const user = dataToStore.username;
           this.$store.commit('login', { token: token, user: user });
-          //TODO: open socket
-          //se socket è aperta -> vai a lobby
-          this.$router.push('/')
+          this.openSocket(token)
         }).catch((error) => {
           this.$store.commit('logout');
           if (error.response) {
@@ -49,6 +46,34 @@ export default {
             }
           }
         });
+      }
+    },
+    openSocket(token){
+      var vue = this
+      var HOST = location.origin.replace(/^http/, 'ws')
+      var mySocket = new WebSocket(HOST + "/websocket?token=" + token)
+      mySocket.onopen = function() { onOpen(vue) };
+      mySocket.onclose = function() { onClose() };
+      mySocket.onmessage = function(evt) { onMessage(evt) };
+      mySocket.onerror = function(evt) { onError(evt) };
+      this.$store.commit('openWebsocket', mySocket)
+
+      function onOpen(vue) {
+        console.log("CONNECTED");
+        vue.$router.push('/')
+      }
+
+      function onClose() {
+        console.log("DISCONNECTED");
+        token = "InvalidToken"
+      }
+
+      function onMessage(evt) {
+        console.log('LOGIN - MSG received');
+      }
+
+      function onError(evt) {
+        console.log('WS ERROR');
       }
     },
     onBlurUser() {
