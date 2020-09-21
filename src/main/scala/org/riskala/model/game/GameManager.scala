@@ -56,7 +56,7 @@ object GameManager {
         // The event store is updated with the new events
         val newEventStore = eventStore.perform(behavior)
         // A new state is computed by projecting the behavior over the old state
-        val newSnapshot = SnapshotGenerator().Project(gameSnapshot, behavior)
+        val newSnapshot = SnapshotGenerator().project(gameSnapshot, behavior)
         (newEventStore, newSnapshot)
       }
 
