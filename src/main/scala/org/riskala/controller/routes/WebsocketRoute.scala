@@ -23,9 +23,9 @@ object WebsocketRoute {
 
   val websocketRoute: Route =
     (get & path("websocket") & parameter("token")) { token =>
-      if( (!AuthManager.checkToken(token)) || AuthManager.getUser(token).isEmpty) complete(StatusCodes.Forbidden)
+      if( (!AuthManager.checkToken(token)) || AuthManager.getUserName(token).isEmpty) complete(StatusCodes.Forbidden)
       else{
-        val username = AuthManager.getUser(token).get
+        val username = AuthManager.getUserName(token).get
         handleWebSocketMessages(createSocketFlow(username))
       }
     }
