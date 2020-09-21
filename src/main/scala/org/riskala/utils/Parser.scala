@@ -13,9 +13,8 @@ object Parser {
   }
 
   def unwrap(message: String): TypedMessage = {
-    val parsedMsg: WrappedMessage = retrieveWrapped(message).get
-    val classType = Class.forName(parsedMsg.classType)
-    TypedMessage(classType, parsedMsg.payload)
+    val (classType,payload):(String,String) = retrieveWrapped(message).get
+    TypedMessage(Class.forName(classType), payload)
   }
 
   def retrieveWrapped(wrappedJson: String): Option[WrappedMessage] = {
