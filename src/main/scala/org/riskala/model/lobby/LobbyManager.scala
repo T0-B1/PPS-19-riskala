@@ -95,8 +95,7 @@ object LobbyManager {
           context.log.info("players -> "+players)
           context.log.info("roomSubscribers -> "+roomSubscribers)
           val newRooms = rooms - info.basicInfo.name
-          val gameSub = roomSubscribers++players.values
-          val game = context.spawn(GameManager(info.basicInfo.name, gameSub,
+          val game = context.spawn(GameManager(info.basicInfo.name, roomSubscribers, players,
             players.keySet, info.scenario, context.self), "GameManager-"+info.basicInfo.name)
           val newGames = games + (info.basicInfo.name -> game)
           notifyAllSubscribers(getInfo(nextRooms = newRooms,nextGames = newGames))

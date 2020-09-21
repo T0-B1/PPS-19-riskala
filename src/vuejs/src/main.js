@@ -48,14 +48,12 @@ const store = new Vuex.Store({
       Window.websocket = newWebsocket;
     },
     changeHandler(state, newHandler) {
-      console.log("INSIDE MUTATION CHANGE HANDLER")
       state.websocket.onmessage = newHandler;
     },
     changeRoomInfo(state, newRoom){
       state.roomInfo = newRoom;
     },
     changeGameInfo(state, newGame){
-      console.log("INSIDE MUTATION CHANGE GAME INFO")
       state.gameInfo = newGame
     },
     changeLobbyInfo(state, newLobby){

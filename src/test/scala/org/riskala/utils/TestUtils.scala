@@ -3,6 +3,15 @@ package org.riskala.utils
 import java.io.FileNotFoundException
 import java.util.Properties
 
+import akka.http.scaladsl.model.StatusCodes
+import akka.stream.scaladsl.Flow
+import org.junit.runner.RunWith
+import org.riskala.controller.routes.WebsocketRoute
+import org.scalatest.Matchers
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
+import org.scalatestplus.junit.JUnitRunner
+
 import scala.io.Source
 
 object TestUtils {

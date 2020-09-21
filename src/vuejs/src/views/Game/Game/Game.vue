@@ -20,17 +20,17 @@
           </div>
           <hr/>
           <div class="buttonDiv" >
-            <button class="submitBtn" type="submit" @click="redeemBonus('Infantry')" 
+            <button class="submitBtn" id="btnInf" type="submit" @click="redeemBonus('Infantry')" 
             v-bind:style="[isInfEnable ? opacity = 1 : opacity = 0.4]">
               <img id="submitBtnI" src="@/assets/buttonsImg/infantry.png" width="50" height="50" alt="submit" />
             </button>
             <span>{{infantryCards}}</span>
-            <button class="submitBtn" type="submit" @click="redeemBonus('Cavalry')"
+            <button class="submitBtn" id="btnCav" type="submit" @click="redeemBonus('Cavalry')"
             v-bind:style="[isCavEnable ? opacity = 1 : opacity = 0.4]">
               <img id="submitBtnC" src="@/assets/buttonsImg/cavalry.png" width="50" height="50" alt="submit" />
             </button>
             <span>{{cavalryCards}}</span>
-            <button class="submitBtn" type="submit" @click="redeemBonus('Artillery')"
+            <button class="submitBtn" id="btnArt" type="submit" @click="redeemBonus('Artillery')"
             v-bind:style="[isArtEnable ? opacity = 1 : opacity = 0.4]">
               <img id="submitBtnA" src="@/assets/buttonsImg/artillery.png" width="50" height="50" alt="submit" />
             </button>
@@ -56,11 +56,12 @@
           <div v-if="visible == true" class="action">
             <h4> Choose one state </h4>
             <div v-for="(neighbor,index) in neighbors" :key="index" class="form-check">
-              <input type="radio" :id="neighbor.id" :checked="neighbor.checked">
+              <input type="radio" :id="neighbor.id" :checked="neighbor.checked" name="selectedNeighbor" 
+              @click="neighborRadioSelection(neighbor.neighbor_name)">
               <label v-model="selectedNeighbor" :for="neighbor.id">{{neighbor.neighbor_name}}</label>
             </div>
             <h4> How many troops? </h4>
-            <input type="number" :value="0" :max="maxAvailableTroops" v-model="troopsDeployed" number></br>
+            <input id="inputTroop" type="number" :max="maxAvailableTroops" v-model="troopsDeployed" @focusout="handleFocus" number></br></br>
             <b-button @click="actionOnMap">{{nameActionBtn}}</b-button>
           </div>
         </div>
@@ -95,16 +96,15 @@ export default {
       neighbors: [],
       visible: false,
       troopsToDeploy: '',
-      maxAvailableTroops: 0,
-      nameActionBtn: '',
-      troopsDeployed: '',
+      maxAvailableTroops: '',
+      nameActionBtn: 'Deploy',
+      troopsDeployed: 0,
       selectedNeighbor: '',
       winnerPlayer: '',
-      isEnded: false
+      isEnded: false,
     }
   },
   mounted() {
-    console.log("MOUNTED OF GAME")
     var vue = this
     var myD3 = d3;
     myD3.xml(this.getMapImage())
@@ -118,18 +118,26 @@ export default {
       }
       this.$store.commit('changeHandler', newHandler)
         if(vue.$store.state.gameInfo !== ''){
-        console.log("MOUNTED OF GAME FOUND GAME INFO")
         ClientGame.setupGame(vue.$store.state.gameInfo, vue)
       }
     });
   },
   methods: {
+    neighborRadioSelection(radioSelection){
+      this.selectedNeighbor = radioSelection
+      ClientGame.neighborClick(this.selectedNeighbor, localStorage.riskalaUser, this.state, this)
+    },
+    handleFocus(){
+      if(this.troopsDeployed > this.maxAvailableTroops)
+        this.troopsDeployed = this.maxAvailableTroops
+    },
     endTurn(){
-      console.log("endTurn")
+      this.visible = false
       this.$store.state.websocket.send(ClientGame.getEmptyMsgWrapped("EndTurnMessage"))
+      this.selectedNeighbor = ""
+      this.neighbors.splice(0)
     },
     leave(){
-      console.log("leave")
       this.$store.state.websocket.send(ClientGame.getEmptyMsgWrapped("LeaveMessage"))
     },    
     addPlayer(player, myTurn){
@@ -145,27 +153,32 @@ export default {
       this.infantryCards = infantry
       if(this.infantryCards >= 3) {
          document.getElementById('submitBtnI').style.opacity = 1
+         document.getElementById('btnInf').disabled = false
       } else{
         document.getElementById('submitBtnI').style.opacity = 0.4
+        document.getElementById('btnInf').disabled = true
       }
       this.cavalryCards = cavalry
       if(this.cavalryCards >= 3) {
          document.getElementById('submitBtnC').style.opacity = 1
+         document.getElementById('btnCav').disabled = false
       } else{
         document.getElementById('submitBtnC').style.opacity = 0.4
+        document.getElementById('btnCav').disabled = true
       }
       this.artilleryCards = artillery
       if(this.artilleryCards >= 3) {
          document.getElementById('submitBtnA').style.opacity = 1
+         document.getElementById('btnArt').disabled = false
       } else{
         document.getElementById('submitBtnA').style.opacity = 0.4
+        document.getElementById('btnArt').disabled = true
       }
     },
     setObjective(obj) {
       this.objective = obj
     },
     setStateInfo(nameState, owner, troops, region){
-      console.log("inside set state info vue")
       this.state = nameState
       this.owner = owner
       this.troops = troops
@@ -175,10 +188,9 @@ export default {
       this.neighbors.push({neighbor_name: neighbor, checked: checked})
     },
     setPlayerState(playerState,owner,troops){
-      console.log("playerState " + playerState)
-      //this.playerStates.push({playerState})
       document.getElementById(playerState).setAttribute("fill", this.getRandomColor(owner))
-      //add troops
+      document.getElementById("T_"+playerState).innerHTML = troops
+      document.getElementById("T_"+playerState).setAttribute("fill", 'black')
     },
     setStateRegion(state, region) {
       document.getElementById(state).style.stroke = this.getRandomColor(region)
@@ -236,11 +248,22 @@ export default {
       });
     },
     actionOnMap(){
-      this.$store.state.websocket.send(ClientGame.getActionMsgWrapped(this.nameActionBtn, this.state, this.selectedNeighbor,this.troopsDeployed))
+      this.$store.state.websocket.send(
+        ClientGame.getActionMsgWrapped(this.nameActionBtn, this.state, this.selectedNeighbor, parseInt(this.troopsDeployed)))
+      //document.getElementById("inputTroop").value = "0"
+      this.troopsDeployed = 0
     },
     setWinner(winner){
       this.isEnded = true
       this.winnerPlayer = winner
+      document.getElementsByTagName("button").forEach(function(input) {
+        input.disabled = true
+      })
+    },
+    goToLobby(lobbyInfo){
+      this.$store.commit('changeLobbyInfo', lobbyInfo)
+      this.$store.commit('changeGameInfo', '')
+      this.$router.push('/')
     }
   }
 }

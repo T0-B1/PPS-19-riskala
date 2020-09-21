@@ -22,61 +22,69 @@ object PlayerRoomBehavior {
                                  room: ActorRef[RoomMessage],
                                  socket: actor.ActorRef): Behavior[PlayerMessage] =
     Behaviors.receive { (context, message) =>
-    def nextBehavior(nextUsername: String = username,
-                     nextRoom: ActorRef[RoomMessage] = room,
-                     nextSocket: actor.ActorRef = socket): Behavior[PlayerMessage] =
-      playerRoomBehavior(nextUsername,nextRoom,nextSocket)
 
     message match {
+        
       case SocketMessage(payload) =>
         context.log.info(s"PlayerActor of $username received socket payload: $payload")
         val wrappedOpt = Parser.retrieveWrapped(payload)
         if(wrappedOpt.isDefined) {
           val wrapped = wrappedOpt.get
           wrapped.classType match {
+
             case "ReadyMessage" =>
               context.log.info("PlayerRoomActor received ReadyMessage")
               Parser.retrieveMessage(wrapped.payload, ReadyMessage.ReadyMessageCodecJson.Decoder)
                 .foreach(j => room ! Ready(Player(username,j.color), context.self))
-              nextBehavior()
+              Behaviors.same
+
             case "LeaveMessage" =>
               context.log.info("PlayerRoomActor received LeaveMessage")
               room ! Leave(context.self)
-              nextBehavior()
+              Behaviors.same
+
             case "LogoutMessage" =>
               context.log.info("PlayerRoomActor received LogoutMessage")
               room ! Logout(context.self)
               //TODO: close socket
               Behaviors.stopped
+
             case "UnReadyMessage" =>
               context.log.info("PlayerRoomActor received UnReadyMessage")
               room ! UnReady(username, context.self)
-              nextBehavior()
+              Behaviors.same
+
             case _ =>
               context.log.info("PlayerRoomActor received an unhandled message, IGNORED")
-              nextBehavior()
+              Behaviors.same
+
           }
         } else {
           context.log.info("PlayerLobbyActor failed to retrieve message, IGNORED")
-          nextBehavior()
+          Behaviors.same
         }
+
       case RoomInfoMessage(roomInfo) =>
         context.log.info(s"PlayerActor of $username received RoomInfoMessage")
         socket ! TextMessage(Parser.wrap("RoomInfo",roomInfo,RoomInfo.RoomInfoCodecJson.Encoder))
-        nextBehavior()
+        Behaviors.same
+
       case LobbyReferent(lobby) =>
         context.log.info(s"PlayerActor of $username received LobbyReferent")
         PlayerLobbyBehavior(username,lobby,socket)
+
       case GameReferent(game) =>
         context.log.info(s"PlayerActor of $username received GameReferent")
         PlayerGameBehavior(username,game,socket)
+
       case errorMessage: PlayerMessages.ErrorMessage =>
         context.log.info(s"PlayerActor of $username received ErrorMessage")
         val clientError = ToClientMessages.ErrorMessage(errorMessage.error)
         socket ! TextMessage(Parser.wrap("ErrorMessage",
           clientError,
           ToClientMessages.ErrorMessage.ErrorCodecJson.Encoder))
-        nextBehavior()
+        Behaviors.same
+
     }
   }
 }
