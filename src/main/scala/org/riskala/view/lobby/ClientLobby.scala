@@ -1,7 +1,7 @@
 package org.riskala.view.lobby
 
 import org.riskala.utils.Parser
-import org.riskala.view.messages.ToClientMessages.{ErrorMessage, LobbyInfo, RoomInfo, RoomNameInfo}
+import org.riskala.view.messages.ToClientMessages.{ErrorMessage, LobbyInfo}
 import argonaut.Argonaut._
 import org.riskala.view.messages.FromClientMessages.JoinMessage
 import org.riskala.view.messages.WrappedMessage
