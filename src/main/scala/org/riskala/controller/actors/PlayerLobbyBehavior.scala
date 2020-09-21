@@ -14,6 +14,13 @@ import org.riskala.view.messages.ToClientMessages
 
 object PlayerLobbyBehavior {
 
+  /**
+   * Creates a PlayerLobbyBehavior which handles lobby messages
+   * @param username Username of the player
+   * @param lobby The actorRef of the lobbyManager
+   * @param socket Classic Akka Actor which handles a socket
+   * @return A new PlayerLobbyBehavior
+   * */
   def apply(username: String, lobby: ActorRef[LobbyMessage], socket: actor.ActorRef): Behavior[PlayerMessage] = {
     Behaviors.setup { context =>
       context.log.info("PlayerLobbyBehavior subscribing to Lobby")
