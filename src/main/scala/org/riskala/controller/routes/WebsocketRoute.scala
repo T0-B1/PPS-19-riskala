@@ -10,7 +10,7 @@ import akka.stream.scaladsl.{Flow, Sink, Source}
 import akka.stream.typed.scaladsl.ActorSource
 import akka.stream.{CompletionStrategy, OverflowStrategy}
 import akka.{Done, NotUsed, actor}
-import org.riskala.controller.actors.{PlayerActor, PlayerLobbyBehavior, PlayerMessages}
+import org.riskala.controller.actors.{PlayerActor, PlayerMessages}
 import org.riskala.controller.actors.PlayerMessages.PlayerMessage
 import org.riskala.controller.{AuthManager, Server}
 import org.riskala.utils.Utils

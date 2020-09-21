@@ -4,10 +4,10 @@ import java.io.InputStream
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import org.riskala.model.Account
-import spray.json.{DefaultJsonProtocol, JsString, JsonParser, RootJsonFormat}
+import spray.json.{DefaultJsonProtocol, JsonParser, RootJsonFormat}
 
 import scala.collection.immutable.HashMap
-import pdi.jwt.{Jwt, JwtAlgorithm, JwtBase64, JwtOptions}
+import pdi.jwt.{Jwt, JwtAlgorithm}
 import argonaut.Argonaut._
 
 import scala.util.{Success, Try}
