@@ -39,18 +39,18 @@ object WebsocketRoute {
   private def spawnOrGetPlayer(username: String, newSocket: actor.ActorRef): ActorRef[PlayerMessage] = {
     Utils.askReceptionistToFind[PlayerMessage](username).toSeq match {
       // No PlayerActor registered found
-      case Seq() => {
+      case Seq() =>
         // TODO use spawn protocol
         // https://doc.akka.io/docs/akka/current/typed/actor-lifecycle.html#spawnprotocol
         val ref: ActorRef[PlayerMessage] = system.systemActorOf(PlayerActor(username, newSocket), username)
         system.receptionist ! Receptionist.Register(ServiceKey[PlayerMessage](username), ref)
         ref
-      }
+
       // The first PlayerActor found
-      case Seq(first, rest@_*) => {
+      case Seq(first, rest@_*) =>
         first ! PlayerMessages.RegisterSocket(newSocket)
         first
-      }
+
     }
   }
 
