@@ -19,11 +19,21 @@ object ClientGame {
   private var myActualPlayer: String = ""
   private var myIsDeployOnly: Boolean = true
 
+  /**
+   * Method that gives a wrapped message in JSON-format string
+   * */
   @JSExport
   def getEmptyMsgWrapped(typeMessage: String): String =  {
     WrappedMessage(typeMessage, "").asJson.pretty(nospace)
   }
 
+  /**
+   * Method that gives a wrapped action message in JSON-format string
+   * @param actionType Attack or Move or Deploy
+   * @param from The state of departure
+   * @param to The arrival state
+   * @param troops The number of troops used for this action
+   * */
   @JSExport
   def getActionMsgWrapped(actionType: String, from: String, to: String, troops: Int): String =  {
     val (msg,action) = actionType match {
@@ -34,14 +44,25 @@ object ClientGame {
     WrappedMessage(msg, action).asJson.pretty(nospace)
   }
 
+  /**
+   * Method that gives a wrapped redeemBonus message in JSON-format string
+   * */
   @JSExport
   def getRedeemBonusMsgWrapped(cardType: String): String =  {
     val card = Cards.withName(cardType)
     WrappedMessage("RedeemBonusMessage", RedeemBonusMessage(card).asJson.pretty(nospace)).asJson.pretty(nospace)
   }
 
+  /**
+   * Method that gives information about the clicked neighbor
+   * @param clickedState The name of the clicked state into the neighbor list
+   * @param namePlayer The player who requires the information
+   * @param mapSelectedState The name of the clicked state into the map
+   * @param gameFacade The instance of javascript facade on which call method
+   * */
   @JSExport
-  def neighborClick(clickedState: String, namePlayer: String, mapSelectedState: String, gameFacade: GameFacade): Unit = {
+  def neighborClick(clickedState: String, namePlayer: String,
+                    mapSelectedState: String, gameFacade: GameFacade): Unit = {
     if(clickedState equals mapSelectedState) {
       gameFacade.nameActionBtn = "Deploy"
       gameFacade.maxAvailableTroops = myTroopsToDeploy
@@ -94,12 +115,21 @@ object ClientGame {
     }
   }
 
+  /**
+   * Method that gives information about the clicked state into the map
+   * @param nameState The name of the clicked state
+   * @param namePlayer The name of the player
+   * @param gameFacade The instance of javascript facade on which call method
+   * */
   @JSExport
   def clickedState(nameState: String, namePlayer: String, gameFacade: GameFacade): Unit = {
     playerStates.find(_.state == nameState)
       .foreach(ps => myStateInfo(ps, gameFacade, ps.owner.nickname == namePlayer, myActualPlayer == namePlayer))
   }
 
+  /**
+   * Initial game setup with its information
+   * */
   @JSExport
   def setupGame(gameInfo: String, gameFacade: GameFacade): Unit = {
     val game = Parser.retrieveMessage(gameInfo, GameFullInfo.GameFullInfoCodecJson.Decoder).get
@@ -119,6 +149,9 @@ object ClientGame {
     game.winner.foreach(winner => gameFacade.setWinner(winner.nickname))
   }
 
+  /**
+   * Method used to menage messages that are sent to game page
+   * */
   @JSExport
   def handleGameMessage(message: String, gameFacade: GameFacade): Unit = {
     val wrappedMsg = Parser.retrieveWrapped(message).get
@@ -154,7 +187,6 @@ object ClientGame {
         gameFacade.setWinner(winner.nickname)
 
       case "LobbyInfo" =>
-        println("SCALAJS received lobbyInfo")
         gameFacade.goToLobby(wrappedMsg.payload)
     }
   }
