@@ -24,9 +24,6 @@ object PlayerRoomBehavior {
                                  socket: actor.ActorRef): Behavior[PlayerMessage] =
     Behaviors.receive { (context, message) =>
 
-      println("AAAA")
-      println(message)
-
     message match {
         
       case SocketMessage(payload) =>

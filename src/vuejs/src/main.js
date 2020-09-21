@@ -26,7 +26,6 @@ function openSocket(oldSocket, token){
   mySocket.onclose = function() { onClose() };
   mySocket.onmessage = function(evt) { onMessage(evt) };
   mySocket.onerror = function(evt) { onError(evt) };
-  //this.$store.commit('openWebsocket', mySocket)
 
   function onOpen() {
     console.log("CONNECTED");
