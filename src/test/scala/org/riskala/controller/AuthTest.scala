@@ -5,7 +5,7 @@ import java.util.Properties
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity, StatusCodes}
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import org.junit.runner.RunWith
-import org.riskala.utils.TestUtils
+import org.riskala.utils.Utils
 import org.scalatest.Assertion
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
@@ -14,7 +14,7 @@ import org.scalatestplus.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class AuthTest extends AnyWordSpec with Matchers with ScalatestRouteTest {
 
-  val properties: Properties = TestUtils.loadPropertiesFromResources()
+  val properties: Properties = Utils.loadPropertiesFromResources()
 
   "A user" when {
     "registered" should {
@@ -33,7 +33,7 @@ class AuthTest extends AnyWordSpec with Matchers with ScalatestRouteTest {
       "be able to retrieve his username from the token" in {
         val username = properties.get("testAccountUsername").toString
         val token = AuthTest.login(username, properties.get("testAccountPassword").toString)
-        Some(username) shouldBe AuthManager.getUser(token)
+        Some(username) shouldBe AuthManager.getUserName(token)
       }
     }
   }
