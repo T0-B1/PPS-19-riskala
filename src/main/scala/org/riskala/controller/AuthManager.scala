@@ -71,7 +71,7 @@ object AuthManager {
   /**
    * Method that gives username through token
    * */
-  def getUser(token: String): Option[String] = {
+  def getUserName(token: String): Option[String] = {
     Jwt.decodeRawAll(token, secretKey, Seq(jwtAlgorithm)) match {
       case Success(tuple) => tuple match {
         case (header, claim, signature) =>
@@ -82,6 +82,10 @@ object AuthManager {
       }
       case _ => None
     }
+  }
+
+  def getUserMail(userName: String): Option[String] = {
+    credential.get(userName).map(user => user.email)
   }
 }
 

@@ -7,7 +7,9 @@ import org.riskala.model.ModelMessages.{GameMessage, LobbyMessage, Logout}
 import org.riskala.model.{Player, eventsourcing}
 import org.riskala.model.eventsourcing.{Command, Deploy, Event, EventStore, GameInitialized, GameSnapshot, SnapshotGenerator}
 import org.riskala.model.game.GameMessages._
-import org.riskala.model.lobby.LobbyMessages.{EndGame, Subscribe}
+import org.riskala.model.lobby.LobbyMessages.EndGame
+import org.riskala.model.lobby.LobbyMessages.Subscribe
+import org.riskala.utils.Utils
 import org.riskala.view.messages.ToClientMessages.GamePersonalInfo
 
 object GameManager {
@@ -61,7 +63,7 @@ object GameManager {
         // The event store is updated with the new events
         val newEventStore = eventStore.perform(behavior)
         // A new state is computed by projecting the behavior over the old state
-        val newSnapshot = SnapshotGenerator().Project(gameSnapshot, behavior)
+        val newSnapshot = SnapshotGenerator().project(gameSnapshot, behavior)
         (newEventStore, newSnapshot)
       }
 
@@ -144,8 +146,10 @@ object GameManager {
           val player = getPlayerByName(players, playerName).get
           val (newEventStore, newSnapshot) = evolveEventStore(eventsourcing.EndTurn(player))
           notifyUpdate(newSnapshot)
+          val nextPlayer = newSnapshot.nowPlaying
+          if(!participants.contains(nextPlayer))
+            Utils.sendUserTurnNotification(nextPlayer.nickname, gameName)
           nextBehavior(eventStore = newEventStore, gameSnapshot = newSnapshot)
-
         case Logout(actor) =>
           val newSubs = subscribers-actor
           val newPart = participants.filterNot(kv=>kv._2==actor)
