@@ -52,7 +52,6 @@ object PlayerLobbyBehavior {
               case "LogoutMessage" =>
                 context.log.info("PlayerLobbyActor received LogoutMessage")
                 lobby ! Logout(context.self)
-                //TODO: close socket
                 Behaviors.stopped
 
               case _ =>

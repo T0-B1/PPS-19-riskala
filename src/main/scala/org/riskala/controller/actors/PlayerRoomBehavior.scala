@@ -46,7 +46,6 @@ object PlayerRoomBehavior {
             case "LogoutMessage" =>
               context.log.info("PlayerRoomActor received LogoutMessage")
               room ! Logout(context.self)
-              //TODO: close socket
               Behaviors.stopped
 
             case "UnReadyMessage" =>
