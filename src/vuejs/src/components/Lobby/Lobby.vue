@@ -39,11 +39,9 @@
     mounted() {
       var vue = this
       var newHandler = function(evt) {
-        console.log('LOBBY - Receive message: ' + evt.data);
         ClientLobby.handleLobbyMessage(evt.data, vue)
       }
       this.$store.commit('changeHandler', newHandler)
-
       if(this.$store.state.lobbyInfo !== ''){
         ClientLobby.setupLobby(this.$store.state.lobbyInfo, this)
       }
@@ -51,7 +49,6 @@
     methods: {
       readSocketMessage() {
         this.$store.state.websocket.onmessage = function(evt) { console.log("rec.msg"+evt.data); onMessage(evt) };
-        console.log("cerco di fare on message")
         function onMessage(evt) {
           console.log('LOBBY - Receive message: ' + evt.data);
           ClientLobby.handleLobbyMessage(evt.data, this)
