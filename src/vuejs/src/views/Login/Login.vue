@@ -69,9 +69,9 @@ export default {
     };
   },
   mounted(){
-    var token = localStorage.riskalaToken
+    var token = sessionStorage.riskalaToken
     if(token !== 'InvalidToken'){
-      this.$store.commit('login', { token: token, user: localStorage.riskalaUser });
+      this.$store.commit('login', { token: token, user: sessionStorage.riskalaUser });
       this.$router.push('/')
     }
   },

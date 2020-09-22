@@ -85,7 +85,7 @@ const mapsExt = '.svg';
 export default {
   data(){
     return {
-      myName: localStorage.riskalaUser,
+      myName: sessionStorage.riskalaUser,
       players: [],
       state: 'Select a state',
       owner: '',
@@ -128,7 +128,7 @@ export default {
   methods: {
     neighborRadioSelection(radioSelection){
       this.selectedNeighbor = radioSelection
-      ClientGame.neighborClick(this.selectedNeighbor, localStorage.riskalaUser, this.state, this)
+      ClientGame.neighborClick(this.selectedNeighbor, sessionStorage.riskalaUser, this.state, this)
     },
     handleFocus(){
       if(this.troopsDeployed > this.maxAvailableTroops)
@@ -246,7 +246,7 @@ export default {
           if(el.id !== 'Select a state'){
             document.getElementById(el.id).style.opacity = 0.5
             vue.state = el.id;
-            ClientGame.clickedState(vue.state, localStorage.riskalaUser, vue)
+            ClientGame.clickedState(vue.state, sessionStorage.riskalaUser, vue)
           } else {
             vue.state = "Select a state"
             vue.visible = false
