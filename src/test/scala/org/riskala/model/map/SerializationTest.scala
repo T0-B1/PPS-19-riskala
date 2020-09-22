@@ -21,7 +21,7 @@ class SerializationTest extends AnyWordSpec{
     Bridge(swi,fra,userCreated = false),
     Bridge(fra,spa,userCreated = false),
     Bridge(fra,ger,userCreated = false))
-  val map = MapGeography("Europe",regions,states,bridges)
+  val map: MapGeography = MapGeography("Europe",regions,states,bridges)
   "Bridge" should {
     val bridge = bridges.head
     "be serialized to JSON" in {

@@ -1,7 +1,6 @@
 package org.riskala.controller.auth
 
 import java.util.Properties
-
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity, StatusCodes}
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import org.junit.runner.RunWith

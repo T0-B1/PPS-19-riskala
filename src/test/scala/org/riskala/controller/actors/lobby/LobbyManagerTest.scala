@@ -97,7 +97,7 @@ class LobbyManagerTest extends AnyWordSpec with BeforeAndAfterAll {
       val player2: Player = Player("player2","blue")
       val player1probe: TestProbe[PlayerMessage] = testKit.createTestProbe[PlayerMessage]("playerJoin")
       val player2probe: TestProbe[PlayerMessage] = testKit.createTestProbe[PlayerMessage]("player2Join")
-      val players = HashMap((player1->player1probe.ref),(player2->player2probe.ref))
+      val players = HashMap(player1->player1probe.ref, player2->player2probe.ref)
       lobby ! Subscribe(probeSub.ref)
       probeSub.expectMessage(LobbyReferent(lobby.ref))
       probeSub.expectMessageType[LobbyInfoMessage]

@@ -19,7 +19,7 @@ class RoomManagerTest extends AnyWordSpec with BeforeAndAfterAll {
 
   override def afterAll(): Unit = testKit.shutdownTestKit()
 
-  val roomBasicInfo = RoomBasicInfo("Europa", 0, 4)
+  val roomBasicInfo: RoomBasicInfo = RoomBasicInfo("Europa", 0, 4)
   val roomInfo: RoomInfo = RoomInfo(roomBasicInfo, Set.empty[Player], "")
 
   "Join to room" should {
