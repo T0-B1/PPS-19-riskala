@@ -1,6 +1,6 @@
-package org.riskala.model.eventsourcing
+package org.riskala.model.logic
 
-import org.riskala.model.eventsourcing.EventStore.Behavior
+import org.riskala.model.logic.EventStore.Behavior
 
 object EventStore {
   type Behavior[Ev] = Seq[Ev]

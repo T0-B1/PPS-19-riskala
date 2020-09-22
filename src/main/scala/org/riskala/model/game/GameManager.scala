@@ -4,8 +4,8 @@ import akka.actor.typed.{ActorRef, Behavior}
 import akka.actor.typed.scaladsl.Behaviors
 import org.riskala.controller.actors.PlayerMessages.{GameEndMessage, GameInfoMessage, GameReferent, GameUpdateMessage, PlayerMessage}
 import org.riskala.model.ModelMessages.{GameMessage, LobbyMessage, Logout}
-import org.riskala.model.{Player, eventsourcing}
-import org.riskala.model.eventsourcing.{Command, Deploy, Event, EventStore, GameInitialized, GameSnapshot, SnapshotGenerator}
+import org.riskala.model.{Player, logic}
+import org.riskala.model.logic.{Command, Deploy, Event, EventStore, GameInitialized, GameSnapshot, SnapshotGenerator}
 import org.riskala.model.game.GameMessages._
 import org.riskala.model.lobby.LobbyMessages.EndGame
 import org.riskala.model.lobby.LobbyMessages.Subscribe
@@ -106,12 +106,12 @@ object GameManager {
           nextBehavior(updatedSub = newSubs, updatedParticipants = newPart)
 
         case ActionAttack(playerName, from, to, troops) =>
-          val (newEventStore, newSnapshot) = evolveEventStore(eventsourcing.Attack(from, to, troops))
+          val (newEventStore, newSnapshot) = evolveEventStore(logic.Attack(from, to, troops))
           notifyUpdate(newSnapshot)
           nextBehavior(eventStore = newEventStore, gameSnapshot = newSnapshot)
 
         case ActionMove(playerName, from, to, troops) =>
-          val (newEventStore, newSnapshot) = evolveEventStore(eventsourcing.MoveTroops(from, to, troops))
+          val (newEventStore, newSnapshot) = evolveEventStore(logic.MoveTroops(from, to, troops))
           notifyUpdate(newSnapshot)
           nextBehavior(eventStore = newEventStore, gameSnapshot = newSnapshot)
 
@@ -122,7 +122,7 @@ object GameManager {
 
         case RedeemBonus(playerName, card) =>
           val player = getPlayerByName(players, playerName).get
-          val (newEventStore, newSnapshot) = evolveEventStore(eventsourcing.RedeemBonus(player, card))
+          val (newEventStore, newSnapshot) = evolveEventStore(logic.RedeemBonus(player, card))
           notifyUpdate(newSnapshot)
           nextBehavior(eventStore = newEventStore, gameSnapshot = newSnapshot)
 
@@ -144,7 +144,7 @@ object GameManager {
 
         case EndTurn(playerName) =>
           val player = getPlayerByName(players, playerName).get
-          val (newEventStore, newSnapshot) = evolveEventStore(eventsourcing.EndTurn(player))
+          val (newEventStore, newSnapshot) = evolveEventStore(logic.EndTurn(player))
           notifyUpdate(newSnapshot)
           val nextPlayer = newSnapshot.nowPlaying
           if(!participants.contains(nextPlayer))

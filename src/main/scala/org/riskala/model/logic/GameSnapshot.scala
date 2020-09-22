@@ -1,4 +1,4 @@
-package org.riskala.model.eventsourcing
+package org.riskala.model.logic
 
 import org.riskala.model.Cards.Cards
 import org.riskala.model.Objectives.Objective

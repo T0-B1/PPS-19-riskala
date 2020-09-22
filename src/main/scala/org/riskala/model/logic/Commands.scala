@@ -1,9 +1,9 @@
-package org.riskala.model.eventsourcing
+package org.riskala.model.logic
 
 import org.riskala.model.Cards.Cards
 import org.riskala.model.{Cards, Player}
 import org.riskala.model.State.State
-import org.riskala.model.eventsourcing.EventStore.Behavior
+import org.riskala.model.logic.EventStore.Behavior
 
 import scala.util.Random
 
