@@ -43,7 +43,7 @@ class AuthTest extends AnyWordSpec with Matchers with ScalatestRouteTest {
 object AuthTest extends AnyWordSpec with Matchers  with ScalatestRouteTest{
 
   def login(username: String, password: String): String = {
-    val json: String = LoginJsonSupport.LoginFormats.write(Login(username, password)).toString()
+    val json: String = LoginJsonSupport.LoginFormats.write(LoginData(username, password)).toString()
     Post("/login", HttpEntity(ContentTypes.`application/json`, json)) ~> Server.routing ~> check {
       response.status shouldEqual StatusCodes.OK
       responseAs[String]
@@ -51,7 +51,7 @@ object AuthTest extends AnyWordSpec with Matchers  with ScalatestRouteTest{
   }
 
   def register(username: String, password: String, email: String): Assertion = {
-    val json: String = LoginJsonSupport.RegisterFormats.write(Register(username, password, email)).toString()
+    val json: String = LoginJsonSupport.RegisterFormats.write(RegistrationData(username, password, email)).toString()
     Post("/register", HttpEntity(ContentTypes.`application/json`, json)) ~> Server.routing ~> check {
       response.status shouldEqual StatusCodes.BadRequest
     }
