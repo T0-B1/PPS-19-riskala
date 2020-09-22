@@ -1,11 +1,11 @@
-package org.riskala.controller.actors
+package org.riskala.controller.actors.player
 
 import akka.actor
 import akka.actor.typed.Behavior
 import akka.actor.typed.receptionist.Receptionist
 import akka.actor.typed.scaladsl.Behaviors
-import org.riskala.controller.actors.PlayerMessages.PlayerMessage
-import org.riskala.model.lobby.LobbyManager._
+import org.riskala.controller.actors.player.PlayerMessages.PlayerMessage
+import org.riskala.model.lobby.LobbyManager.lobbyServiceKey
 
 object PlayerActor {
 

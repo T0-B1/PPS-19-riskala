@@ -1,7 +1,7 @@
 package org.riskala.model
 
 import akka.actor.typed.ActorRef
-import org.riskala.controller.actors.PlayerMessages.PlayerMessage
+import org.riskala.controller.actors.player.PlayerMessages.PlayerMessage
 
 object ModelMessages {
 

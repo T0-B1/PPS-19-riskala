@@ -1,16 +1,16 @@
-package org.riskala.controller.actors
+package org.riskala.controller.actors.player
 
 import akka.actor
-import akka.actor.typed.{ActorRef, Behavior}
 import akka.actor.typed.scaladsl.Behaviors
+import akka.actor.typed.{ActorRef, Behavior}
 import akka.http.scaladsl.model.ws.TextMessage
-import org.riskala.controller.actors.PlayerMessages._
+import org.riskala.controller.actors.player.PlayerMessages.PlayerMessage
 import org.riskala.model.ModelMessages.{LobbyMessage, Logout}
 import org.riskala.model.lobby.LobbyMessages.{CreateRoom, JoinTo, Subscribe}
 import org.riskala.utils.Parser
 import org.riskala.view.messages.FromClientMessages.{CreateMessage, JoinMessage}
-import org.riskala.view.messages.ToClientMessages.{LobbyInfo, RoomBasicInfo, RoomInfo}
 import org.riskala.view.messages.ToClientMessages
+import org.riskala.view.messages.ToClientMessages.{LobbyInfo, RoomBasicInfo, RoomInfo}
 
 object PlayerLobbyBehavior {
 

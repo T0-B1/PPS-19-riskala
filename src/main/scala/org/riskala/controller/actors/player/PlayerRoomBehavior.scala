@@ -1,17 +1,17 @@
-package org.riskala.controller.actors
+package org.riskala.controller.actors.player
 
 import akka.actor
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.http.scaladsl.model.ws.TextMessage
-import org.riskala.controller.actors.PlayerMessages._
+import org.riskala.controller.actors.player.PlayerMessages.PlayerMessage
 import org.riskala.model.ModelMessages.{Logout, RoomMessage}
 import org.riskala.model.Player
 import org.riskala.model.room.RoomMessages.{Leave, Ready, UnReady}
 import org.riskala.utils.Parser
 import org.riskala.view.messages.FromClientMessages.ReadyMessage
-import org.riskala.view.messages.ToClientMessages.RoomInfo
 import org.riskala.view.messages.ToClientMessages
+import org.riskala.view.messages.ToClientMessages.RoomInfo
 
 object PlayerRoomBehavior {
 
@@ -32,7 +32,7 @@ object PlayerRoomBehavior {
     Behaviors.receive { (context, message) =>
 
     message match {
-        
+
       case SocketMessage(payload) =>
         context.log.info(s"PlayerActor of $username received socket payload: $payload")
         val wrappedOpt = Parser.retrieveWrapped(payload)

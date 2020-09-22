@@ -4,7 +4,8 @@ import akka.actor.testkit.typed.scaladsl.{BehaviorTestKit, ScalaTestWithActorTes
 import org.riskala.model.ModelMessages.{GameMessage, LobbyMessage, RoomMessage}
 import org.scalatest.wordspec.AnyWordSpecLike
 import org.junit.runner.RunWith
-import org.riskala.controller.actors.PlayerMessages.{GameReferent, RoomReferent}
+import org.riskala.controller.actors.player.{PlayerActor, PlayerGameBehavior, PlayerLobbyBehavior, PlayerRoomBehavior}
+import org.riskala.controller.actors.player.PlayerMessages.{GameReferent, RoomReferent}
 import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.junit.JUnitRunner
 

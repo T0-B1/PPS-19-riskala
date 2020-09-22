@@ -2,7 +2,7 @@ package org.riskala.model.game
 
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.actor.typed.scaladsl.Behaviors
-import org.riskala.controller.actors.PlayerMessages.{GameEndMessage, GameInfoMessage, GameReferent, GameUpdateMessage, PlayerMessage}
+import org.riskala.controller.actors.player.PlayerMessages.{GameEndMessage, GameInfoMessage, GameReferent, GameUpdateMessage, PlayerMessage}
 import org.riskala.model.ModelMessages.{GameMessage, LobbyMessage, Logout}
 import org.riskala.model.{Player, logic}
 import org.riskala.model.logic.{Command, Deploy, Event, EventStore, GameInitialized, GameSnapshot, SnapshotGenerator}

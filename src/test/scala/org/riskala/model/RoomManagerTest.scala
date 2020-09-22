@@ -3,7 +3,7 @@ package org.riskala.model
 import akka.actor.testkit.typed.scaladsl.{ActorTestKit, TestProbe}
 import akka.actor.typed.ActorRef
 import org.junit.runner.RunWith
-import org.riskala.controller.actors.PlayerMessages.{PlayerMessage, RoomInfoMessage, RoomReferent}
+import org.riskala.controller.actors.player.PlayerMessages.{PlayerMessage, RoomInfoMessage, RoomReferent}
 import org.riskala.model.room.RoomManager
 import org.riskala.model.room.RoomMessages._
 import org.riskala.model.ModelMessages._

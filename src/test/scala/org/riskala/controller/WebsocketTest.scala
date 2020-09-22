@@ -6,7 +6,7 @@ import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.stream.scaladsl.Flow
 import org.junit.runner.RunWith
-import org.riskala.controller.actors.PlayerMessages.PlayerMessage
+import org.riskala.controller.actors.player.PlayerMessages.PlayerMessage
 import org.riskala.controller.routes.WebsocketRoute
 import org.riskala.utils.Utils
 import org.scalatest.matchers.should.Matchers

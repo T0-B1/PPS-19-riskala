@@ -1,13 +1,12 @@
-package org.riskala.controller.actors
+package org.riskala.controller.actors.player
 
 import akka.actor
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.http.scaladsl.model.ws.TextMessage
-import org.riskala.controller.actors.PlayerMessages._
-import org.riskala.controller.actors.PlayerRoomBehavior.playerRoomBehavior
+import org.riskala.controller.actors.player.PlayerMessages.PlayerMessage
 import org.riskala.model.ModelMessages.{GameMessage, Logout}
-import org.riskala.model.game.GameMessages.{ActionAttack, ActionDeploy, ActionMove, EndTurn, GetFullInfo, Leave, RedeemBonus}
+import org.riskala.model.game.GameMessages._
 import org.riskala.utils.Parser
 import org.riskala.view.messages.FromClientMessages.{ActionAttackMessage, ActionDeployMessage, ActionMoveMessage, RedeemBonusMessage}
 import org.riskala.view.messages.ToClientMessages
