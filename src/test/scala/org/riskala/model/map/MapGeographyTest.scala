@@ -6,7 +6,7 @@ import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class MapTest extends AnyWordSpec {
+class MapGeographyTest extends AnyWordSpec {
   val ita: State = "Italy"
   val fra: State = "France"
   val swi: State = "Switzerland"

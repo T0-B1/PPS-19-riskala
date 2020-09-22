@@ -22,14 +22,14 @@ class PlayerActorTest extends ScalaTestWithActorTestKit with AnyWordSpecLike wit
 
   "A PlayerActor" when {
     val lobbyProbe = testKit.createTestProbe[LobbyMessage]()
-    val behaviorTestKit = BehaviorTestKit(PlayerLobbyBehavior("test", lobbyProbe.ref, null))
+    val behaviorTestKit = BehaviorTestKit(LobbyPlayerBehavior("test", lobbyProbe.ref, null))
 
     "in the lobby" should {
       "go into a room upon receiving a RoomReferent" in {
         val roomProbe = testKit.createTestProbe[RoomMessage]()
         behaviorTestKit.run(RoomReferent(roomProbe.ref))
         assert(behaviorTestKit.currentBehavior.toString.contains("PlayerRoomBehavior"))
-        val RoomBehaviourClassName = PlayerRoomBehavior.getClass.getSimpleName
+        val RoomBehaviourClassName = RoomPlayerBehavior.getClass.getSimpleName
         assert(behaviorTestKit.currentBehavior.toString
           .contains(RoomBehaviourClassName.substring(0, RoomBehaviourClassName.size - 1)))
       }
@@ -39,7 +39,7 @@ class PlayerActorTest extends ScalaTestWithActorTestKit with AnyWordSpecLike wit
       "go into a game upon receiving a GameReferent" in {
         val gameProbe = testKit.createTestProbe[GameMessage]()
         behaviorTestKit.run(GameReferent(gameProbe.ref))
-        val GameBehaviourClassName = PlayerGameBehavior.getClass.getSimpleName
+        val GameBehaviourClassName = GamePlayerBehavior.getClass.getSimpleName
         assert(behaviorTestKit.currentBehavior.toString
           .contains(GameBehaviourClassName.substring(0, GameBehaviourClassName.size - 1)))
       }

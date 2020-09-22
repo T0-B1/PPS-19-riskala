@@ -12,7 +12,7 @@ import org.riskala.client.messages.FromClientMessages.{CreateMessage, JoinMessag
 import org.riskala.client.messages.ToClientMessages
 import org.riskala.client.messages.ToClientMessages.{LobbyInfo, RoomBasicInfo, RoomInfo}
 
-object PlayerLobbyBehavior {
+object LobbyPlayerBehavior {
 
   /**
    * Creates a PlayerLobbyBehavior which handles lobby messages
@@ -25,11 +25,11 @@ object PlayerLobbyBehavior {
     Behaviors.setup { context =>
       context.log.info("PlayerLobbyBehavior subscribing to Lobby")
       lobby ! Subscribe(context.self)
-      playerActor(username, lobby, socket)
+      lobbyPlayerBehavior(username, lobby, socket)
     }
   }
 
-  private def playerActor(username: String,
+  private def lobbyPlayerBehavior(username: String,
                           lobby: ActorRef[LobbyMessage],
                           socket: actor.ActorRef): Behavior[PlayerMessage] = {
     Behaviors.receive { (context,message) =>
@@ -86,15 +86,15 @@ object PlayerLobbyBehavior {
 
         case RegisterSocket(newSocketActor) =>
           context.log.info(s"PlayerActor of $username registering new socket")
-          playerActor(username, lobby, newSocketActor)
+          lobbyPlayerBehavior(username, lobby, newSocketActor)
 
         case RoomReferent(room) =>
           context.log.info(s"PlayerActor of $username received RoomReferent")
-          PlayerRoomBehavior(username,room,socket)
+          RoomPlayerBehavior(username,room,socket)
 
         case GameReferent(game) =>
           context.log.info(s"PlayerActor of $username received GameReferent")
-          PlayerGameBehavior(username,game,socket)
+          GamePlayerBehavior(username,game,socket)
 
         case other =>
           context.log.info(s"PlayerActor of $username received "+ other +", IGNORED")

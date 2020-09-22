@@ -13,7 +13,7 @@ import org.riskala.client.messages.FromClientMessages.ReadyMessage
 import org.riskala.client.messages.ToClientMessages
 import org.riskala.client.messages.ToClientMessages.RoomInfo
 
-object PlayerRoomBehavior {
+object RoomPlayerBehavior {
 
   /**
    * Creates a PlayerRoomBehavior which handles game messages
@@ -23,10 +23,10 @@ object PlayerRoomBehavior {
    * @return A new PlayerRoomBehavior
    * */
   def apply(username: String, room: ActorRef[RoomMessage], socket: actor.ActorRef): Behavior[PlayerMessage] = {
-    playerRoomBehavior(username, room, socket)
+    roomPlayerBehavior(username, room, socket)
   }
 
-  private def playerRoomBehavior(username: String,
+  private def roomPlayerBehavior(username: String,
                                  room: ActorRef[RoomMessage],
                                  socket: actor.ActorRef): Behavior[PlayerMessage] =
     Behaviors.receive { (context, message) =>
@@ -78,15 +78,15 @@ object PlayerRoomBehavior {
 
       case LobbyReferent(lobby) =>
         context.log.info(s"PlayerActor of $username received LobbyReferent")
-        PlayerLobbyBehavior(username,lobby,socket)
+        LobbyPlayerBehavior(username,lobby,socket)
 
       case GameReferent(game) =>
         context.log.info(s"PlayerActor of $username received GameReferent")
-        PlayerGameBehavior(username,game,socket)
+        GamePlayerBehavior(username,game,socket)
 
       case RegisterSocket(newSocketActor) =>
         context.log.info(s"PlayerActor of $username registering new socket")
-        playerRoomBehavior(username, room, newSocketActor)
+        roomPlayerBehavior(username, room, newSocketActor)
 
       case errorMessage: PlayerMessages.ErrorMessage =>
         context.log.info(s"PlayerActor of $username received ErrorMessage")

@@ -12,7 +12,7 @@ import org.riskala.client.messages.FromClientMessages.{ActionAttackMessage, Acti
 import org.riskala.client.messages.ToClientMessages
 import org.riskala.client.messages.ToClientMessages.{GameEnd, GameFullInfo, GameUpdate}
 
-object PlayerGameBehavior {
+object GamePlayerBehavior {
 
   /**
    * Creates a PlayerGameBehavior which handles game messages
@@ -105,7 +105,7 @@ object PlayerGameBehavior {
 
         case LobbyReferent(lobby) =>
           context.log.info(s"PlayerGameActor of $username received LobbyReferent")
-          PlayerLobbyBehavior(username,lobby,socket)
+          LobbyPlayerBehavior(username,lobby,socket)
 
         case errorMessage: PlayerMessages.ErrorMessage =>
           context.log.info(s"PlayerGameActor of $username received ErrorMessage: ${errorMessage.error}")
@@ -117,7 +117,7 @@ object PlayerGameBehavior {
 
         case RegisterSocket(newSocketActor) =>
           context.log.info(s"PlayerActor of $username registering new socket")
-          PlayerGameBehavior(username, game, newSocketActor)
+          GamePlayerBehavior(username, game, newSocketActor)
 
         case other =>
           context.log.info(s"PlayerActor of $username received "+ other +", IGNORED")

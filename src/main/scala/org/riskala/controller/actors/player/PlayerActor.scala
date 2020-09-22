@@ -30,7 +30,7 @@ object PlayerActor {
           listings.headOption match {
             case Some(lobbyManager) =>
               context.log.info("PlayerActor found Lobby")
-              PlayerLobbyBehavior(username, lobbyManager, socket)
+              LobbyPlayerBehavior(username, lobbyManager, socket)
             case None => {
               context.log.error("Lobby manager not found")
               Behaviors.same
