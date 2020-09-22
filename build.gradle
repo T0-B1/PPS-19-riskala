@@ -54,7 +54,7 @@ dependencies {
     )
 }
 
-task spec(dependsOn: ['testClasses'], type: JavaExec) {
+task testSpec(dependsOn: ['testClasses'], type: JavaExec) {
     main = 'org.scalatest.tools.Runner'
     args = ['-R', 'build/classes/scala/test', '-o']
     classpath = sourceSets.test.runtimeClasspath
