@@ -1,7 +1,7 @@
 package org.riskala.utils
 
-import org.riskala.model.MapGeography
 import argonaut.Argonaut._
+import org.riskala.model.map.MapGeography
 
 import scala.io.Source
 

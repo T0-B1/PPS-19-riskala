@@ -3,7 +3,8 @@ package org.riskala.model
 import org.scalatest.wordspec.AnyWordSpec
 import argonaut.Argonaut._
 import org.junit.runner.RunWith
-import org.riskala.model.State.State
+import org.riskala.model.map.{Bridge, MapGeography, PlayerState, Region}
+import org.riskala.model.map.State.State
 import org.scalatestplus.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])

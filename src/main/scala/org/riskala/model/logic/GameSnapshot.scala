@@ -2,7 +2,8 @@ package org.riskala.model.logic
 
 import org.riskala.model.Cards.Cards
 import org.riskala.model.Objectives.Objective
-import org.riskala.model.{Geopolitics, MapGeography, Objectives, Player, PlayerState}
+import org.riskala.model.map.{Geopolitics, MapGeography, PlayerState}
+import org.riskala.model.{Objectives, Player}
 import org.riskala.utils.{MapLoader, Utils}
 
 case class GameSnapshot(players: Seq[Player],

@@ -2,7 +2,7 @@ package org.riskala.model.logic
 
 import org.riskala.model.Cards.Cards
 import org.riskala.model.Player
-import org.riskala.model.State.State
+import org.riskala.model.map.State.State
 
 trait Event{
   def happen(game: GameSnapshot): GameSnapshot

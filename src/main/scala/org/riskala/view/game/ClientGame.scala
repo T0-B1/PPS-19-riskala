@@ -2,7 +2,8 @@ package org.riskala.view.game
 
 import argonaut.Argonaut.{ToJsonIdentity, nospace}
 import org.riskala.model.Cards._
-import org.riskala.model.{Cards, MapGeography, PlayerState}
+import org.riskala.model.Cards
+import org.riskala.model.map.{MapGeography, PlayerState}
 import org.riskala.utils.Parser
 import org.riskala.view.messages.FromClientMessages.{ActionAttackMessage, ActionDeployMessage, ActionMoveMessage, RedeemBonusMessage}
 import org.riskala.view.messages.ToClientMessages.{ErrorMessage, GameEnd, GameFullInfo, GameUpdate}

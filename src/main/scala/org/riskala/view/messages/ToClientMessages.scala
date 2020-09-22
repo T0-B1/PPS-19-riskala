@@ -4,7 +4,8 @@ import argonaut.Argonaut._
 import argonaut.CodecJson
 import org.riskala.model.Cards.Cards
 import org.riskala.model.Objectives.Objective
-import org.riskala.model.{MapGeography, Player, PlayerState}
+import org.riskala.model.Player
+import org.riskala.model.map.{MapGeography, PlayerState}
 
 import scala.scalajs.js.annotation.JSExportAll
 

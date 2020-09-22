@@ -2,7 +2,8 @@ package org.riskala.model.logic
 
 import org.junit.runner.RunWith
 import org.riskala.model
-import org.riskala.model.{Cards, Geopolitics, MapGeography, Player}
+import org.riskala.model.map.{Geopolitics, MapGeography}
+import org.riskala.model.{Cards, Player}
 import org.riskala.utils.MapLoader
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.junit.JUnitRunner

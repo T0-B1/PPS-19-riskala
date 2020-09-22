@@ -2,7 +2,8 @@ package org.riskala.model
 
 import argonaut.Argonaut.casecodec2
 import argonaut.CodecJson
-import org.riskala.model.State.State
+import org.riskala.model.map.MapGeography
+import org.riskala.model.map.State.State
 
 object Objectives {
 

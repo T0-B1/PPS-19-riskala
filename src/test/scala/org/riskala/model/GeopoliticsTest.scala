@@ -1,6 +1,7 @@
 package org.riskala.model
 
 import org.junit.runner.RunWith
+import org.riskala.model.map.{Geopolitics, PlayerState}
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.junit.JUnitRunner
 

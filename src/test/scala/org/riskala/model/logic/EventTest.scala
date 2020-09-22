@@ -3,8 +3,9 @@ package org.riskala.model.logic
 import org.junit.runner.RunWith
 import org.riskala.model
 import org.riskala.model.Cards.Cards
-import org.riskala.model.State.State
-import org.riskala.model.{Cards, Geopolitics, MapGeography, Player, PlayerState}
+import org.riskala.model.map.{Geopolitics, MapGeography, PlayerState}
+import org.riskala.model.map.State.State
+import org.riskala.model.{Cards, Player, map}
 import org.riskala.utils.MapLoader
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.junit.JUnitRunner
@@ -29,7 +30,7 @@ class EventTest extends AnyWordSpec {
     val attackingState = "Emilia-Romagna"
     val defendingState = "Toscana"
     val attackingPlayerState = PlayerState(attackingState, p1, 10)
-    val defendingPlayerState = PlayerState(defendingState, p2, 5)
+    val defendingPlayerState = map.PlayerState(defendingState, p2, 5)
     val playerStates: Geopolitics = initialSnapshot.geopolitics.filterNot(p =>
       p.state.equals(attackingState) || p.state.equals(defendingState)) + attackingPlayerState + defendingPlayerState
     val preBattleGame = initialSnapshot.copy(geopolitics = playerStates)
@@ -84,8 +85,8 @@ class EventTest extends AnyWordSpec {
     val fromState = "Emilia-Romagna"
     val toState = "Toscana"
     val movedTroops = 3
-    val fromPlayerState = PlayerState(fromState, p1, 5)
-    val toPlayerState = PlayerState(toState, p1, 5)
+    val fromPlayerState = map.PlayerState(fromState, p1, 5)
+    val toPlayerState = map.PlayerState(toState, p1, 5)
     val playerStates: Geopolitics = initialSnapshot.geopolitics.filterNot(p =>
       p.state.equals(fromState) || p.state.equals(toState)) + fromPlayerState + toPlayerState
     val preMoveGame = initialSnapshot.copy(geopolitics = playerStates)
@@ -108,7 +109,7 @@ class EventTest extends AnyWordSpec {
   "A deploy event" should {
     val toState = "Emilia-Romagna"
     val deployed = 3
-    val toPlayerState = PlayerState(toState, p1, 5)
+    val toPlayerState = map.PlayerState(toState, p1, 5)
     val playerStates: Geopolitics = initialSnapshot.geopolitics.filterNot(p =>
       p.state.equals(toState)) + toPlayerState
     val preDeployGame = initialSnapshot.copy(geopolitics = playerStates)

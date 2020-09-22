@@ -1,7 +1,8 @@
 package org.riskala.model
 
 import org.junit.runner.RunWith
-import org.riskala.model.State.State
+import org.riskala.model.map.Region
+import org.riskala.model.map.State.State
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.junit.JUnitRunner
 
