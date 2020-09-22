@@ -8,6 +8,7 @@ import akka.stream.scaladsl.Flow
 import org.junit.runner.RunWith
 import org.riskala.controller.Server
 import org.riskala.controller.actors.player.PlayerMessages.PlayerMessage
+import org.riskala.controller.auth.AuthTest
 import org.riskala.utils.Utils
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
