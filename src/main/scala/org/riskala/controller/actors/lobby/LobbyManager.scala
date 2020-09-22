@@ -10,7 +10,7 @@ import org.riskala.controller.actors.game.GameMessages.JoinGame
 import org.riskala.controller.actors.lobby.LobbyMessages._
 import org.riskala.controller.actors.room.RoomManager
 import org.riskala.controller.actors.room.RoomMessages.Join
-import org.riskala.view.messages.ToClientMessages.{LobbyInfo, RoomBasicInfo, RoomNameInfo}
+import org.riskala.client.messages.ToClientMessages.{LobbyInfo, RoomBasicInfo, RoomNameInfo}
 
 object LobbyManager {
 

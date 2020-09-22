@@ -8,9 +8,9 @@ import org.riskala.controller.actors.player.PlayerMessages._
 import org.riskala.controller.actors.Messages.{GameMessage, Logout}
 import org.riskala.controller.actors.game.GameMessages._
 import org.riskala.utils.Parser
-import org.riskala.view.messages.FromClientMessages.{ActionAttackMessage, ActionDeployMessage, ActionMoveMessage, RedeemBonusMessage}
-import org.riskala.view.messages.ToClientMessages
-import org.riskala.view.messages.ToClientMessages.{GameEnd, GameFullInfo, GameUpdate}
+import org.riskala.client.messages.FromClientMessages.{ActionAttackMessage, ActionDeployMessage, ActionMoveMessage, RedeemBonusMessage}
+import org.riskala.client.messages.ToClientMessages
+import org.riskala.client.messages.ToClientMessages.{GameEnd, GameFullInfo, GameUpdate}
 
 object PlayerGameBehavior {
 

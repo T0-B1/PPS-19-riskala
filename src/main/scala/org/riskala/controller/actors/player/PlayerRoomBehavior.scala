@@ -9,9 +9,9 @@ import org.riskala.controller.actors.Messages.{Logout, RoomMessage}
 import org.riskala.model.Player
 import org.riskala.controller.actors.room.RoomMessages.{Leave, Ready, UnReady}
 import org.riskala.utils.Parser
-import org.riskala.view.messages.FromClientMessages.ReadyMessage
-import org.riskala.view.messages.ToClientMessages
-import org.riskala.view.messages.ToClientMessages.RoomInfo
+import org.riskala.client.messages.FromClientMessages.ReadyMessage
+import org.riskala.client.messages.ToClientMessages
+import org.riskala.client.messages.ToClientMessages.RoomInfo
 
 object PlayerRoomBehavior {
 

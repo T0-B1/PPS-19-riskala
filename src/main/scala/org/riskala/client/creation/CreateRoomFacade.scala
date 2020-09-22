@@ -1,4 +1,4 @@
-package org.riskala.view.creation
+package org.riskala.client.creation
 
 import scala.scalajs.js
 import scala.scalajs.js.annotation.JSGlobal

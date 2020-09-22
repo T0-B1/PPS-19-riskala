@@ -10,8 +10,8 @@ import org.riskala.controller.actors.player.PlayerActor
 import org.riskala.controller.actors.player.PlayerMessages.SocketMessage
 import org.riskala.controller.actors.lobby.LobbyManager
 import org.riskala.controller.actors.lobby.LobbyMessages.JoinTo
-import org.riskala.view.messages.FromClientMessages.JoinMessage
-import org.riskala.view.messages.WrappedMessage
+import org.riskala.client.messages.FromClientMessages.JoinMessage
+import org.riskala.client.messages.WrappedMessage
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.wordspec.AnyWordSpecLike
 import org.scalatestplus.junit.JUnitRunner

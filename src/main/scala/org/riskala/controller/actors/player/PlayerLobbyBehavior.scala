@@ -8,9 +8,9 @@ import org.riskala.controller.actors.player.PlayerMessages._
 import org.riskala.controller.actors.Messages.{LobbyMessage, Logout}
 import org.riskala.controller.actors.lobby.LobbyMessages.{CreateRoom, JoinTo, Subscribe}
 import org.riskala.utils.Parser
-import org.riskala.view.messages.FromClientMessages.{CreateMessage, JoinMessage}
-import org.riskala.view.messages.ToClientMessages
-import org.riskala.view.messages.ToClientMessages.{LobbyInfo, RoomBasicInfo, RoomInfo}
+import org.riskala.client.messages.FromClientMessages.{CreateMessage, JoinMessage}
+import org.riskala.client.messages.ToClientMessages
+import org.riskala.client.messages.ToClientMessages.{LobbyInfo, RoomBasicInfo, RoomInfo}
 
 object PlayerLobbyBehavior {
 

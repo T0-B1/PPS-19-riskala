@@ -5,7 +5,7 @@ import akka.actor.typed.ActorRef
 import org.riskala.controller.actors.Messages.{GameMessage, LobbyMessage, RoomMessage}
 import org.riskala.model.Player
 import org.riskala.model.map.{MapGeography, PlayerState}
-import org.riskala.view.messages.ToClientMessages.{GamePersonalInfo, LobbyInfo, RoomInfo}
+import org.riskala.client.messages.ToClientMessages.{GamePersonalInfo, LobbyInfo, RoomInfo}
 
 object PlayerMessages {
 

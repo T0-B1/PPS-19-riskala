@@ -10,7 +10,7 @@ import org.riskala.controller.actors.game.GameMessages._
 import org.riskala.controller.actors.lobby.LobbyMessages.EndGame
 import org.riskala.controller.actors.lobby.LobbyMessages.Subscribe
 import org.riskala.utils.Utils
-import org.riskala.view.messages.ToClientMessages.GamePersonalInfo
+import org.riskala.client.messages.ToClientMessages.GamePersonalInfo
 
 object GameManager {
   /**

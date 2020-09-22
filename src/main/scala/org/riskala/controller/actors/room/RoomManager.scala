@@ -10,7 +10,7 @@ import org.riskala.controller.actors.lobby.LobbyMessages.{EmptyRoom, StartGame, 
 import monocle.Lens
 import monocle.macros.GenLens
 import org.riskala.model.Player
-import org.riskala.view.messages.ToClientMessages.{RoomBasicInfo, RoomInfo}
+import org.riskala.client.messages.ToClientMessages.{RoomBasicInfo, RoomInfo}
 
 object RoomManager {
 

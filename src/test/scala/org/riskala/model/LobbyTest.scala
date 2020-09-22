@@ -9,7 +9,7 @@ import org.riskala.controller.actors.player.PlayerMessages._
 import org.riskala.controller.actors.lobby.LobbyManager
 import org.riskala.controller.actors.lobby.LobbyMessages._
 import org.riskala.controller.actors.Messages._
-import org.riskala.view.messages.ToClientMessages.{LobbyInfo, RoomBasicInfo, RoomInfo, RoomNameInfo}
+import org.riskala.client.messages.ToClientMessages.{LobbyInfo, RoomBasicInfo, RoomInfo, RoomNameInfo}
 import org.scalatest.BeforeAndAfterAll
 import org.scalatestplus.junit.JUnitRunner
 

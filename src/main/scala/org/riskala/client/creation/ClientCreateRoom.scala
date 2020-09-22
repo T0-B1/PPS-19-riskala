@@ -1,10 +1,10 @@
-package org.riskala.view.creation
+package org.riskala.client.creation
 
 import argonaut.Argonaut._
 import org.riskala.utils.Parser
-import org.riskala.view.messages.FromClientMessages.CreateMessage
-import org.riskala.view.messages.ToClientMessages.ErrorMessage
-import org.riskala.view.messages.WrappedMessage
+import org.riskala.client.messages.FromClientMessages.CreateMessage
+import org.riskala.client.messages.ToClientMessages.ErrorMessage
+import org.riskala.client.messages.WrappedMessage
 
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 
