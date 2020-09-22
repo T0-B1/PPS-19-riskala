@@ -2,7 +2,6 @@ package org.riskala.controller.auth
 
 import argonaut.Argonaut._
 import argonaut.CodecJson
-
 import scala.scalajs.js.annotation.{JSExportAll, JSExportTopLevel}
 
 /**

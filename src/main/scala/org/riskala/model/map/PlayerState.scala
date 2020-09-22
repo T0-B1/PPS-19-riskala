@@ -4,7 +4,6 @@ import argonaut.Argonaut._
 import argonaut.CodecJson
 import org.riskala.model.Player
 import org.riskala.model.map.State.State
-
 import scala.scalajs.js.annotation.{JSExportAll, JSExportTopLevel}
 
 /**

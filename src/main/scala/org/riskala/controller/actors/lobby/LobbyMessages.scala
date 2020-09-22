@@ -6,7 +6,6 @@ import org.riskala.controller.actors.Messages._
 import org.riskala.model.Player
 import org.riskala.client.messages.ToClientMessages.{RoomBasicInfo, RoomInfo}
 
-
 /**
  * lobby messages
  */

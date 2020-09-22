@@ -1,15 +1,12 @@
 package org.riskala.controller.auth
 
 import java.io.InputStream
-
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import argonaut.Argonaut._
 import pdi.jwt.{Jwt, JwtAlgorithm}
 import spray.json.{DefaultJsonProtocol, JsonParser, RootJsonFormat}
-
 import scala.collection.immutable.HashMap
 import scala.util.{Success, Try}
-
 case class Login(username: String, password: String)
 case class Register(username: String, password: String, email: String)
 

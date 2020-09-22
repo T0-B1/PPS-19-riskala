@@ -8,7 +8,6 @@ import org.riskala.controller.routes.RestRoutes._
 import org.riskala.controller.routes.WebsocketRoute._
 import org.riskala.controller.actors.Messages.LobbyMessage
 import org.riskala.controller.actors.lobby.LobbyManager
-
 import scala.concurrent.{ExecutionContextExecutor, Future}
 import scala.concurrent.duration._
 import scala.util.Try

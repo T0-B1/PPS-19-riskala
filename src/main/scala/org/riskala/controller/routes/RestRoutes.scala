@@ -7,7 +7,6 @@ import org.riskala.controller.auth.LoginJsonSupport._
 import org.riskala.controller.auth.{AuthManager, Login, Register}
 
 object RestRoutes {
-  //TODO add comment
 
   val staticContent: server.Route = (get & pathPrefix("")){
     (pathEndOrSingleSlash & redirectToTrailingSlashIfMissing(StatusCodes.TemporaryRedirect)) {

@@ -3,7 +3,6 @@ package org.riskala.model.map
 import argonaut.Argonaut._
 import argonaut.CodecJson
 import org.riskala.model.map.State.State
-
 import scala.scalajs.js.annotation.{JSExportAll, JSExportTopLevel}
 
 /** Map structure #scala.js

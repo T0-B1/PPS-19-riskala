@@ -96,8 +96,8 @@ object PlayerLobbyBehavior {
           context.log.info(s"PlayerActor of $username received GameReferent")
           PlayerGameBehavior(username,game,socket)
 
-        case x =>
-          context.log.info(s"PlayerActor of $username received "+ x +", IGNORED")
+        case other =>
+          context.log.info(s"PlayerActor of $username received "+ other +", IGNORED")
           Behaviors.same
 
       }

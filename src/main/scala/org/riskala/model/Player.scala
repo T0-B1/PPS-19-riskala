@@ -2,7 +2,6 @@ package org.riskala.model
 
 import argonaut.Argonaut._
 import argonaut.CodecJson
-
 import scala.scalajs.js.annotation.{JSExportAll, JSExportTopLevel}
 
 /**

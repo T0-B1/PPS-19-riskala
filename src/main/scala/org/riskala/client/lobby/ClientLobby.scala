@@ -5,7 +5,6 @@ import org.riskala.client.messages.ToClientMessages.{ErrorMessage, LobbyInfo}
 import argonaut.Argonaut._
 import org.riskala.client.messages.FromClientMessages.JoinMessage
 import org.riskala.client.messages.WrappedMessage
-
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 
 /**
