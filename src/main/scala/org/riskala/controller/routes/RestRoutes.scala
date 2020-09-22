@@ -3,7 +3,6 @@ package org.riskala.controller.routes
 import akka.http.scaladsl.model.{HttpHeader, StatusCodes}
 import akka.http.scaladsl.server
 import akka.http.scaladsl.server.Directives._
-import org.riskala.controller.Login
 import LoginJsonSupport._
 
 object RestRoutes {
