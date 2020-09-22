@@ -12,38 +12,12 @@ Vue.use(Vuex);
 Vue.config.productionTip = false
 
 function openSocket(oldSocket, token){
-  console.log(oldSocket)
   if(oldSocket != null && oldSocket.readyState === WebSocket.OPEN) {
-    console.log("Socket already open")
-    console.log(oldSocket)
     return oldSocket
   }
-  console.log("Opening socket")
   var vue = this
   var HOST = location.origin.replace(/^http/, 'ws')
   var mySocket = new WebSocket(HOST + "/websocket?token=" + token)
-  mySocket.onopen = function() { onOpen() };
-  mySocket.onclose = function() { onClose() };
-  mySocket.onmessage = function(evt) { onMessage(evt) };
-  mySocket.onerror = function(evt) { onError(evt) };
-
-  function onOpen() {
-    console.log("CONNECTED");
-  }
-
-  function onClose() {
-    console.log("DISCONNECTED");
-    token = "InvalidToken"
-  }
-
-  function onMessage(evt) {
-    console.log('MSG received');
-  }
-
-  function onError(evt) {
-    console.log('WS ERROR');
-  }
-
   return mySocket
 }
 

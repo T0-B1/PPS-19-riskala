@@ -90,9 +90,9 @@ export default {
           this.$store.commit('logout');
           if (error.response) {
             if (error.response.status === 404) {
-              console.log("Invalid credentials");
+              console.error("Invalid credentials");
             } else {
-              console.log("Internal server error!");
+              console.error("Internal server error!");
             }
           }
         });
