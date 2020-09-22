@@ -4,15 +4,18 @@ import org.scalatest.wordspec.AnyWordSpec
 import akka.actor.testkit.typed.scaladsl.{ActorTestKit, TestProbe}
 import akka.actor.typed.ActorRef
 import akka.actor.typed.scaladsl.Behaviors
+import org.junit.runner.RunWith
 import org.riskala.controller.actors.PlayerMessages._
 import org.riskala.model.lobby.LobbyManager
 import org.riskala.model.lobby.LobbyMessages._
 import org.riskala.model.ModelMessages._
 import org.riskala.view.messages.ToClientMessages.{LobbyInfo, RoomBasicInfo, RoomInfo, RoomNameInfo}
 import org.scalatest.BeforeAndAfterAll
+import org.scalatestplus.junit.JUnitRunner
 
 import scala.collection.immutable.{HashMap, HashSet}
 
+@RunWith(classOf[JUnitRunner])
 class LobbyTest extends AnyWordSpec with BeforeAndAfterAll {
   val testKit: ActorTestKit = ActorTestKit()
 

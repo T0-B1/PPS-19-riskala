@@ -2,6 +2,7 @@ package org.riskala.model
 
 import akka.actor.testkit.typed.scaladsl.{ActorTestKit, TestProbe}
 import akka.actor.typed.ActorRef
+import org.junit.runner.RunWith
 import org.riskala.controller.actors.PlayerMessages.{PlayerMessage, RoomInfoMessage, RoomReferent}
 import org.riskala.model.room.RoomManager
 import org.riskala.model.room.RoomMessages._
@@ -10,7 +11,9 @@ import org.riskala.model.lobby.LobbyMessages.{EmptyRoom, StartGame, Subscribe, U
 import org.riskala.view.messages.ToClientMessages.{RoomBasicInfo, RoomInfo}
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.wordspec.AnyWordSpec
+import org.scalatestplus.junit.JUnitRunner
 
+@RunWith(classOf[JUnitRunner])
 class RoomManagerTest extends AnyWordSpec with BeforeAndAfterAll {
   val testKit: ActorTestKit = ActorTestKit()
 
