@@ -6,8 +6,8 @@ import akka.actor.typed.ActorRef
 import akka.actor.typed.scaladsl.Behaviors
 import org.junit.runner.RunWith
 import org.riskala.controller.actors.player.PlayerMessages._
-import org.riskala.model.lobby.LobbyManager
-import org.riskala.model.lobby.LobbyMessages._
+import org.riskala.controller.actors.lobby.LobbyManager
+import org.riskala.controller.actors.lobby.LobbyMessages._
 import org.riskala.model.ModelMessages._
 import org.riskala.view.messages.ToClientMessages.{LobbyInfo, RoomBasicInfo, RoomInfo, RoomNameInfo}
 import org.scalatest.BeforeAndAfterAll

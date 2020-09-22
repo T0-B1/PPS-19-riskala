@@ -1,4 +1,4 @@
-package org.riskala.model.lobby
+package org.riskala.controller.actors.lobby
 
 import akka.actor.typed.ActorRef
 import org.riskala.controller.actors.player.PlayerMessages.PlayerMessage

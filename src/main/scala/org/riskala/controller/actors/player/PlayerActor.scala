@@ -5,7 +5,7 @@ import akka.actor.typed.Behavior
 import akka.actor.typed.receptionist.Receptionist
 import akka.actor.typed.scaladsl.Behaviors
 import org.riskala.controller.actors.player.PlayerMessages.PlayerMessage
-import org.riskala.model.lobby.LobbyManager.lobbyServiceKey
+import org.riskala.controller.actors.lobby.LobbyManager.lobbyServiceKey
 
 object PlayerActor {
 

@@ -1,15 +1,15 @@
-package org.riskala.model.lobby
+package org.riskala.controller.actors.lobby
 
 import akka.actor.typed.receptionist.{Receptionist, ServiceKey}
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}
 import org.riskala.controller.actors.player.PlayerMessages._
 import org.riskala.model.ModelMessages._
-import org.riskala.model.game.GameManager
-import org.riskala.model.game.GameMessages.JoinGame
-import org.riskala.model.lobby.LobbyMessages._
-import org.riskala.model.room.RoomManager
-import org.riskala.model.room.RoomMessages.Join
+import org.riskala.controller.actors.game.GameManager
+import org.riskala.controller.actors.game.GameMessages.JoinGame
+import org.riskala.controller.actors.lobby.LobbyMessages._
+import org.riskala.controller.actors.room.RoomManager
+import org.riskala.controller.actors.room.RoomMessages.Join
 import org.riskala.view.messages.ToClientMessages.{LobbyInfo, RoomBasicInfo, RoomNameInfo}
 
 object LobbyManager {

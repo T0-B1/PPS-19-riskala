@@ -1,4 +1,4 @@
-package org.riskala.model.game
+package org.riskala.controller.actors.game
 
 import akka.actor.typed.ActorRef
 import org.riskala.controller.actors.player.PlayerMessages.PlayerMessage

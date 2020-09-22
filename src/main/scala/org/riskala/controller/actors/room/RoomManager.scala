@@ -1,11 +1,11 @@
-package org.riskala.model.room
+package org.riskala.controller.actors.room
 
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}
 import RoomMessages._
 import org.riskala.controller.actors.player.PlayerMessages._
 import org.riskala.model.ModelMessages._
-import org.riskala.model.lobby.LobbyMessages.{EmptyRoom, StartGame, Subscribe, UpdateRoomInfo}
+import org.riskala.controller.actors.lobby.LobbyMessages.{EmptyRoom, StartGame, Subscribe, UpdateRoomInfo}
 
 import monocle.Lens
 import monocle.macros.GenLens

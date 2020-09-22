@@ -7,7 +7,7 @@ import akka.http.scaladsl.server.Route
 import org.riskala.controller.routes.RestRoutes._
 import org.riskala.controller.routes.WebsocketRoute._
 import org.riskala.model.ModelMessages.LobbyMessage
-import org.riskala.model.lobby.LobbyManager
+import org.riskala.controller.actors.lobby.LobbyManager
 
 import scala.concurrent.{ExecutionContextExecutor, Future}
 import scala.concurrent.duration._

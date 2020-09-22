@@ -8,8 +8,8 @@ import argonaut.Argonaut._
 import org.junit.runner.RunWith
 import org.riskala.controller.actors.player.PlayerActor
 import org.riskala.controller.actors.player.PlayerMessages.SocketMessage
-import org.riskala.model.lobby.LobbyManager
-import org.riskala.model.lobby.LobbyMessages.JoinTo
+import org.riskala.controller.actors.lobby.LobbyManager
+import org.riskala.controller.actors.lobby.LobbyMessages.JoinTo
 import org.riskala.view.messages.FromClientMessages.JoinMessage
 import org.riskala.view.messages.WrappedMessage
 import org.scalatest.BeforeAndAfterAll
