@@ -28,7 +28,6 @@ class PlayerActorTest extends ScalaTestWithActorTestKit with AnyWordSpecLike wit
       "go into a room upon receiving a RoomReferent" in {
         val roomProbe = testKit.createTestProbe[RoomMessage]()
         behaviorTestKit.run(RoomReferent(roomProbe.ref))
-        assert(behaviorTestKit.currentBehavior.toString.contains("PlayerRoomBehavior"))
         val RoomBehaviourClassName = RoomPlayerBehavior.getClass.getSimpleName
         assert(behaviorTestKit.currentBehavior.toString
           .contains(RoomBehaviourClassName.substring(0, RoomBehaviourClassName.size - 1)))
