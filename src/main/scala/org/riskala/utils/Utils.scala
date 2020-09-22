@@ -13,7 +13,7 @@ import scala.reflect.ClassTag
 import scala.concurrent.duration._
 import scala.io.Source
 import com.mashape.unirest.http.Unirest
-import org.riskala.controller.AuthManager
+import org.riskala.controller.routes.AuthManager
 
 object Utils{
 

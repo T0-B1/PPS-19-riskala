@@ -12,7 +12,7 @@ import akka.stream.{CompletionStrategy, OverflowStrategy}
 import akka.{Done, NotUsed, actor}
 import org.riskala.controller.actors.player.{PlayerActor, PlayerMessages}
 import org.riskala.controller.actors.player.PlayerMessages.PlayerMessage
-import org.riskala.controller.{AuthManager, Server}
+import org.riskala.controller.Server
 import org.riskala.utils.Utils
 
 import scala.concurrent.Future

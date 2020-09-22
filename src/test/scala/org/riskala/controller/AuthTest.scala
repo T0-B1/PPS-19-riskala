@@ -5,6 +5,7 @@ import java.util.Properties
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity, StatusCodes}
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import org.junit.runner.RunWith
+import org.riskala.controller.routes.{AuthManager, Login, LoginJsonSupport, Register}
 import org.riskala.utils.Utils
 import org.scalatest.Assertion
 import org.scalatest.matchers.should.Matchers

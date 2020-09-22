@@ -1,15 +1,14 @@
-package org.riskala.controller
+package org.riskala.controller.routes
 
 import java.io.InputStream
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
+import argonaut.Argonaut._
 import org.riskala.model.Account
+import pdi.jwt.{Jwt, JwtAlgorithm}
 import spray.json.{DefaultJsonProtocol, JsonParser, RootJsonFormat}
 
 import scala.collection.immutable.HashMap
-import pdi.jwt.{Jwt, JwtAlgorithm}
-import argonaut.Argonaut._
-
 import scala.util.{Success, Try}
 
 case class Login(username: String, password: String)
