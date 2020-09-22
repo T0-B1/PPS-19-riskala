@@ -8,10 +8,6 @@ object EventStore {
 
 case class EventStore[Ev](events: Seq[Ev] = Seq.empty) {
 
-  def append(newEvents: Seq[Ev]) : EventStore[Ev] = {
-    EventStore(events ++ newEvents)
-  }
-
   def perform(behavior: Behavior[Ev]) : EventStore[Ev] = {
     EventStore(events ++ behavior)
   }
