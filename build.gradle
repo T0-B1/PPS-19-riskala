@@ -58,37 +58,17 @@ task testSpec(dependsOn: ['testClasses'], type: JavaExec) {
     args = ['-R', 'build/classes/scala/test', '-o']
     classpath = sourceSets.test.runtimeClasspath
 }
-/*
-task foo() {
-    println(project.sourceSets.main.output)
-
-    println(project.sourceSets.main.compileClasspath)
-}
-
- */
 
 scaladoc {
     classpath = project.sourceSets.main.compileClasspath
 }
 
 task provideSourcesToScalajs(type: Copy) {
-    
-    //def scalaJsClasses = "org/riskala/model/**/*"
-    //def scalaJsIgnore = [
-    //"org/riskala/model/ModelMessages.scala",
-    //"org/riskala/model/game/**/*",
-    //"org/riskala/model/lobby/**/*",
-    //"org/riskala/model/room/**/*"]
-
-    def scalaJsClasses = ["org/riskala/model/*.scala",
-                          "org/riskala/view/**/*.scala",
-                          "org/riskala/utils/Parser.scala"]
-    def scalaJsIgnore = ["org/riskala/model/ModelMessages.scala",
-                         "org/riskala/view/SocketActor.scala"]
     delete "$projectDir/src/scalajs/src"
     from "$projectDir/src/main/scala/"
-    include scalaJsClasses 
-    exclude scalaJsIgnore
+    exclude { FileTreeElement details ->
+        !details.isDirectory() && !details.file.text.contains('#scala.js')
+    }
     into "$projectDir/src/scalajs/src/main/scala/"
 }
 
