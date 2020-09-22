@@ -1,10 +1,9 @@
-package org.riskala.controller.routes
+package org.riskala.controller.auth
 
 import java.io.InputStream
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import argonaut.Argonaut._
-import org.riskala.model.Account
 import pdi.jwt.{Jwt, JwtAlgorithm}
 import spray.json.{DefaultJsonProtocol, JsonParser, RootJsonFormat}
 

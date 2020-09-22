@@ -1,4 +1,4 @@
-package org.riskala.model
+package org.riskala.controller.auth
 
 import argonaut.Argonaut._
 import argonaut.CodecJson

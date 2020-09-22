@@ -13,6 +13,7 @@ import akka.{Done, NotUsed, actor}
 import org.riskala.controller.actors.player.{PlayerActor, PlayerMessages}
 import org.riskala.controller.actors.player.PlayerMessages.PlayerMessage
 import org.riskala.controller.Server
+import org.riskala.controller.auth.AuthManager
 import org.riskala.utils.Utils
 
 import scala.concurrent.Future
