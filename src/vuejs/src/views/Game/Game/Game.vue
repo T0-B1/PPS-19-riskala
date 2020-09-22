@@ -221,6 +221,9 @@ export default {
     },
     redeemBonus(cardType){
       this.$store.state.websocket.send(ClientGame.getRedeemBonusMsgWrapped(cardType))
+      this.troopsDeployed = 0
+      this.selectedNeighbor = ""
+      this.neighbors.splice(0)
     },
     getRandomColor(name) {
       var rng = seedRandom(name)
