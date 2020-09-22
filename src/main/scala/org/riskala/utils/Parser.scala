@@ -2,8 +2,11 @@ package org.riskala.utils
 
 import argonaut.Argonaut._
 import argonaut.{DecodeJson, EncodeJson}
-import org.riskala.view.messages.WrappedMessage
+import org.riskala.client.messages.WrappedMessage
 
+/**
+ * #scala.js
+ */
 object Parser {
 
   case class TypedMessage(classType: Class[_], payload: String)

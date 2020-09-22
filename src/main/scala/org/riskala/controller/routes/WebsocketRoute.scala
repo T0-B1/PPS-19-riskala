@@ -10,9 +10,10 @@ import akka.stream.scaladsl.{Flow, Sink, Source}
 import akka.stream.typed.scaladsl.ActorSource
 import akka.stream.{CompletionStrategy, OverflowStrategy}
 import akka.{Done, NotUsed, actor}
-import org.riskala.controller.actors.{PlayerActor, PlayerMessages}
-import org.riskala.controller.actors.PlayerMessages.PlayerMessage
-import org.riskala.controller.{AuthManager, Server}
+import org.riskala.controller.actors.player.{PlayerActor, PlayerMessages}
+import org.riskala.controller.actors.player.PlayerMessages.PlayerMessage
+import org.riskala.controller.Server
+import org.riskala.controller.auth.AuthManager
 import org.riskala.utils.Utils
 
 import scala.concurrent.Future
@@ -40,8 +41,6 @@ object WebsocketRoute {
     Utils.askReceptionistToFind[PlayerMessage](username).toSeq match {
       // No PlayerActor registered found
       case Seq() =>
-        // TODO use spawn protocol
-        // https://doc.akka.io/docs/akka/current/typed/actor-lifecycle.html#spawnprotocol
         val ref: ActorRef[PlayerMessage] = system.systemActorOf(PlayerActor(username, newSocket), username)
         system.receptionist ! Receptionist.Register(ServiceKey[PlayerMessage](username), ref)
         ref

@@ -4,7 +4,7 @@ import argonaut.Argonaut._
 import argonaut.{CodecJson, DecodeResult}
 
 /**
- * Structure of Cards
+ * Structure of Cards #scala.js
  * */
 object Cards extends Enumeration {
 

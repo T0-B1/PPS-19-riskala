@@ -2,18 +2,16 @@ package org.riskala.utils
 
 import java.io.FileNotFoundException
 import java.util.Properties
-
 import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.actor.typed.receptionist.{Receptionist, ServiceKey}
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.util.Timeout
-
 import scala.concurrent.{Await, ExecutionContextExecutor, Future}
 import scala.reflect.ClassTag
 import scala.concurrent.duration._
 import scala.io.Source
 import com.mashape.unirest.http.Unirest
-import org.riskala.controller.AuthManager
+import org.riskala.controller.auth.AuthManager
 
 object Utils{
 
@@ -25,7 +23,7 @@ object Utils{
     if (url != null)
       properties.load(Source.fromURL(url).bufferedReader())
     else
-      throw new FileNotFoundException(s"Properties file at path $PROPS_PATH cannot be loaded");
+      throw new FileNotFoundException(s"Properties file at path $PROPS_PATH cannot be loaded")
     properties
   }
 
