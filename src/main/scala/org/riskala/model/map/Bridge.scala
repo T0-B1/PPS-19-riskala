@@ -1,10 +1,10 @@
-package org.riskala.model
+package org.riskala.model.map
 
-import scala.scalajs.js.annotation.JSExportAll
-import scala.scalajs.js.annotation.JSExportTopLevel
 import argonaut.Argonaut._
 import argonaut.CodecJson
-import org.riskala.model.State.State
+import org.riskala.model.map.State.State
+
+import scala.scalajs.js.annotation.{JSExportAll, JSExportTopLevel}
 
 /**
  * Bridge implementation #scala.js

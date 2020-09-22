@@ -1,8 +1,8 @@
-package org.riskala.model
+package org.riskala.model.map
 
-import org.riskala.model.State.State
 import argonaut.Argonaut._
 import argonaut.CodecJson
+import org.riskala.model.map.State.State
 
 import scala.scalajs.js.annotation.{JSExportAll, JSExportTopLevel}
 

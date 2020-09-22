@@ -1,6 +1,7 @@
-package org.riskala.model
+package org.riskala.model.map
 
-import org.riskala.model.State.State
+import org.riskala.model.Player
+import org.riskala.model.map.State.State
 
 /**
  * #scala.js
