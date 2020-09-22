@@ -1,9 +1,9 @@
-package org.riskala.model
+package org.riskala.controller.actors
 
 import akka.actor.typed.ActorRef
 import org.riskala.controller.actors.player.PlayerMessages.PlayerMessage
 
-object ModelMessages {
+object Messages {
 
   trait LobbyMessage
 

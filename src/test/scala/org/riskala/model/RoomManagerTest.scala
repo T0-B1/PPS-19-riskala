@@ -6,7 +6,7 @@ import org.junit.runner.RunWith
 import org.riskala.controller.actors.player.PlayerMessages.{PlayerMessage, RoomInfoMessage, RoomReferent}
 import org.riskala.controller.actors.room.RoomManager
 import org.riskala.controller.actors.room.RoomMessages._
-import org.riskala.model.ModelMessages._
+import org.riskala.controller.actors.Messages._
 import org.riskala.controller.actors.lobby.LobbyMessages.{EmptyRoom, StartGame, Subscribe, UpdateRoomInfo}
 import org.riskala.view.messages.ToClientMessages.{RoomBasicInfo, RoomInfo}
 import org.scalatest.BeforeAndAfterAll

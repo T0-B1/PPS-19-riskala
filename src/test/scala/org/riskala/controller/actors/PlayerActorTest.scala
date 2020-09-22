@@ -1,7 +1,7 @@
 package org.riskala.controller.actors
 
 import akka.actor.testkit.typed.scaladsl.{BehaviorTestKit, ScalaTestWithActorTestKit}
-import org.riskala.model.ModelMessages.{GameMessage, LobbyMessage, RoomMessage}
+import Messages.{GameMessage, LobbyMessage, RoomMessage}
 import org.scalatest.wordspec.AnyWordSpecLike
 import org.junit.runner.RunWith
 import org.riskala.controller.actors.player.{PlayerActor, PlayerGameBehavior, PlayerLobbyBehavior, PlayerRoomBehavior}

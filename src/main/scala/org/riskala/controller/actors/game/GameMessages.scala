@@ -3,7 +3,7 @@ package org.riskala.controller.actors.game
 import akka.actor.typed.ActorRef
 import org.riskala.controller.actors.player.PlayerMessages.PlayerMessage
 import org.riskala.model.Cards.Cards
-import org.riskala.model.ModelMessages.GameMessage
+import org.riskala.controller.actors.Messages.GameMessage
 
 /**
  * Type of possible messages that GameManager can receive

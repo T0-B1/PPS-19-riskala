@@ -5,7 +5,7 @@ import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.http.scaladsl.model.ws.TextMessage
 import org.riskala.controller.actors.player.PlayerMessages._
-import org.riskala.model.ModelMessages.{GameMessage, Logout}
+import org.riskala.controller.actors.Messages.{GameMessage, Logout}
 import org.riskala.controller.actors.game.GameMessages._
 import org.riskala.utils.Parser
 import org.riskala.view.messages.FromClientMessages.{ActionAttackMessage, ActionDeployMessage, ActionMoveMessage, RedeemBonusMessage}
