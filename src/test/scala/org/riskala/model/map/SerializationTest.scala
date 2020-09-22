@@ -16,11 +16,11 @@ class SerializationTest extends AnyWordSpec{
   val spa: State = "Spain"
   val states = Set(ita, fra, swi, ger, spa)
   val regions = Set(Region("NonEmptyRegion1",Set(ita,swi),4),Region("NonEmptyRegion2",Set(spa,ger,fra),6))
-  val bridges = Set(Bridge(ita,fra,false),
-    Bridge(ita,swi,false),
-    Bridge(swi,fra,false),
-    Bridge(fra,spa,false),
-    Bridge(fra,ger,false))
+  val bridges = Set(Bridge(ita,fra,userCreated = false),
+    Bridge(ita,swi,userCreated = false),
+    Bridge(swi,fra,userCreated = false),
+    Bridge(fra,spa,userCreated = false),
+    Bridge(fra,ger,userCreated = false))
   val map = MapGeography("Europe",regions,states,bridges)
   "Bridge" should {
     val bridge = bridges.head
