@@ -5,7 +5,8 @@ import argonaut.CodecJson
 
 import scala.scalajs.js.annotation.{JSExportAll, JSExportTopLevel}
 
-/** Playes structure
+/**
+ * Player structure #scala.js
  *
  * @param nickname       nickname of user
  * @param color          color of user

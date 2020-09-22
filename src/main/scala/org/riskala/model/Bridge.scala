@@ -6,7 +6,8 @@ import argonaut.Argonaut._
 import argonaut.CodecJson
 import org.riskala.model.State.State
 
-/** Bridge implementation
+/**
+ * Bridge implementation #scala.js
  *
  * @param state1         first state
  * @param state2         second state
@@ -19,7 +20,7 @@ case class Bridge(state1: State,
                   userCreated: Boolean) {
 
   /**
-   * check if the object is a bridge and if this bridge link the same states
+   * Checks if the object is a bridge and if this bridge link the same states
    *
    * @return true if equal
    */

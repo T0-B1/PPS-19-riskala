@@ -6,7 +6,8 @@ import argonaut.CodecJson
 
 import scala.scalajs.js.annotation.{JSExportAll, JSExportTopLevel}
 
-/** Region structure
+/**
+ * Region structure #scala.js
  *
  * @param states       list of states of the region
  * @param bonus        bonus in terms of deployable troops
@@ -16,7 +17,7 @@ import scala.scalajs.js.annotation.{JSExportAll, JSExportTopLevel}
 case class Region(name: String, states: Set[State], bonus: Int) {
 
   /**
-   * Check if the region contains the given state
+   * Checks if the region contains the given state
    *
    * @param state     the state to check
    * @return true if it contains state*/

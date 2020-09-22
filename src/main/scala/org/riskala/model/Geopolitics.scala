@@ -2,6 +2,10 @@ package org.riskala.model
 
 import org.riskala.model.State.State
 
+/**
+ * #scala.js
+ * @param states
+ */
 case class Geopolitics(states: Set[PlayerState]) {
 
   implicit def states2geopolitics(states: Set[PlayerState]): Geopolitics = Geopolitics(states)

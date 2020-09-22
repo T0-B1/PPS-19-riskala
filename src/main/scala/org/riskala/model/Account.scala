@@ -5,7 +5,8 @@ import argonaut.CodecJson
 
 import scala.scalajs.js.annotation.{JSExportAll, JSExportTopLevel}
 
-/** Account structure
+/**
+ * Account structure #scala.js
  *
  * @param username       username of user
  * @param password       password

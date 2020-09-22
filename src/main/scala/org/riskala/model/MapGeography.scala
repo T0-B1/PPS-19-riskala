@@ -6,7 +6,7 @@ import org.riskala.model.State.State
 
 import scala.scalajs.js.annotation.{JSExportAll, JSExportTopLevel}
 
-/** Map structure
+/** Map structure #scala.js
  *
  * @param name           name of the map used in game.
  * @param regions        list of regions

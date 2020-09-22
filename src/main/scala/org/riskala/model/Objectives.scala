@@ -13,7 +13,7 @@ object Objectives {
   private val minNumberOfPlayerForRnd: Int = 4
 
   /**
-   * Utility to generate a random Objective based on map and number of player
+   * Utility to generate a random Objective based on map and number of player #scala.js
    * @param map the map used for the random generated Objective
    * @param numberOfPlayer the numbre of player for the game where this Objective will be used
    * @return the random Objective based on params
