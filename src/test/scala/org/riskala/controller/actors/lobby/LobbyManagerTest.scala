@@ -1,22 +1,22 @@
-package org.riskala.model
+package org.riskala.controller.actors.lobby
 
-import org.scalatest.wordspec.AnyWordSpec
 import akka.actor.testkit.typed.scaladsl.{ActorTestKit, TestProbe}
 import akka.actor.typed.ActorRef
 import akka.actor.typed.scaladsl.Behaviors
 import org.junit.runner.RunWith
-import org.riskala.controller.actors.player.PlayerMessages._
-import org.riskala.controller.actors.lobby.LobbyManager
-import org.riskala.controller.actors.lobby.LobbyMessages._
-import org.riskala.controller.actors.Messages._
 import org.riskala.client.messages.ToClientMessages.{LobbyInfo, RoomBasicInfo, RoomInfo, RoomNameInfo}
+import org.riskala.controller.actors.Messages._
+import org.riskala.controller.actors.lobby.LobbyMessages._
+import org.riskala.controller.actors.player.PlayerMessages._
+import org.riskala.model.Player
 import org.scalatest.BeforeAndAfterAll
+import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.junit.JUnitRunner
 
 import scala.collection.immutable.{HashMap, HashSet}
 
 @RunWith(classOf[JUnitRunner])
-class LobbyTest extends AnyWordSpec with BeforeAndAfterAll {
+class LobbyManagerTest extends AnyWordSpec with BeforeAndAfterAll {
   val testKit: ActorTestKit = ActorTestKit()
 
   override def afterAll(): Unit = testKit.shutdownTestKit()

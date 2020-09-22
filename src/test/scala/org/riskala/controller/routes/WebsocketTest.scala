@@ -1,4 +1,4 @@
-package org.riskala.controller
+package org.riskala.controller.routes
 
 import java.util.Properties
 
@@ -6,13 +6,12 @@ import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.stream.scaladsl.Flow
 import org.junit.runner.RunWith
+import org.riskala.controller.Server
 import org.riskala.controller.actors.player.PlayerMessages.PlayerMessage
-import org.riskala.controller.routes.WebsocketRoute
 import org.riskala.utils.Utils
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.junit.JUnitRunner
-import akka.actor.typed.scaladsl.adapter._
 
 @RunWith(classOf[JUnitRunner])
 class WebsocketTest extends AnyWordSpec with Matchers with ScalatestRouteTest {

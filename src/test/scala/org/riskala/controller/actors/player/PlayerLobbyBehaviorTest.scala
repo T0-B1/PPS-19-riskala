@@ -1,4 +1,4 @@
-package org.riskala.controller.actors
+package org.riskala.controller.actors.player
 
 import akka.actor.typed.receptionist.Receptionist
 import akka.actor.typed.scaladsl.adapter.ClassicActorSystemOps
@@ -6,12 +6,11 @@ import akka.actor.{ActorSystem, typed}
 import akka.testkit.{TestKit, TestProbe}
 import argonaut.Argonaut._
 import org.junit.runner.RunWith
-import org.riskala.controller.actors.player.PlayerActor
-import org.riskala.controller.actors.player.PlayerMessages.SocketMessage
-import org.riskala.controller.actors.lobby.LobbyManager
-import org.riskala.controller.actors.lobby.LobbyMessages.JoinTo
 import org.riskala.client.messages.FromClientMessages.JoinMessage
 import org.riskala.client.messages.WrappedMessage
+import org.riskala.controller.actors.lobby.LobbyManager
+import org.riskala.controller.actors.lobby.LobbyMessages.JoinTo
+import org.riskala.controller.actors.player.PlayerMessages.SocketMessage
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.wordspec.AnyWordSpecLike
 import org.scalatestplus.junit.JUnitRunner

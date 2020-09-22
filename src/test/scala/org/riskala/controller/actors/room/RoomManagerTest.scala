@@ -1,14 +1,14 @@
-package org.riskala.model
+package org.riskala.controller.actors.room
 
 import akka.actor.testkit.typed.scaladsl.{ActorTestKit, TestProbe}
 import akka.actor.typed.ActorRef
 import org.junit.runner.RunWith
-import org.riskala.controller.actors.player.PlayerMessages.{PlayerMessage, RoomInfoMessage, RoomReferent}
-import org.riskala.controller.actors.room.RoomManager
-import org.riskala.controller.actors.room.RoomMessages._
+import org.riskala.client.messages.ToClientMessages.{RoomBasicInfo, RoomInfo}
 import org.riskala.controller.actors.Messages._
 import org.riskala.controller.actors.lobby.LobbyMessages.{EmptyRoom, StartGame, Subscribe, UpdateRoomInfo}
-import org.riskala.client.messages.ToClientMessages.{RoomBasicInfo, RoomInfo}
+import org.riskala.controller.actors.player.PlayerMessages.{PlayerMessage, RoomInfoMessage, RoomReferent}
+import org.riskala.controller.actors.room.RoomMessages._
+import org.riskala.model.Player
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.junit.JUnitRunner

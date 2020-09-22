@@ -1,12 +1,11 @@
-package org.riskala.controller.actors
+package org.riskala.controller.actors.player
 
 import akka.actor.testkit.typed.scaladsl.{BehaviorTestKit, ScalaTestWithActorTestKit}
-import Messages.{GameMessage, LobbyMessage, RoomMessage}
-import org.scalatest.wordspec.AnyWordSpecLike
 import org.junit.runner.RunWith
-import org.riskala.controller.actors.player.{PlayerActor, PlayerGameBehavior, PlayerLobbyBehavior, PlayerRoomBehavior}
+import org.riskala.controller.actors.Messages.{GameMessage, LobbyMessage, RoomMessage}
 import org.riskala.controller.actors.player.PlayerMessages.{GameReferent, RoomReferent}
 import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpecLike
 import org.scalatestplus.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])

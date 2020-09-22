@@ -1,12 +1,11 @@
-package org.riskala.controller
+package org.riskala.controller.auth
 
 import java.util.Properties
 
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity, StatusCodes}
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import org.junit.runner.RunWith
-import org.riskala.controller.auth.{AuthManager, Login, LoginJsonSupport, Register}
-import org.riskala.controller.routes.LoginJsonSupport
+import org.riskala.controller.Server
 import org.riskala.utils.Utils
 import org.scalatest.Assertion
 import org.scalatest.matchers.should.Matchers
