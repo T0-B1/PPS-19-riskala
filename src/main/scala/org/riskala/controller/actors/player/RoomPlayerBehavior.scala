@@ -7,7 +7,7 @@ import akka.http.scaladsl.model.ws.TextMessage
 import org.riskala.controller.actors.player.PlayerMessages._
 import org.riskala.controller.actors.Messages.{Logout, RoomMessage}
 import org.riskala.model.Player
-import org.riskala.controller.actors.room.RoomMessages.{Leave, Ready, UnReady}
+import org.riskala.controller.actors.room.RoomMessages.{Join, Leave, Ready, UnReady}
 import org.riskala.utils.Parser
 import org.riskala.client.messages.FromClientMessages.ReadyMessage
 import org.riskala.client.messages.ToClientMessages
@@ -86,6 +86,8 @@ object RoomPlayerBehavior {
 
       case RegisterSocket(newSocketActor) =>
         context.log.info(s"PlayerActor of $username registering new socket")
+        room ! Leave(context.self)
+        room ! Join(context.self)
         roomPlayerBehavior(username, room, newSocketActor)
 
       case errorMessage: PlayerMessages.ErrorMessage =>
