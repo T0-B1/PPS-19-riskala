@@ -9,7 +9,7 @@ import org.riskala.model.{MapGeography, Player, PlayerState}
 import scala.scalajs.js.annotation.JSExportAll
 
 /**
- * Structure of messages that are sent to client
+ * Structure of messages that are sent to client #scala.js
  * */
 @JSExportAll
 object ToClientMessages {

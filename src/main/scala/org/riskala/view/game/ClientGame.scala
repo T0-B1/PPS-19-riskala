@@ -10,6 +10,9 @@ import org.riskala.view.messages.WrappedMessage
 
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 
+/**
+ * #scala.js
+ */
 @JSExportTopLevel("ClientGame")
 object ClientGame {
 

@@ -2,6 +2,9 @@ package org.riskala.view.room
 import scala.scalajs.js
 import scala.scalajs.js.annotation.JSGlobal
 
+/**
+ * #scala.js
+ */
 @js.native
 @JSGlobal
 class RoomFacade extends js.Object{

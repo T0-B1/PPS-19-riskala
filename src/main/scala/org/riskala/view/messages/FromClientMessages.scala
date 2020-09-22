@@ -7,7 +7,7 @@ import org.riskala.model.Cards.Cards
 import scala.scalajs.js.annotation.JSExportAll
 
 /**
- * Structure of messages that client sends to server
+ * Structure of messages that client sends to server #scala.js
  * */
 @JSExportAll
 object FromClientMessages {

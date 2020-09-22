@@ -3,6 +3,9 @@ package org.riskala.view.creation
 import scala.scalajs.js
 import scala.scalajs.js.annotation.JSGlobal
 
+/**
+ * #scala.js
+ */
 @js.native
 @JSGlobal
 class CreateRoomFacade extends js.Object {

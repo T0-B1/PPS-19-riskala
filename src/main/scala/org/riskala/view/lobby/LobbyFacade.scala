@@ -3,6 +3,9 @@ package org.riskala.view.lobby
 import scala.scalajs.js
 import scala.scalajs.js.annotation.JSGlobal
 
+/**
+ * #scala.js
+ */
 @js.native
 @JSGlobal
 class LobbyFacade extends js.Object {

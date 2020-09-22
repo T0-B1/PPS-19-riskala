@@ -3,6 +3,9 @@ package org.riskala.view.game
 import scala.scalajs.js
 import scala.scalajs.js.annotation.JSGlobal
 
+/**
+ * #scala.js
+ */
 @js.native
 @JSGlobal
 class GameFacade extends js.Object {
