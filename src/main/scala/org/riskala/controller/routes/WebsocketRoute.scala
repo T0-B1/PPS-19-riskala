@@ -37,17 +37,25 @@ object WebsocketRoute {
     Flow.fromSinkAndSource(sinkFromActor(playerActorRef), wsSource)
   }
 
-  private def spawnOrGetPlayer(username: String, newSocket: actor.ActorRef): ActorRef[PlayerMessage] = {
+  /**
+   * Retrieves the PlayerActor of a particular user and returns it.
+   * If absent, a new one is generated and returned.
+   *
+   * @param username The username
+   * @param newSocketActor The actor encapsulating the websocket
+   * @return
+   */
+  private def spawnOrGetPlayer(username: String, newSocketActor: actor.ActorRef): ActorRef[PlayerMessage] = {
     Utils.askReceptionistToFind[PlayerMessage](username).toSeq match {
       // No PlayerActor registered found
       case Seq() =>
-        val ref: ActorRef[PlayerMessage] = system.systemActorOf(PlayerActor(username, newSocket), username)
+        val ref: ActorRef[PlayerMessage] = system.systemActorOf(PlayerActor(username, newSocketActor), username)
         system.receptionist ! Receptionist.Register(ServiceKey[PlayerMessage](username), ref)
         ref
 
       // The first PlayerActor found
       case Seq(first, rest@_*) =>
-        first ! PlayerMessages.RegisterSocket(newSocket)
+        first ! PlayerMessages.RegisterSocket(newSocketActor)
         first
 
     }

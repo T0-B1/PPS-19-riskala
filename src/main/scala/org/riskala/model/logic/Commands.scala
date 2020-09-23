@@ -8,12 +8,39 @@ import org.riskala.model.logic.EventStore.Behavior
 import scala.util.Random
 
 sealed trait Command{
+
+  /**
+   * Return the result of the execution of the command on a game instance in terms of events that will happen
+   *
+   * @param game A game instance on which the command is executed
+   * @return A behavior
+   */
   def execution(game: GameSnapshot): Behavior[Event]
 
+  /**
+   * Investigates the feasibility of a command given a game instance and returns a feasibility report
+   *
+   * @param game A game instance on which the command has to be executed
+   * @return A feasibility report
+   */
   def feasibility(game: GameSnapshot): FeasibilityReport
+
 }
 
+case class FeasibilityReport(feasible: Boolean = true, error: Option[String] = None)
+
+/**
+ * A command that automatically checks for feasibility before being executed
+ */
 trait SelfCheckingCommand extends Command {
+
+  /**
+   * Only in case the command is feasible, it returns the result of the execution of the command on a game instance
+   * in terms of events that will happen.
+   *
+   * @param game A game instance on which the command is executed
+   * @return A behavior
+   */
   override def execution(game: GameSnapshot): Behavior[Event] = {
     val feasibilityReport = feasibility(game)
     if(!feasibilityReport.feasible) {
@@ -23,11 +50,22 @@ trait SelfCheckingCommand extends Command {
     checkedExecution(game)
   }
 
+  /**
+   * The execution of the command that will happen if feasible
+   *
+   * @param game A game instance on which the command is executed
+   * @return A behavior
+   */
   def checkedExecution(game: GameSnapshot): Behavior[Event]
 }
 
-case class FeasibilityReport(feasible: Boolean = true, error: Option[String] = None)
-
+/**
+ * An attack
+ *
+ * @param from The attacking state
+ * @param to The target state
+ * @param troops The number of troops mobilized
+ */
 final case class Attack(from: State,
                         to: State,
                         troops: Int)
@@ -82,6 +120,12 @@ final case class Attack(from: State,
   }
 }
 
+/**
+ * A command to move troops between states of the same player
+ * @param from The state of origin
+ * @param to The destination state
+ * @param troops The number of troops to move
+ */
 final case class MoveTroops(from: State,
                             to: State,
                             troops: Int)
@@ -107,6 +151,11 @@ final case class MoveTroops(from: State,
   }
 }
 
+/**
+ * A command to deploy troops to a state
+ * @param to The target state
+ * @param troops The number of troops to deploy
+ */
 final case class Deploy(to: State,
                         troops: Int)
                   extends SelfCheckingCommand {
@@ -127,6 +176,11 @@ final case class Deploy(to: State,
   }
 }
 
+/**
+ * A command to redeem a card bonus
+ * @param player The owner of the cards
+ * @param cardBonus The type of bonus to redeem
+ */
 final case class RedeemBonus(player: Player,
                              cardBonus: Cards)
                   extends SelfCheckingCommand {
@@ -147,6 +201,10 @@ final case class RedeemBonus(player: Player,
   }
 }
 
+/**
+ * A command to end the turn of a player
+ * @param player The player whose turn ends
+ */
 final case class EndTurn(player: Player)
                   extends SelfCheckingCommand {
   override def checkedExecution(game: GameSnapshot): Behavior[Event] = {
@@ -160,6 +218,13 @@ final case class EndTurn(player: Player)
 
 object Command {
 
+  /**
+   * Check that a command is being executed by the user whose current turn is
+   *
+   * @param player The player executing the command
+   * @param game The game
+   * @return A feasibility report
+   */
   def checkTurn(player: Player, game: GameSnapshot): FeasibilityReport = {
     game.nowPlaying match {
       case p if p.equals(player) => FeasibilityReport(feasible = true, None)
