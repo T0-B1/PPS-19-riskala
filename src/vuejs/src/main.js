@@ -36,8 +36,8 @@ const store = new Vuex.Store({
   mutations: {
     login(state, newState) {
       state.isLogged = true;
-      localStorage.riskalaToken = newState.token;
-      localStorage.riskalaUser = newState.user;
+      sessionStorage.riskalaToken = newState.token;
+      sessionStorage.riskalaUser = newState.user;
       state.http = Axios.create({
         timeout: 10000,
         headers: { token: newState.token },
@@ -45,8 +45,8 @@ const store = new Vuex.Store({
     },
     logout(state) {
       state.isLogged = false;
-      localStorage.riskalaToken = 'InvalidToken';
-      localStorage.riskalaUser = '';
+      sessionStorage.riskalaToken = 'InvalidToken';
+      sessionStorage.riskalaUser = '';
       state.websocket = null;
       state.http = Axios.create({
         timeout: 10000,
@@ -59,7 +59,7 @@ const store = new Vuex.Store({
       Window.websocket = state.websocket;
     },
     changeHandler(state, newHandler) {
-      state.websocket = openSocket(state.websocket, localStorage.riskalaToken);
+      state.websocket = openSocket(state.websocket, sessionStorage.riskalaToken);
       state.websocket.onmessage = newHandler;
     },
     changeRoomInfo(state, newRoom){
@@ -74,13 +74,13 @@ const store = new Vuex.Store({
   }
 });
 
-if (localStorage.riskalaToken === undefined) {
-  localStorage.riskalaToken = 'InvalidToken';
+if (sessionStorage.riskalaToken === undefined) {
+  sessionStorage.riskalaToken = 'InvalidToken';
 }
 
-if (localStorage.riskalaToken !== 'InvalidToken') {
-  const t = localStorage.riskalaToken;
-  const u = localStorage.riskalaUser;
+if (sessionStorage.riskalaToken !== 'InvalidToken') {
+  const t = sessionStorage.riskalaToken;
+  const u = sessionStorage.riskalaUser;
   store.commit('login', { token: t, user: u });
   store.state.http.post('login', { username: u, password: '' })
   .then((response) => {

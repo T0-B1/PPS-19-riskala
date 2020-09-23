@@ -86,7 +86,7 @@ object LobbyPlayerBehavior {
 
         case RegisterSocket(newSocketActor) =>
           context.log.info(s"PlayerActor of $username registering new socket")
-          lobbyPlayerBehavior(username, lobby, newSocketActor)
+          LobbyPlayerBehavior(username, lobby, newSocketActor)
 
         case RoomReferent(room) =>
           context.log.info(s"PlayerActor of $username received RoomReferent")

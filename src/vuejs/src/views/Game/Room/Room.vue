@@ -97,7 +97,7 @@ export default {
     },
     readyClick() {
       this.ready=true
-      this.$store.state.websocket.send(ClientRoom.getReadyMsgWrapped("ReadyMessage", this.getRandomColor(localStorage.riskalaUser)))
+      this.$store.state.websocket.send(ClientRoom.getReadyMsgWrapped("ReadyMessage", this.getRandomColor(sessionStorage.riskalaUser)))
     },
     unready(){
       this.ready=false
