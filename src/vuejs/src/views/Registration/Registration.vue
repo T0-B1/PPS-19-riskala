@@ -26,7 +26,7 @@
                                 required
                                 type="text"
                                 @focusout="onBlurUser"
-                                placeholder="Inserisci username"
+                                placeholder="Insert username"
                                 aria-describedby="user-help-block"
                               ></b-form-input>
                               <b-form-text id="user-help-block" v-show="!correctUser">
@@ -46,7 +46,7 @@
                                 type="email"
                                 required
                                 @focusout="onBlurEmail"
-                                placeholder="Inserisci email"
+                                placeholder="Insert email"
                                 aria-describedby="email-help-block"
                               ></b-form-input>
                               <b-form-text id="email-help-block" v-show="!correctEmail">
@@ -66,10 +66,10 @@
                                 type="password"
                                 required
                                 @focusout="onBlurPsw"
-                                placeholder="Inserisci password"
+                                placeholder="Insert password"
                                 aria-describedby="password-help-block"
                               ></b-form-input>
-                              <button id="buttonHideShowPsw" title="Hold down to show password"
+                              <button id="buttonHideShowPsw" title="Hold down to show the password"
                                 @click="changeTypePsw" type = "button"></button>
                             </div>
                           </div>
@@ -84,10 +84,10 @@
                                 type="password"
                                 required
                                 @focusout="onBlurRePsw"
-                                placeholder="Reinserisci password"
+                                placeholder="Insert password"
                                 aria-describedby="password-help-block"
                               ></b-form-input>
-                              <button id="buttonHideShowRePsw" title="Hold down to show password"
+                              <button id="buttonHideShowRePsw" title="Hold down to show the password"
                               @click="changeTypeRePsw" type = "button"></button>
                             </div>
                           </div>
