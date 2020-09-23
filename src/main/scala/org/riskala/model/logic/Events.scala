@@ -4,15 +4,39 @@ import org.riskala.model.Cards.Cards
 import org.riskala.model.Player
 import org.riskala.model.map.State.State
 
+/**
+ * An event happening in a game
+ */
 trait Event{
+
+  /**
+   * Returns a new instance of a game in which the event has happened
+   *
+   * @param game The game before the event
+   * @return The game after the event
+   */
   def happen(game: GameSnapshot): GameSnapshot
 }
 
+/**
+ * The first event of a game
+ *
+ * @param initialSnapshot The starting point of a game
+ */
 final case class GameInitialized(initialSnapshot: GameSnapshot)
                   extends Event {
   override def happen(game: GameSnapshot): GameSnapshot = game
 }
 
+/**
+ * A battle event
+ *
+ * @param from The attacking state
+ * @param to The target state
+ * @param attacking The number of troops mobilized by the attacker
+ * @param attackingPassed The number of attacking troops that invaded the target state
+ * @param defendingCasualties The number of troops perished in the target state
+ */
 final case class Battle(from: State,
                        to: State,
                        attacking: Int,
@@ -31,6 +55,12 @@ final case class Battle(from: State,
   }
 }
 
+/**
+ * An event representing troops moving from on state of another
+ * @param from The origin state
+ * @param to The destination state
+ * @param moved The number of troops moved
+ */
 final case class TroopsMoved(from: State,
                              to: State,
                              moved: Int)
@@ -42,6 +72,11 @@ final case class TroopsMoved(from: State,
   }
 }
 
+/**
+ * An event representing the deploying of troops
+ * @param to The target state
+ * @param troops The number of troops deployed
+ */
 final case class TroopsDeployed(to: State,
                         troops: Int)
                   extends Event {
@@ -51,6 +86,12 @@ final case class TroopsDeployed(to: State,
   }
 }
 
+/**
+ * An event representing the drawing of a card
+ *
+ * @param player The player drawing the card
+ * @param card The card drawn
+ */
 final case class CardDrawn(player: Player,
                       card: Cards)
                   extends Event {
@@ -60,6 +101,12 @@ final case class CardDrawn(player: Player,
   }
 }
 
+/**
+ * An event representing the receipt of a bonus
+ *
+ * @param player The player using the bonus
+ * @param card The type of bonus
+ */
 final case class BonusRedeemed(player: Player,
                                card: Cards)
                   extends Event {
@@ -74,6 +121,11 @@ final case class BonusRedeemed(player: Player,
   }
 }
 
+/**
+ * An event representing the end of a turn
+ *
+ * @param player The player who ends his turn
+ */
 final case class TurnEnded(player: Player)
                   extends Event {
   override def happen(game: GameSnapshot): GameSnapshot = {
@@ -85,6 +137,11 @@ final case class TurnEnded(player: Player)
   }
 }
 
+/**
+ * The last event of a game
+ *
+ * @param winner The winner of the game
+ */
 final case class GameEnded(winner: Player)
                   extends Event {
   override def happen(game: GameSnapshot): GameSnapshot = {
