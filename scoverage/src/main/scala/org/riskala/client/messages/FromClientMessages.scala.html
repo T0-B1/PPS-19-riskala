@@ -1,0 +1,1554 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          src\main\scala\org\riskala\client\messages\FromClientMessages.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier, monospace;'>1 <span style=''>package org.riskala.client.messages
+</span>2 <span style=''>
+</span>3 <span style=''>import argonaut.Argonaut._
+</span>4 <span style=''>import argonaut.CodecJson
+</span>5 <span style=''>import org.riskala.model.Cards.Cards
+</span>6 <span style=''>
+</span>7 <span style=''>import scala.scalajs.js.annotation.JSExportAll
+</span>8 <span style=''>
+</span>9 <span style=''>/**
+</span>10 <span style=''> * Structure of messages that client sends to server #scala.js
+</span>11 <span style=''> * */
+</span>12 <span style=''>@JSExportAll
+</span>13 <span style=''>object FromClientMessages {
+</span>14 <span style=''>
+</span>15 <span style=''>  /**
+</span>16 <span style=''>   * @param name Name of the room or game or terminatedGame that the player wants to join
+</span>17 <span style=''>   * */
+</span>18 <span style=''>  final case class JoinMessage(name: String)
+</span>19 <span style=''>  object JoinMessage {
+</span>20 <span style=''>    implicit def JoinCodecJson: CodecJson[JoinMessage] =
+</span>21 <span style=''>      </span><span style='background: #AEF1AE'>casecodec1(JoinMessage.apply,JoinMessage.unapply)(&quot;name&quot;)</span><span style=''>
+</span>22 <span style=''>  }
+</span>23 <span style=''>
+</span>24 <span style=''>  /**
+</span>25 <span style=''>   * @param color color associated to a player
+</span>26 <span style=''>   * */
+</span>27 <span style=''>  final case class ReadyMessage(color: String)
+</span>28 <span style=''>  object ReadyMessage {
+</span>29 <span style=''>    implicit def ReadyMessageCodecJson: CodecJson[ReadyMessage] =
+</span>30 <span style=''>      </span><span style='background: #F0ADAD'>casecodec1(ReadyMessage.apply,ReadyMessage.unapply)(&quot;color&quot;)</span><span style=''>
+</span>31 <span style=''>  }
+</span>32 <span style=''>
+</span>33 <span style=''>  final case class UnReadyMessage()
+</span>34 <span style=''>
+</span>35 <span style=''>  /**
+</span>36 <span style=''>   * @param name Name of the room that the player creates
+</span>37 <span style=''>   * @param maxPlayer Max number of player into the created room
+</span>38 <span style=''>   * @param scenario Name of the map chosen to play
+</span>39 <span style=''>   * */
+</span>40 <span style=''>  final case class CreateMessage(name: String, maxPlayer: Int, scenario: String)
+</span>41 <span style=''>  object CreateMessage {
+</span>42 <span style=''>    implicit def CreateCodecJson: CodecJson[CreateMessage] =
+</span>43 <span style=''>      </span><span style='background: #F0ADAD'>casecodec3(CreateMessage.apply,CreateMessage.unapply)(&quot;name&quot;, &quot;maxPlayer&quot;, &quot;scenario&quot;)</span><span style=''>
+</span>44 <span style=''>  }
+</span>45 <span style=''>
+</span>46 <span style=''>  final case class LeaveMessage()
+</span>47 <span style=''>
+</span>48 <span style=''>  /**
+</span>49 <span style=''>   * @param from Name of the starting state
+</span>50 <span style=''>   * @param to Name of the state that the player decided to attack
+</span>51 <span style=''>   * @param troops Number of troops used to do an attack
+</span>52 <span style=''>   * */
+</span>53 <span style=''>  final case class ActionAttackMessage(from: String,
+</span>54 <span style=''>                                 to: String,
+</span>55 <span style=''>                                 troops: Int)
+</span>56 <span style=''>  object ActionAttackMessage {
+</span>57 <span style=''>    implicit def ActionAttackMessageCodecJson: CodecJson[ActionAttackMessage] =
+</span>58 <span style=''>      </span><span style='background: #F0ADAD'>casecodec3(ActionAttackMessage.apply,ActionAttackMessage.unapply)(&quot;from&quot;, &quot;to&quot;, &quot;troops&quot;)</span><span style=''>
+</span>59 <span style=''>  }
+</span>60 <span style=''>
+</span>61 <span style=''>  /**
+</span>62 <span style=''>   * @param from Name of the starting state
+</span>63 <span style=''>   * @param to Name of the state in which the player decided to deploy
+</span>64 <span style=''>   * @param troops Number of troops to deploy
+</span>65 <span style=''>   * */
+</span>66 <span style=''>  final case class ActionDeployMessage(from: String,
+</span>67 <span style=''>                                 to: String,
+</span>68 <span style=''>                                 troops: Int)
+</span>69 <span style=''>  object ActionDeployMessage {
+</span>70 <span style=''>    implicit def ActionDeployMessageCodecJson: CodecJson[ActionDeployMessage] =
+</span>71 <span style=''>      </span><span style='background: #F0ADAD'>casecodec3(ActionDeployMessage.apply,ActionDeployMessage.unapply)(&quot;from&quot;, &quot;to&quot;, &quot;troops&quot;)</span><span style=''>
+</span>72 <span style=''>  }
+</span>73 <span style=''>
+</span>74 <span style=''>  /**
+</span>75 <span style=''>   * @param from Name of the starting state
+</span>76 <span style=''>   * @param to Name of the state of the the player in which move the troops
+</span>77 <span style=''>   * @param troops Number of troops moved
+</span>78 <span style=''>   * */
+</span>79 <span style=''>  final case class ActionMoveMessage(from: String,
+</span>80 <span style=''>                                 to: String,
+</span>81 <span style=''>                                 troops: Int)
+</span>82 <span style=''>  object ActionMoveMessage {
+</span>83 <span style=''>    implicit def ActionMoveMessageCodecJson: CodecJson[ActionMoveMessage] =
+</span>84 <span style=''>      </span><span style='background: #F0ADAD'>casecodec3(ActionMoveMessage.apply,ActionMoveMessage.unapply)(&quot;from&quot;, &quot;to&quot;, &quot;troops&quot;)</span><span style=''>
+</span>85 <span style=''>  }
+</span>86 <span style=''>
+</span>87 <span style=''>  /**
+</span>88 <span style=''>   * @param card the random card redeemed
+</span>89 <span style=''>   * */
+</span>90 <span style=''>  final case class RedeemBonusMessage(card: Cards)
+</span>91 <span style=''>  object RedeemBonusMessage {
+</span>92 <span style=''>    implicit def RedeemBonusCodecJson: CodecJson[RedeemBonusMessage] =
+</span>93 <span style=''>      </span><span style='background: #F0ADAD'>casecodec1(RedeemBonusMessage.apply,RedeemBonusMessage.unapply)(&quot;cardType&quot;)</span><span style=''>
+</span>94 <span style=''>  }
+</span>95 <span style=''>
+</span>96 <span style=''>  final case class EndTurnMessage()
+</span>97 <span style=''>
+</span>98 <span style=''>  final case class LogoutMessage()
+</span>99 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          514
+        </td>
+        <td>
+          595
+          -
+          595
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.EncodeJsons.StringEncodeJson
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.StringEncodeJson
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          2024
+        </td>
+        <td>
+          575
+          -
+          594
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.messages.FromClientMessages.JoinMessage.unapply
+        </td>
+        <td style="background: #AEF1AE">
+          FromClientMessages.this.JoinMessage.unapply(x$0)
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          1791
+        </td>
+        <td>
+          595
+          -
+          595
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.DecodeJsons.StringDecodeJson
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.StringDecodeJson
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          1352
+        </td>
+        <td>
+          596
+          -
+          602
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;name&quot;
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          1083
+        </td>
+        <td>
+          546
+          -
+          603
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          argonaut.GeneratedCodecJsons.casecodec1
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.casecodec1[String, org.riskala.client.messages.FromClientMessages.JoinMessage]({
+  ((name: String) =&gt; FromClientMessages.this.JoinMessage.apply(name))
+}, {
+  ((x$0: org.riskala.client.messages.FromClientMessages.JoinMessage) =&gt; FromClientMessages.this.JoinMessage.unapply(x$0))
+})(&quot;name&quot;)(argonaut.Argonaut.StringEncodeJson, argonaut.Argonaut.StringDecodeJson)
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          407
+        </td>
+        <td>
+          557
+          -
+          574
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.messages.FromClientMessages.JoinMessage.apply
+        </td>
+        <td style="background: #AEF1AE">
+          FromClientMessages.this.JoinMessage.apply(name)
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          412
+        </td>
+        <td>
+          873
+          -
+          873
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.EncodeJsons.StringEncodeJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.StringEncodeJson
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          1284
+        </td>
+        <td>
+          822
+          -
+          882
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          argonaut.GeneratedCodecJsons.casecodec1
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.casecodec1[String, org.riskala.client.messages.FromClientMessages.ReadyMessage]({
+  ((color: String) =&gt; FromClientMessages.this.ReadyMessage.apply(color))
+}, {
+  ((x$0: org.riskala.client.messages.FromClientMessages.ReadyMessage) =&gt; FromClientMessages.this.ReadyMessage.unapply(x$0))
+})(&quot;color&quot;)(argonaut.Argonaut.StringEncodeJson, argonaut.Argonaut.StringDecodeJson)
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          1947
+        </td>
+        <td>
+          852
+          -
+          872
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.messages.FromClientMessages.ReadyMessage.unapply
+        </td>
+        <td style="background: #F0ADAD">
+          FromClientMessages.this.ReadyMessage.unapply(x$0)
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          1758
+        </td>
+        <td>
+          873
+          -
+          873
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.DecodeJsons.StringDecodeJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.StringDecodeJson
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          547
+        </td>
+        <td>
+          833
+          -
+          851
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.messages.FromClientMessages.ReadyMessage.apply
+        </td>
+        <td style="background: #F0ADAD">
+          FromClientMessages.this.ReadyMessage.apply(color)
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          1202
+        </td>
+        <td>
+          874
+          -
+          881
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;color&quot;
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          1815
+        </td>
+        <td>
+          1331
+          -
+          1352
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.messages.FromClientMessages.CreateMessage.unapply
+        </td>
+        <td style="background: #F0ADAD">
+          FromClientMessages.this.CreateMessage.unapply(x$0)
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          1952
+        </td>
+        <td>
+          1375
+          -
+          1385
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;scenario&quot;
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          1016
+        </td>
+        <td>
+          1300
+          -
+          1386
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          argonaut.GeneratedCodecJsons.casecodec3
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.casecodec3[String, Int, String, org.riskala.client.messages.FromClientMessages.CreateMessage]({
+  ((name: String, maxPlayer: Int, scenario: String) =&gt; FromClientMessages.this.CreateMessage.apply(name, maxPlayer, scenario))
+}, {
+  ((x$0: org.riskala.client.messages.FromClientMessages.CreateMessage) =&gt; FromClientMessages.this.CreateMessage.unapply(x$0))
+})(&quot;name&quot;, &quot;maxPlayer&quot;, &quot;scenario&quot;)(argonaut.Argonaut.StringEncodeJson, argonaut.Argonaut.StringDecodeJson, argonaut.Argonaut.IntEncodeJson, argonaut.Argonaut.IntDecodeJson, argonaut.Argonaut.StringEncodeJson, argonaut.Argonaut.StringDecodeJson)
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          477
+        </td>
+        <td>
+          1311
+          -
+          1330
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.messages.FromClientMessages.CreateMessage.apply
+        </td>
+        <td style="background: #F0ADAD">
+          FromClientMessages.this.CreateMessage.apply(name, maxPlayer, scenario)
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          1269
+        </td>
+        <td>
+          1353
+          -
+          1353
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.DecodeJsons.IntDecodeJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.IntDecodeJson
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          342
+        </td>
+        <td>
+          1353
+          -
+          1353
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.DecodeJsons.StringDecodeJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.StringDecodeJson
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          1170
+        </td>
+        <td>
+          1353
+          -
+          1353
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.EncodeJsons.StringEncodeJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.StringEncodeJson
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          1089
+        </td>
+        <td>
+          1354
+          -
+          1360
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;name&quot;
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          482
+        </td>
+        <td>
+          1353
+          -
+          1353
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.EncodeJsons.StringEncodeJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.StringEncodeJson
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          646
+        </td>
+        <td>
+          1362
+          -
+          1373
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;maxPlayer&quot;
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          1630
+        </td>
+        <td>
+          1353
+          -
+          1353
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.EncodeJsons.IntEncodeJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.IntEncodeJson
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          1821
+        </td>
+        <td>
+          1353
+          -
+          1353
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.DecodeJsons.StringDecodeJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.StringDecodeJson
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          1680
+        </td>
+        <td>
+          1965
+          -
+          1973
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;troops&quot;
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          1019
+        </td>
+        <td>
+          1950
+          -
+          1950
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.DecodeJsons.StringDecodeJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.StringDecodeJson
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          346
+        </td>
+        <td>
+          1959
+          -
+          1963
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;to&quot;
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          1928
+        </td>
+        <td>
+          1950
+          -
+          1950
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.DecodeJsons.IntDecodeJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.IntDecodeJson
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          1270
+        </td>
+        <td>
+          1950
+          -
+          1950
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.EncodeJsons.StringEncodeJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.StringEncodeJson
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          1787
+        </td>
+        <td>
+          1950
+          -
+          1950
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.EncodeJsons.StringEncodeJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.StringEncodeJson
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          1924
+        </td>
+        <td>
+          1922
+          -
+          1949
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.messages.FromClientMessages.ActionAttackMessage.unapply
+        </td>
+        <td style="background: #F0ADAD">
+          FromClientMessages.this.ActionAttackMessage.unapply(x$0)
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          444
+        </td>
+        <td>
+          1950
+          -
+          1950
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.DecodeJsons.StringDecodeJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.StringDecodeJson
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          1104
+        </td>
+        <td>
+          1885
+          -
+          1974
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          argonaut.GeneratedCodecJsons.casecodec3
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.casecodec3[String, String, Int, org.riskala.client.messages.FromClientMessages.ActionAttackMessage]({
+  ((from: String, to: String, troops: Int) =&gt; FromClientMessages.this.ActionAttackMessage.apply(from, to, troops))
+}, {
+  ((x$0: org.riskala.client.messages.FromClientMessages.ActionAttackMessage) =&gt; FromClientMessages.this.ActionAttackMessage.unapply(x$0))
+})(&quot;from&quot;, &quot;to&quot;, &quot;troops&quot;)(argonaut.Argonaut.StringEncodeJson, argonaut.Argonaut.StringDecodeJson, argonaut.Argonaut.StringEncodeJson, argonaut.Argonaut.StringDecodeJson, argonaut.Argonaut.IntEncodeJson, argonaut.Argonaut.IntDecodeJson)
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          263
+        </td>
+        <td>
+          1950
+          -
+          1950
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.EncodeJsons.IntEncodeJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.IntEncodeJson
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          1175
+        </td>
+        <td>
+          1951
+          -
+          1957
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;from&quot;
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          619
+        </td>
+        <td>
+          1896
+          -
+          1921
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.messages.FromClientMessages.ActionAttackMessage.apply
+        </td>
+        <td style="background: #F0ADAD">
+          FromClientMessages.this.ActionAttackMessage.apply(from, to, troops)
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          992
+        </td>
+        <td>
+          2494
+          -
+          2494
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.EncodeJsons.StringEncodeJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.StringEncodeJson
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          448
+        </td>
+        <td>
+          2503
+          -
+          2507
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;to&quot;
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          271
+        </td>
+        <td>
+          2494
+          -
+          2494
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.DecodeJsons.StringDecodeJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.StringDecodeJson
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          1754
+        </td>
+        <td>
+          2466
+          -
+          2493
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.messages.FromClientMessages.ActionDeployMessage.unapply
+        </td>
+        <td style="background: #F0ADAD">
+          FromClientMessages.this.ActionDeployMessage.unapply(x$0)
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          310
+        </td>
+        <td>
+          2440
+          -
+          2465
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.messages.FromClientMessages.ActionDeployMessage.apply
+        </td>
+        <td style="background: #F0ADAD">
+          FromClientMessages.this.ActionDeployMessage.apply(from, to, troops)
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          946
+        </td>
+        <td>
+          2429
+          -
+          2518
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          argonaut.GeneratedCodecJsons.casecodec3
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.casecodec3[String, String, Int, org.riskala.client.messages.FromClientMessages.ActionDeployMessage]({
+  ((from: String, to: String, troops: Int) =&gt; FromClientMessages.this.ActionDeployMessage.apply(from, to, troops))
+}, {
+  ((x$0: org.riskala.client.messages.FromClientMessages.ActionDeployMessage) =&gt; FromClientMessages.this.ActionDeployMessage.unapply(x$0))
+})(&quot;from&quot;, &quot;to&quot;, &quot;troops&quot;)(argonaut.Argonaut.StringEncodeJson, argonaut.Argonaut.StringDecodeJson, argonaut.Argonaut.StringEncodeJson, argonaut.Argonaut.StringDecodeJson, argonaut.Argonaut.IntEncodeJson, argonaut.Argonaut.IntDecodeJson)
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          1314
+        </td>
+        <td>
+          2495
+          -
+          2501
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;from&quot;
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          1092
+        </td>
+        <td>
+          2494
+          -
+          2494
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.DecodeJsons.StringDecodeJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.StringDecodeJson
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          1792
+        </td>
+        <td>
+          2509
+          -
+          2517
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;troops&quot;
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          1714
+        </td>
+        <td>
+          2494
+          -
+          2494
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.DecodeJsons.IntDecodeJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.IntDecodeJson
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          317
+        </td>
+        <td>
+          2494
+          -
+          2494
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.EncodeJsons.IntEncodeJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.IntEncodeJson
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          1896
+        </td>
+        <td>
+          2494
+          -
+          2494
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.EncodeJsons.StringEncodeJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.StringEncodeJson
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          1037
+        </td>
+        <td>
+          2966
+          -
+          3051
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          argonaut.GeneratedCodecJsons.casecodec3
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.casecodec3[String, String, Int, org.riskala.client.messages.FromClientMessages.ActionMoveMessage]({
+  ((from: String, to: String, troops: Int) =&gt; FromClientMessages.this.ActionMoveMessage.apply(from, to, troops))
+}, {
+  ((x$0: org.riskala.client.messages.FromClientMessages.ActionMoveMessage) =&gt; FromClientMessages.this.ActionMoveMessage.unapply(x$0))
+})(&quot;from&quot;, &quot;to&quot;, &quot;troops&quot;)(argonaut.Argonaut.StringEncodeJson, argonaut.Argonaut.StringDecodeJson, argonaut.Argonaut.StringEncodeJson, argonaut.Argonaut.StringDecodeJson, argonaut.Argonaut.IntEncodeJson, argonaut.Argonaut.IntDecodeJson)
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          813
+        </td>
+        <td>
+          3027
+          -
+          3027
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.DecodeJsons.StringDecodeJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.StringDecodeJson
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          1993
+        </td>
+        <td>
+          3042
+          -
+          3050
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;troops&quot;
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          1769
+        </td>
+        <td>
+          3001
+          -
+          3026
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.messages.FromClientMessages.ActionMoveMessage.unapply
+        </td>
+        <td style="background: #F0ADAD">
+          FromClientMessages.this.ActionMoveMessage.unapply(x$0)
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          225
+        </td>
+        <td>
+          3036
+          -
+          3040
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;to&quot;
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          479
+        </td>
+        <td>
+          2977
+          -
+          3000
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.messages.FromClientMessages.ActionMoveMessage.apply
+        </td>
+        <td style="background: #F0ADAD">
+          FromClientMessages.this.ActionMoveMessage.apply(from, to, troops)
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          1720
+        </td>
+        <td>
+          3027
+          -
+          3027
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.EncodeJsons.StringEncodeJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.StringEncodeJson
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          440
+        </td>
+        <td>
+          3027
+          -
+          3027
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.EncodeJsons.IntEncodeJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.IntEncodeJson
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          1053
+        </td>
+        <td>
+          3028
+          -
+          3034
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;from&quot;
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          1860
+        </td>
+        <td>
+          3027
+          -
+          3027
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.DecodeJsons.IntDecodeJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.IntDecodeJson
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          284
+        </td>
+        <td>
+          3027
+          -
+          3027
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.DecodeJsons.StringDecodeJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.StringDecodeJson
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          1172
+        </td>
+        <td>
+          3027
+          -
+          3027
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.EncodeJsons.StringEncodeJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.StringEncodeJson
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          917
+        </td>
+        <td>
+          3280
+          -
+          3355
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          argonaut.GeneratedCodecJsons.casecodec1
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.casecodec1[org.riskala.model.Cards.Cards, org.riskala.client.messages.FromClientMessages.RedeemBonusMessage]({
+  ((card: org.riskala.model.Cards.Cards) =&gt; FromClientMessages.this.RedeemBonusMessage.apply(card))
+}, {
+  ((x$0: org.riskala.client.messages.FromClientMessages.RedeemBonusMessage) =&gt; FromClientMessages.this.RedeemBonusMessage.unapply(x$0))
+})(&quot;cardType&quot;)(model.this.Cards.CardEnumCodecJson, model.this.Cards.CardEnumCodecJson)
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          1694
+        </td>
+        <td>
+          3343
+          -
+          3343
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.Cards.CardEnumCodecJson
+        </td>
+        <td style="background: #F0ADAD">
+          model.this.Cards.CardEnumCodecJson
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          1927
+        </td>
+        <td>
+          3316
+          -
+          3342
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.messages.FromClientMessages.RedeemBonusMessage.unapply
+        </td>
+        <td style="background: #F0ADAD">
+          FromClientMessages.this.RedeemBonusMessage.unapply(x$0)
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          234
+        </td>
+        <td>
+          3291
+          -
+          3315
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.messages.FromClientMessages.RedeemBonusMessage.apply
+        </td>
+        <td style="background: #F0ADAD">
+          FromClientMessages.this.RedeemBonusMessage.apply(card)
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          1131
+        </td>
+        <td>
+          3344
+          -
+          3354
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;cardType&quot;
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          308
+        </td>
+        <td>
+          3343
+          -
+          3343
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.Cards.CardEnumCodecJson
+        </td>
+        <td style="background: #F0ADAD">
+          model.this.Cards.CardEnumCodecJson
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

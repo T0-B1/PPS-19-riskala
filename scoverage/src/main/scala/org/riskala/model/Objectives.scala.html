@@ -1,0 +1,710 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          src\main\scala\org\riskala\model\Objectives.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier, monospace;'>1 <span style=''>package org.riskala.model
+</span>2 <span style=''>
+</span>3 <span style=''>import argonaut.Argonaut.casecodec2
+</span>4 <span style=''>import argonaut.CodecJson
+</span>5 <span style=''>import org.riskala.model.map.MapGeography
+</span>6 <span style=''>import org.riskala.model.map.State.State
+</span>7 <span style=''>
+</span>8 <span style=''>object Objectives {
+</span>9 <span style=''>
+</span>10 <span style=''>  final case class Objective(states: Set[State] = Set.empty[State], info: String = &quot;&quot;)
+</span>11 <span style=''>
+</span>12 <span style=''>  implicit def ObjectiveCodecJson: CodecJson[Objective] =
+</span>13 <span style=''>    </span><span style='background: #F0ADAD'>casecodec2(Objective.apply, Objective.unapply)(&quot;states&quot;, &quot;info&quot;)</span><span style=''>
+</span>14 <span style=''>
+</span>15 <span style=''>  private val minNumberOfPlayerForRnd: Int = </span><span style='background: #AEF1AE'>4</span><span style=''>
+</span>16 <span style=''>
+</span>17 <span style=''>  /**
+</span>18 <span style=''>   * Utility to generate a random Objective based on map and number of player #scala.js
+</span>19 <span style=''>   * @param map the map used for the random generated Objective
+</span>20 <span style=''>   * @param numberOfPlayer the numbre of player for the game where this Objective will be used
+</span>21 <span style=''>   * @return the random Objective based on params
+</span>22 <span style=''>   * */
+</span>23 <span style=''>  def generateRandomObjective(map: MapGeography, numberOfPlayer: Int): Objective = {
+</span>24 <span style=''>    numberOfPlayer match {
+</span>25 <span style=''>      case _ if </span><span style='background: #AEF1AE'>numberOfPlayer &lt; minNumberOfPlayerForRnd</span><span style=''> =&gt; </span><span style='background: #AEF1AE'>Objective(map.states,&quot;Conquer all states&quot;)</span><span style=''>
+</span>26 <span style=''>      case _ =&gt;
+</span>27 <span style=''>        val range = </span><span style='background: #F0ADAD'>math.ceil(map.regions.size.toDouble/3).toInt</span><span style=''>
+</span>28 <span style=''>        val regions = </span><span style='background: #F0ADAD'>util.Random.shuffle(map.regions).slice(0, range)</span><span style=''>
+</span>29 <span style=''>        val states = </span><span style='background: #F0ADAD'>regions.map(_.states).reduce(_++_)</span><span style=''>
+</span>30 <span style=''>        val info = </span><span style='background: #F0ADAD'>regions.map(_.name).reduce(_+&quot; &quot;+_)</span><span style=''>
+</span>31 <span style=''>        </span><span style='background: #F0ADAD'>Objective(states,s&quot;Conquer states of regions $info&quot;)</span><span style=''>
+</span>32 <span style=''>    }
+</span>33 <span style=''>  }
+</span>34 <span style=''>
+</span>35 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          415
+        </td>
+        <td>
+          384
+          -
+          401
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.Objectives.Objective.unapply
+        </td>
+        <td style="background: #F0ADAD">
+          Objectives.this.Objective.unapply(x$0)
+        </td>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          487
+        </td>
+        <td>
+          356
+          -
+          420
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          argonaut.GeneratedCodecJsons.casecodec2
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.casecodec2[Set[org.riskala.model.map.State.State], String, org.riskala.model.Objectives.Objective]({
+  ((states: Set[org.riskala.model.map.State.State], info: String) =&gt; Objectives.this.Objective.apply(states, info))
+}, {
+  ((x$0: org.riskala.model.Objectives.Objective) =&gt; Objectives.this.Objective.unapply(x$0))
+})(&quot;states&quot;, &quot;info&quot;)(argonaut.this.EncodeJson.SetEncodeJson[org.riskala.model.map.State.State](argonaut.this.EncodeJson.StringEncodeJson), argonaut.this.DecodeJson.SetDecodeJson[org.riskala.model.map.State.State](argonaut.this.DecodeJson.StringDecodeJson), argonaut.this.EncodeJson.StringEncodeJson, argonaut.this.DecodeJson.StringDecodeJson)
+        </td>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          1177
+        </td>
+        <td>
+          402
+          -
+          402
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.DecodeJsons.StringDecodeJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.this.DecodeJson.StringDecodeJson
+        </td>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          651
+        </td>
+        <td>
+          402
+          -
+          402
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.EncodeJsons.StringEncodeJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.this.EncodeJson.StringEncodeJson
+        </td>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          1416
+        </td>
+        <td>
+          413
+          -
+          419
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;info&quot;
+        </td>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          1882
+        </td>
+        <td>
+          403
+          -
+          411
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;states&quot;
+        </td>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          2136
+        </td>
+        <td>
+          402
+          -
+          402
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.EncodeJsons.StringEncodeJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.this.EncodeJson.StringEncodeJson
+        </td>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          1230
+        </td>
+        <td>
+          367
+          -
+          382
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.Objectives.Objective.apply
+        </td>
+        <td style="background: #F0ADAD">
+          Objectives.this.Objective.apply(states, info)
+        </td>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          787
+        </td>
+        <td>
+          402
+          -
+          402
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          argonaut.DecodeJsons.SetDecodeJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.this.DecodeJson.SetDecodeJson[org.riskala.model.map.State.State](argonaut.this.DecodeJson.StringDecodeJson)
+        </td>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          1328
+        </td>
+        <td>
+          402
+          -
+          402
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.DecodeJsons.StringDecodeJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.this.DecodeJson.StringDecodeJson
+        </td>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          1902
+        </td>
+        <td>
+          402
+          -
+          402
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          argonaut.EncodeJsons.SetEncodeJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.this.EncodeJson.SetEncodeJson[org.riskala.model.map.State.State](argonaut.this.EncodeJson.StringEncodeJson)
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          1883
+        </td>
+        <td>
+          469
+          -
+          470
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          4
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          1180
+        </td>
+        <td>
+          986
+          -
+          1006
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;Conquer all states&quot;
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          1395
+        </td>
+        <td>
+          938
+          -
+          961
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.Objectives.minNumberOfPlayerForRnd
+        </td>
+        <td style="background: #AEF1AE">
+          Objectives.this.minNumberOfPlayerForRnd
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          392
+        </td>
+        <td>
+          965
+          -
+          1007
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.Objectives.Objective.apply
+        </td>
+        <td style="background: #AEF1AE">
+          Objectives.this.Objective.apply(map.states, &quot;Conquer all states&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          2001
+        </td>
+        <td>
+          975
+          -
+          985
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.map.MapGeography.states
+        </td>
+        <td style="background: #AEF1AE">
+          map.states
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          655
+        </td>
+        <td>
+          921
+          -
+          961
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&lt;
+        </td>
+        <td style="background: #AEF1AE">
+          numberOfPlayer.&lt;(Objectives.this.minNumberOfPlayerForRnd)
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          2071
+        </td>
+        <td>
+          1056
+          -
+          1083
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Double./
+        </td>
+        <td style="background: #F0ADAD">
+          map.regions.size.toDouble./(3)
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          1334
+        </td>
+        <td>
+          1046
+          -
+          1090
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Double.toInt
+        </td>
+        <td style="background: #F0ADAD">
+          scala.math.`package`.ceil(map.regions.size.toDouble./(3)).toInt
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          450
+        </td>
+        <td>
+          1114
+          -
+          1162
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.slice
+        </td>
+        <td style="background: #F0ADAD">
+          scala.util.Random.shuffle[org.riskala.model.map.Region, Set](map.regions)(immutable.this.Set.canBuildFrom[org.riskala.model.map.Region]).slice(0, range)
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          1930
+        </td>
+        <td>
+          1185
+          -
+          1219
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.reduce
+        </td>
+        <td style="background: #F0ADAD">
+          regions.map[Set[org.riskala.model.map.State.State], scala.collection.immutable.Set[Set[org.riskala.model.map.State.State]]](((x$1: org.riskala.model.map.Region) =&gt; x$1.states))(immutable.this.Set.canBuildFrom[Set[org.riskala.model.map.State.State]]).reduce[Set[org.riskala.model.map.State.State]](((x$2: Set[org.riskala.model.map.State.State], x$3: Set[org.riskala.model.map.State.State]) =&gt; x$2.++(x$3)))
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          593
+        </td>
+        <td>
+          1214
+          -
+          1218
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.SetLike.++
+        </td>
+        <td style="background: #F0ADAD">
+          x$2.++(x$3)
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          1867
+        </td>
+        <td>
+          1197
+          -
+          1205
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.map.Region.states
+        </td>
+        <td style="background: #F0ADAD">
+          x$1.states
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          1406
+        </td>
+        <td>
+          1196
+          -
+          1196
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.immutable.Set.canBuildFrom
+        </td>
+        <td style="background: #F0ADAD">
+          immutable.this.Set.canBuildFrom[Set[org.riskala.model.map.State.State]]
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          1186
+        </td>
+        <td>
+          1252
+          -
+          1258
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.map.Region.name
+        </td>
+        <td style="background: #F0ADAD">
+          x$4.name
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          381
+        </td>
+        <td>
+          1251
+          -
+          1251
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.immutable.Set.canBuildFrom
+        </td>
+        <td style="background: #F0ADAD">
+          immutable.this.Set.canBuildFrom[String]
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          1254
+        </td>
+        <td>
+          1240
+          -
+          1275
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.reduce
+        </td>
+        <td style="background: #F0ADAD">
+          regions.map[String, scala.collection.immutable.Set[String]](((x$4: org.riskala.model.map.Region) =&gt; x$4.name))(immutable.this.Set.canBuildFrom[String]).reduce[String](((x$5: String, x$6: String) =&gt; x$5.+(&quot; &quot;).+(x$6)))
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          2079
+        </td>
+        <td>
+          1267
+          -
+          1274
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #F0ADAD">
+          x$5.+(&quot; &quot;).+(x$6)
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          1871
+        </td>
+        <td>
+          1285
+          -
+          1337
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.Objectives.Objective.apply
+        </td>
+        <td style="background: #F0ADAD">
+          Objectives.this.Objective.apply(states, scala.StringContext.apply(&quot;Conquer states of regions &quot;, &quot;&quot;).s(info))
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          453
+        </td>
+        <td>
+          1302
+          -
+          1336
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;Conquer states of regions &quot;, &quot;&quot;).s(info)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

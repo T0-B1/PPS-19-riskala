@@ -1,0 +1,392 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          src\main\scala\org\riskala\model\map\Region.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier, monospace;'>1 <span style=''>package org.riskala.model.map
+</span>2 <span style=''>
+</span>3 <span style=''>import argonaut.Argonaut._
+</span>4 <span style=''>import argonaut.CodecJson
+</span>5 <span style=''>import org.riskala.model.map.State.State
+</span>6 <span style=''>import scala.scalajs.js.annotation.{JSExportAll, JSExportTopLevel}
+</span>7 <span style=''>
+</span>8 <span style=''>/**
+</span>9 <span style=''> * Region structure #scala.js
+</span>10 <span style=''> *
+</span>11 <span style=''> * @param states       list of states of the region
+</span>12 <span style=''> * @param bonus        bonus in terms of deployable troops
+</span>13 <span style=''> */
+</span>14 <span style=''>@JSExportTopLevel(&quot;Region&quot;)
+</span>15 <span style=''>@JSExportAll
+</span>16 <span style=''>case class Region(name: String, states: Set[State], bonus: Int) {
+</span>17 <span style=''>
+</span>18 <span style=''>  /**
+</span>19 <span style=''>   * Checks if the region contains the given state
+</span>20 <span style=''>   *
+</span>21 <span style=''>   * @param state     the state to check
+</span>22 <span style=''>   * @return true if it contains state*/
+</span>23 <span style=''>  def hasState(state: State): Boolean = </span><span style='background: #AEF1AE'>states.contains(state)</span><span style=''>
+</span>24 <span style=''>
+</span>25 <span style=''>}
+</span>26 <span style=''>
+</span>27 <span style=''>object Region {
+</span>28 <span style=''>
+</span>29 <span style=''>  implicit def RegionCodecJson: CodecJson[Region] =
+</span>30 <span style=''>    </span><span style='background: #AEF1AE'>casecodec3(Region.apply,Region.unapply)(&quot;name&quot;,&quot;states&quot;,&quot;bonus&quot;)</span><span style=''>
+</span>31 <span style=''>
+</span>32 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          2094
+        </td>
+        <td>
+          659
+          -
+          681
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.SetLike.contains
+        </td>
+        <td style="background: #AEF1AE">
+          Region.this.states.contains(state)
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          110
+        </td>
+        <td>
+          806
+          -
+          812
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;name&quot;
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          672
+        </td>
+        <td>
+          766
+          -
+          830
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          argonaut.GeneratedCodecJsons.casecodec3
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.casecodec3[String, Set[org.riskala.model.map.State.State], Int, org.riskala.model.map.Region]({
+  ((name: String, states: Set[org.riskala.model.map.State.State], bonus: Int) =&gt; Region.apply(name, states, bonus))
+}, {
+  ((x$0: org.riskala.model.map.Region) =&gt; Region.unapply(x$0))
+})(&quot;name&quot;, &quot;states&quot;, &quot;bonus&quot;)(argonaut.Argonaut.StringEncodeJson, argonaut.Argonaut.StringDecodeJson, argonaut.Argonaut.SetEncodeJson[org.riskala.model.map.State.State](argonaut.Argonaut.StringEncodeJson), argonaut.Argonaut.SetDecodeJson[org.riskala.model.map.State.State](argonaut.Argonaut.StringDecodeJson), argonaut.Argonaut.IntEncodeJson, argonaut.Argonaut.IntDecodeJson)
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          1345
+        </td>
+        <td>
+          805
+          -
+          805
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.DecodeJsons.StringDecodeJson
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.StringDecodeJson
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          935
+        </td>
+        <td>
+          790
+          -
+          804
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.map.Region.unapply
+        </td>
+        <td style="background: #AEF1AE">
+          Region.unapply(x$0)
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          1500
+        </td>
+        <td>
+          805
+          -
+          805
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.DecodeJsons.StringDecodeJson
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.StringDecodeJson
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          1428
+        </td>
+        <td>
+          813
+          -
+          821
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;states&quot;
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          112
+        </td>
+        <td>
+          805
+          -
+          805
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.EncodeJsons.IntEncodeJson
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.IntEncodeJson
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          943
+        </td>
+        <td>
+          805
+          -
+          805
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          argonaut.DecodeJsons.SetDecodeJson
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.SetDecodeJson[org.riskala.model.map.State.State](argonaut.Argonaut.StringDecodeJson)
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          1472
+        </td>
+        <td>
+          805
+          -
+          805
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.DecodeJsons.IntDecodeJson
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.IntDecodeJson
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          793
+        </td>
+        <td>
+          805
+          -
+          805
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.EncodeJsons.StringEncodeJson
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.StringEncodeJson
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          2097
+        </td>
+        <td>
+          805
+          -
+          805
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          argonaut.EncodeJsons.SetEncodeJson
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.SetEncodeJson[org.riskala.model.map.State.State](argonaut.Argonaut.StringEncodeJson)
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          667
+        </td>
+        <td>
+          822
+          -
+          829
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;bonus&quot;
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          1244
+        </td>
+        <td>
+          777
+          -
+          789
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.map.Region.apply
+        </td>
+        <td style="background: #AEF1AE">
+          Region.apply(name, states, bonus)
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          266
+        </td>
+        <td>
+          805
+          -
+          805
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.EncodeJsons.StringEncodeJson
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.StringEncodeJson
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

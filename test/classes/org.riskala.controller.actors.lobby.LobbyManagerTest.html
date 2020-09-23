@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta http-equiv="x-ua-compatible" content="IE=edge"/>
+<title>Test results - Class org.riskala.controller.actors.lobby.LobbyManagerTest</title>
+<link href="../css/base-style.css" rel="stylesheet" type="text/css"/>
+<link href="../css/style.css" rel="stylesheet" type="text/css"/>
+<script src="../js/report.js" type="text/javascript"></script>
+</head>
+<body>
+<div id="content">
+<h1>Class org.riskala.controller.actors.lobby.LobbyManagerTest</h1>
+<div class="breadcrumbs">
+<a href="../index.html">all</a> &gt; 
+<a href="../packages/org.riskala.controller.actors.lobby.html">org.riskala.controller.actors.lobby</a> &gt; LobbyManagerTest</div>
+<div id="summary">
+<table>
+<tr>
+<td>
+<div class="summaryGroup">
+<table>
+<tr>
+<td>
+<div class="infoBox" id="tests">
+<div class="counter">8</div>
+<p>tests</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="failures">
+<div class="counter">0</div>
+<p>failures</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="ignored">
+<div class="counter">0</div>
+<p>ignored</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="duration">
+<div class="counter">0.544s</div>
+<p>duration</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</td>
+<td>
+<div class="infoBox success" id="successRate">
+<div class="percent">100%</div>
+<p>successful</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div id="tabs">
+<ul class="tabLinks">
+<li>
+<a href="#tab0">Tests</a>
+</li>
+<li>
+<a href="#tab1">Standard error</a>
+</li>
+</ul>
+<div id="tab0" class="tab">
+<h2>Tests</h2>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>Duration</th>
+<th>Result</th>
+</tr>
+</thead>
+<tr>
+<td class="success">CloseGame to Lobby should update Lobby info</td>
+<td class="success">0.007s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">Creation of a Room in Lobby should create the Room and give Lobby info to subs</td>
+<td class="success">0.026s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">EmptyRoom to Lobby should remove the Room info and notify subs</td>
+<td class="success">0.109s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">EndGame to Lobby should update Lobby info</td>
+<td class="success">0.007s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">Join a Room from Lobby should remove from Lobby and update info</td>
+<td class="success">0.117s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">StartGame to Lobby should update Lobby info</td>
+<td class="success">0.013s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">Subscribe to Lobby should give Lobby info</td>
+<td class="success">0.159s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">UpdateRoom to Lobby should update the Room info and notify subs</td>
+<td class="success">0.106s</td>
+<td class="success">passed</td>
+</tr>
+</table>
+</div>
+<div id="tab1" class="tab">
+<h2>Standard error</h2>
+<span class="code">
+<pre>[LobbyManagerTest-akka.actor.default-dispatcher-5] INFO akka.event.slf4j.Slf4jLogger - Slf4jLogger started
+[LobbyManagerTest-akka.actor.default-dispatcher-3] INFO org.riskala.controller.actors.lobby.LobbyManager$ - SetupLobbyManager
+[LobbyManagerTest-akka.actor.default-dispatcher-5] INFO org.riskala.controller.actors.lobby.LobbyManager$ - Subscribe from Actor[akka://LobbyManagerTest/system/probeSub-1#1432810475]
+[LobbyManagerTest-akka.actor.default-dispatcher-3] INFO org.riskala.controller.actors.lobby.LobbyManager$ - SetupLobbyManager
+[LobbyManagerTest-akka.actor.default-dispatcher-3] INFO org.riskala.controller.actors.lobby.LobbyManager$ - Subscribe from Actor[akka://LobbyManagerTest/system/probeCreate-2#633219720]
+[LobbyManagerTest-akka.actor.default-dispatcher-3] INFO org.riskala.controller.actors.lobby.LobbyManager$ - Subscribe from Actor[akka://LobbyManagerTest/system/probeCreate2-3#120914878]
+[LobbyManagerTest-akka.actor.default-dispatcher-6] INFO org.riskala.controller.actors.lobby.LobbyManager$ - SetupLobbyManager
+[LobbyManagerTest-akka.actor.default-dispatcher-3] INFO org.riskala.controller.actors.lobby.LobbyManager$ - Subscribe from Actor[akka://LobbyManagerTest/system/probeJoin-4#398369575]
+[LobbyManagerTest-akka.actor.default-dispatcher-3] INFO org.riskala.controller.actors.lobby.LobbyManager$ - Subscribe from Actor[akka://LobbyManagerTest/system/probeJoin2-5#-178185606]
+[LobbyManagerTest-akka.actor.default-dispatcher-3] INFO org.riskala.controller.actors.lobby.LobbyManager$ - Subscribe from Actor[akka://LobbyManagerTest/system/probeJoin3-6#1908602180]
+[LobbyManagerTest-akka.actor.default-dispatcher-5] INFO org.riskala.controller.actors.room.RoomManager$ - Room received JOIN message
+[LobbyManagerTest-akka.actor.default-dispatcher-7] INFO org.riskala.controller.actors.room.RoomManager$ - Room received JOIN message
+[LobbyManagerTest-akka.actor.default-dispatcher-7] INFO org.riskala.controller.actors.room.RoomManager$ - Number of subscribers after subscriprion into the room 1
+[LobbyManagerTest-akka.actor.default-dispatcher-5] INFO org.riskala.controller.actors.room.RoomManager$ - Number of subscribers after subscriprion into the room 1
+[LobbyManagerTest-akka.actor.default-dispatcher-5] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated subscribers: -&gt; List(Actor[akka://LobbyManagerTest/system/probeCreate-2#633219720])
+[LobbyManagerTest-akka.actor.default-dispatcher-7] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated subscribers: -&gt; List(Actor[akka://LobbyManagerTest/system/probeJoin-4#398369575])
+[LobbyManagerTest-akka.actor.default-dispatcher-5] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated ready player: -&gt; List()
+[LobbyManagerTest-akka.actor.default-dispatcher-7] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated ready player: -&gt; List()
+[LobbyManagerTest-akka.actor.default-dispatcher-5] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated room info: -&gt; RoomInfo(RoomBasicInfo(RoomName,0,4),Set(),)
+[LobbyManagerTest-akka.actor.default-dispatcher-7] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated room info: -&gt; RoomInfo(RoomBasicInfo(UsaRoom,0,6),Set(),usa)
+[LobbyManagerTest-akka.actor.default-dispatcher-5] INFO org.riskala.controller.actors.room.RoomManager$ - ------- --------
+[LobbyManagerTest-akka.actor.default-dispatcher-7] INFO org.riskala.controller.actors.room.RoomManager$ - ------- --------
+[LobbyManagerTest-akka.actor.default-dispatcher-7] INFO org.riskala.controller.actors.room.RoomManager$ - Room received JOIN message
+[LobbyManagerTest-akka.actor.default-dispatcher-7] INFO org.riskala.controller.actors.room.RoomManager$ - Number of subscribers after subscriprion into the room 2
+[LobbyManagerTest-akka.actor.default-dispatcher-7] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated subscribers: -&gt; List(Actor[akka://LobbyManagerTest/system/probeJoin-4#398369575], Actor[akka://LobbyManagerTest/system/probeJoin2-5#-178185606])
+[LobbyManagerTest-akka.actor.default-dispatcher-7] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated ready player: -&gt; List()
+[LobbyManagerTest-akka.actor.default-dispatcher-7] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated room info: -&gt; RoomInfo(RoomBasicInfo(UsaRoom,0,6),Set(),usa)
+[LobbyManagerTest-akka.actor.default-dispatcher-7] INFO org.riskala.controller.actors.room.RoomManager$ - ------- --------
+[LobbyManagerTest-akka.actor.default-dispatcher-5] INFO org.riskala.controller.actors.lobby.LobbyManager$ - SetupLobbyManager
+[LobbyManagerTest-akka.actor.default-dispatcher-5] INFO org.riskala.controller.actors.lobby.LobbyManager$ - Subscribe from Actor[akka://LobbyManagerTest/system/probeStart-7#-1487061142]
+[LobbyManagerTest-akka.actor.default-dispatcher-5] INFO org.riskala.controller.actors.lobby.LobbyManager$ - info -&gt; RoomInfo(RoomBasicInfo(RoomName,4,4),Set(),italy)
+[LobbyManagerTest-akka.actor.default-dispatcher-5] INFO org.riskala.controller.actors.lobby.LobbyManager$ - players -&gt; Map(Player(player1,red) -&gt; Actor[akka://LobbyManagerTest/system/playerJoin-8#-1253801330], Player(player2,blue) -&gt; Actor[akka://LobbyManagerTest/system/player2Join-9#-753410091])
+[LobbyManagerTest-akka.actor.default-dispatcher-5] INFO org.riskala.controller.actors.lobby.LobbyManager$ - roomSubscribers -&gt; Set()
+[LobbyManagerTest-akka.actor.default-dispatcher-8] INFO org.riskala.controller.actors.lobby.LobbyManager$ - SetupLobbyManager
+[LobbyManagerTest-akka.actor.default-dispatcher-5] INFO org.riskala.controller.actors.lobby.LobbyManager$ - Subscribe from Actor[akka://LobbyManagerTest/system/probeEnd-10#-973942144]
+[LobbyManagerTest-akka.actor.default-dispatcher-8] INFO org.riskala.controller.actors.lobby.LobbyManager$ - SetupLobbyManager
+[LobbyManagerTest-akka.actor.default-dispatcher-3] INFO org.riskala.controller.actors.lobby.LobbyManager$ - Subscribe from Actor[akka://LobbyManagerTest/system/probeClose-11#-1057894152]
+[LobbyManagerTest-akka.actor.default-dispatcher-3] INFO org.riskala.controller.actors.lobby.LobbyManager$ - SetupLobbyManager
+[LobbyManagerTest-akka.actor.default-dispatcher-3] INFO org.riskala.controller.actors.lobby.LobbyManager$ - Subscribe from Actor[akka://LobbyManagerTest/system/probeUpdate-12#-1950858920]
+[LobbyManagerTest-akka.actor.default-dispatcher-3] INFO org.riskala.controller.actors.lobby.LobbyManager$ - Subscribe from Actor[akka://LobbyManagerTest/system/probeUpdate2-13#-730945717]
+[LobbyManagerTest-akka.actor.default-dispatcher-8] INFO org.riskala.controller.actors.room.RoomManager$ - Room received JOIN message
+[LobbyManagerTest-akka.actor.default-dispatcher-8] INFO org.riskala.controller.actors.room.RoomManager$ - Number of subscribers after subscriprion into the room 1
+[LobbyManagerTest-akka.actor.default-dispatcher-8] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated subscribers: -&gt; List(Actor[akka://LobbyManagerTest/system/probeUpdate-12#-1950858920])
+[LobbyManagerTest-akka.actor.default-dispatcher-8] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated ready player: -&gt; List()
+[LobbyManagerTest-akka.actor.default-dispatcher-8] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated room info: -&gt; RoomInfo(RoomBasicInfo(RoomName,0,4),Set(),)
+[LobbyManagerTest-akka.actor.default-dispatcher-8] INFO org.riskala.controller.actors.room.RoomManager$ - ------- --------
+[LobbyManagerTest-akka.actor.default-dispatcher-8] INFO org.riskala.controller.actors.lobby.LobbyManager$ - SetupLobbyManager
+[LobbyManagerTest-akka.actor.default-dispatcher-8] INFO org.riskala.controller.actors.lobby.LobbyManager$ - Subscribe from Actor[akka://LobbyManagerTest/system/probeEmpty-14#1478579103]
+[LobbyManagerTest-akka.actor.default-dispatcher-8] INFO org.riskala.controller.actors.lobby.LobbyManager$ - Subscribe from Actor[akka://LobbyManagerTest/system/probeEmpty2-15#1479100603]
+[LobbyManagerTest-akka.actor.default-dispatcher-3] INFO org.riskala.controller.actors.room.RoomManager$ - Room received JOIN message
+[LobbyManagerTest-akka.actor.default-dispatcher-3] INFO org.riskala.controller.actors.room.RoomManager$ - Number of subscribers after subscriprion into the room 1
+[LobbyManagerTest-akka.actor.default-dispatcher-3] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated subscribers: -&gt; List(Actor[akka://LobbyManagerTest/system/probeEmpty-14#1478579103])
+[LobbyManagerTest-akka.actor.default-dispatcher-3] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated ready player: -&gt; List()
+[LobbyManagerTest-akka.actor.default-dispatcher-3] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated room info: -&gt; RoomInfo(RoomBasicInfo(RoomName,0,4),Set(),)
+[LobbyManagerTest-akka.actor.default-dispatcher-3] INFO org.riskala.controller.actors.room.RoomManager$ - ------- --------
+</pre>
+</span>
+</div>
+</div>
+<div id="footer">
+<p>
+<div>
+<label class="hidden" id="label-for-line-wrapping-toggle" for="line-wrapping-toggle">Wrap lines
+<input id="line-wrapping-toggle" type="checkbox" autocomplete="off"/>
+</label>
+</div>Generated by 
+<a href="http://www.gradle.org">Gradle 6.5.1</a> at 23 set 2020, 06:42:56</p>
+</div>
+</div>
+</body>
+</html>

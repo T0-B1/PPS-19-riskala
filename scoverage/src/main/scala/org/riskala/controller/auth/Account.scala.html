@@ -1,0 +1,317 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          src\main\scala\org\riskala\controller\auth\Account.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier, monospace;'>1 <span style=''>package org.riskala.controller.auth
+</span>2 <span style=''>
+</span>3 <span style=''>import argonaut.Argonaut._
+</span>4 <span style=''>import argonaut.CodecJson
+</span>5 <span style=''>import scala.scalajs.js.annotation.{JSExportAll, JSExportTopLevel}
+</span>6 <span style=''>
+</span>7 <span style=''>/**
+</span>8 <span style=''> * Account structure #scala.js
+</span>9 <span style=''> *
+</span>10 <span style=''> * @param username       username of user
+</span>11 <span style=''> * @param password       password
+</span>12 <span style=''> * @param email          email
+</span>13 <span style=''> */
+</span>14 <span style=''>@JSExportTopLevel(&quot;Account&quot;)
+</span>15 <span style=''>@JSExportAll
+</span>16 <span style=''>case class Account(username: String, password: String, email: String)
+</span>17 <span style=''>object Account {
+</span>18 <span style=''>  implicit def BridgeCodecJson: CodecJson[Account] =
+</span>19 <span style=''>    </span><span style='background: #AEF1AE'>casecodec3(Account.apply,</span><span style='background: #F0ADAD'>Account.unapply</span><span style='background: #AEF1AE'>)(&quot;username&quot;,&quot;password&quot;,&quot;email&quot;)</span><span style=''>
+</span>20 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          469
+        </td>
+        <td>
+          552
+          -
+          552
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.EncodeJsons.StringEncodeJson
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.StringEncodeJson
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          1097
+        </td>
+        <td>
+          552
+          -
+          552
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.DecodeJsons.StringDecodeJson
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.StringDecodeJson
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          364
+        </td>
+        <td>
+          553
+          -
+          563
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;username&quot;
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          334
+        </td>
+        <td>
+          511
+          -
+          583
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          argonaut.GeneratedCodecJsons.casecodec3
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.casecodec3[String, String, String, org.riskala.controller.auth.Account]({
+  ((username: String, password: String, email: String) =&gt; Account.apply(username, password, email))
+}, {
+  ((x$0: org.riskala.controller.auth.Account) =&gt; Account.unapply(x$0))
+})(&quot;username&quot;, &quot;password&quot;, &quot;email&quot;)(argonaut.Argonaut.StringEncodeJson, argonaut.Argonaut.StringDecodeJson, argonaut.Argonaut.StringEncodeJson, argonaut.Argonaut.StringDecodeJson, argonaut.Argonaut.StringEncodeJson, argonaut.Argonaut.StringDecodeJson)
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          1030
+        </td>
+        <td>
+          552
+          -
+          552
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.EncodeJsons.StringEncodeJson
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.StringEncodeJson
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          1945
+        </td>
+        <td>
+          552
+          -
+          552
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.EncodeJsons.StringEncodeJson
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.StringEncodeJson
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          1687
+        </td>
+        <td>
+          564
+          -
+          574
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;password&quot;
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          1941
+        </td>
+        <td>
+          522
+          -
+          535
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.auth.Account.apply
+        </td>
+        <td style="background: #AEF1AE">
+          Account.apply(username, password, email)
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          1199
+        </td>
+        <td>
+          536
+          -
+          551
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.auth.Account.unapply
+        </td>
+        <td style="background: #F0ADAD">
+          Account.unapply(x$0)
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          1280
+        </td>
+        <td>
+          575
+          -
+          582
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;email&quot;
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          1809
+        </td>
+        <td>
+          552
+          -
+          552
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.DecodeJsons.StringDecodeJson
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.StringDecodeJson
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          152
+        </td>
+        <td>
+          552
+          -
+          552
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.DecodeJsons.StringDecodeJson
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.StringDecodeJson
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

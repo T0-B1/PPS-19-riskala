@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta http-equiv="x-ua-compatible" content="IE=edge"/>
+<title>Test results - Class org.riskala.controller.routes.WebsocketTest</title>
+<link href="../css/base-style.css" rel="stylesheet" type="text/css"/>
+<link href="../css/style.css" rel="stylesheet" type="text/css"/>
+<script src="../js/report.js" type="text/javascript"></script>
+</head>
+<body>
+<div id="content">
+<h1>Class org.riskala.controller.routes.WebsocketTest</h1>
+<div class="breadcrumbs">
+<a href="../index.html">all</a> &gt; 
+<a href="../packages/org.riskala.controller.routes.html">org.riskala.controller.routes</a> &gt; WebsocketTest</div>
+<div id="summary">
+<table>
+<tr>
+<td>
+<div class="summaryGroup">
+<table>
+<tr>
+<td>
+<div class="infoBox" id="tests">
+<div class="counter">3</div>
+<p>tests</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="failures">
+<div class="counter">0</div>
+<p>failures</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="ignored">
+<div class="counter">0</div>
+<p>ignored</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="duration">
+<div class="counter">0.205s</div>
+<p>duration</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</td>
+<td>
+<div class="infoBox success" id="successRate">
+<div class="percent">100%</div>
+<p>successful</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div id="tabs">
+<ul class="tabLinks">
+<li>
+<a href="#tab0">Tests</a>
+</li>
+<li>
+<a href="#tab1">Standard error</a>
+</li>
+</ul>
+<div id="tab0" class="tab">
+<h2>Tests</h2>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>Duration</th>
+<th>Result</th>
+</tr>
+</thead>
+<tr>
+<td class="success">A user should not be able to open a socket without a valid token</td>
+<td class="success">0.073s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">A user when logged should be able to open a socket using his token</td>
+<td class="success">0.122s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">A user when logged should trigger the spawn of a playerActor upon opening the socket</td>
+<td class="success">0.010s</td>
+<td class="success">passed</td>
+</tr>
+</table>
+</div>
+<div id="tab1" class="tab">
+<h2>Standard error</h2>
+<span class="code">
+<pre>[org-riskala-controller-routes-WebsocketTest-akka.actor.default-dispatcher-6] INFO akka.event.slf4j.Slf4jLogger - Slf4jLogger started
+[riskala-akka.actor.default-dispatcher-8] INFO org.riskala.controller.actors.player.PlayerActor$ - PlayerActor looking for Lobby
+[riskala-akka.actor.default-dispatcher-8] INFO org.riskala.controller.actors.player.PlayerActor$ - PlayerActor found Lobby
+[riskala-akka.actor.default-dispatcher-8] INFO org.riskala.controller.actors.player.PlayerActor$ - PlayerLobbyBehavior subscribing to Lobby
+[riskala-akka.actor.default-dispatcher-8] INFO org.riskala.controller.actors.lobby.LobbyManager$ - Subscribe from Actor[akka://riskala/system/test#-1217164243]
+[riskala-akka.actor.default-dispatcher-3] INFO org.riskala.controller.actors.player.PlayerActor$ - PlayerActor of test received LobbyReferent(Actor[akka://riskala/user#0]), IGNORED
+[riskala-akka.actor.default-dispatcher-3] INFO org.riskala.controller.actors.player.PlayerActor$ - PlayerActor of test received LobbyInfoMessage
+[riskala-akka.actor.default-dispatcher-3] INFO org.riskala.controller.actors.player.PlayerActor$ - PlayerActor of test received socket payload: {
+  &quot;classType&quot; : &quot;LobbyInfo&quot;,
+  &quot;payload&quot; : &quot;{\n  \&quot;rooms\&quot; : [],\n  \&quot;games\&quot; : [],\n  \&quot;terminatedGames\&quot; : []\n}&quot;
+}
+[riskala-akka.actor.default-dispatcher-3] INFO org.riskala.controller.actors.player.PlayerActor$ - PlayerLobbyActor received an unhandled message, IGNORED
+[riskala-akka.actor.default-dispatcher-7] INFO org.riskala.controller.actors.player.PlayerActor$ - PlayerActor of test registering new socket
+[riskala-akka.actor.default-dispatcher-7] INFO org.riskala.controller.actors.player.PlayerActor$ - PlayerLobbyBehavior subscribing to Lobby
+[riskala-akka.actor.default-dispatcher-3] INFO org.riskala.controller.actors.lobby.LobbyManager$ - Subscribe from Actor[akka://riskala/system/test#-1217164243]
+[riskala-akka.actor.default-dispatcher-8] INFO org.riskala.controller.actors.player.PlayerActor$ - PlayerActor of test received LobbyReferent(Actor[akka://riskala/user#0]), IGNORED
+[riskala-akka.actor.default-dispatcher-8] INFO org.riskala.controller.actors.player.PlayerActor$ - PlayerActor of test received LobbyInfoMessage
+[riskala-akka.actor.default-dispatcher-8] INFO org.riskala.controller.actors.player.PlayerActor$ - PlayerActor of test received socket payload: {
+  &quot;classType&quot; : &quot;LobbyInfo&quot;,
+  &quot;payload&quot; : &quot;{\n  \&quot;rooms\&quot; : [],\n  \&quot;games\&quot; : [],\n  \&quot;terminatedGames\&quot; : []\n}&quot;
+}
+[riskala-akka.actor.default-dispatcher-8] INFO org.riskala.controller.actors.player.PlayerActor$ - PlayerLobbyActor received an unhandled message, IGNORED
+</pre>
+</span>
+</div>
+</div>
+<div id="footer">
+<p>
+<div>
+<label class="hidden" id="label-for-line-wrapping-toggle" for="line-wrapping-toggle">Wrap lines
+<input id="line-wrapping-toggle" type="checkbox" autocomplete="off"/>
+</label>
+</div>Generated by 
+<a href="http://www.gradle.org">Gradle 6.5.1</a> at 23 set 2020, 06:42:56</p>
+</div>
+</div>
+</body>
+</html>

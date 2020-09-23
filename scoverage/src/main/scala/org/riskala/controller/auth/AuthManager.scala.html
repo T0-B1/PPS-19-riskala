@@ -1,0 +1,1707 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          src\main\scala\org\riskala\controller\auth\AuthManager.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier, monospace;'>1 <span style=''>package org.riskala.controller.auth
+</span>2 <span style=''>
+</span>3 <span style=''>import java.io.InputStream
+</span>4 <span style=''>import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
+</span>5 <span style=''>import argonaut.Argonaut._
+</span>6 <span style=''>import pdi.jwt.{Jwt, JwtAlgorithm}
+</span>7 <span style=''>import spray.json.{DefaultJsonProtocol, JsonParser, RootJsonFormat}
+</span>8 <span style=''>import scala.collection.immutable.HashMap
+</span>9 <span style=''>import scala.util.{Success, Try}
+</span>10 <span style=''>
+</span>11 <span style=''>case class LoginData(username: String, password: String)
+</span>12 <span style=''>
+</span>13 <span style=''>case class RegistrationData(username: String, password: String, email: String)
+</span>14 <span style=''>
+</span>15 <span style=''>object LoginJsonSupport extends DefaultJsonProtocol with SprayJsonSupport {
+</span>16 <span style=''>  implicit val LoginFormats: RootJsonFormat[LoginData] = </span><span style='background: #AEF1AE'>jsonFormat2(LoginData)</span><span style=''>
+</span>17 <span style=''>  implicit val RegisterFormats: RootJsonFormat[RegistrationData] = </span><span style='background: #AEF1AE'>jsonFormat3(RegistrationData)</span><span style=''>
+</span>18 <span style=''>}
+</span>19 <span style=''>
+</span>20 <span style=''>object AuthManager {
+</span>21 <span style=''>  private val secretKey = </span><span style='background: #AEF1AE'>&quot;PPSRiskala!&quot;</span><span style=''>
+</span>22 <span style=''>  private val jwtAlgorithm = </span><span style='background: #AEF1AE'>JwtAlgorithm.HS256</span><span style=''>
+</span>23 <span style=''>
+</span>24 <span style=''>  private val stream: InputStream = </span><span style='background: #AEF1AE'>getClass.getResourceAsStream(&quot;/account.txt&quot;)</span><span style=''>
+</span>25 <span style=''>  private val lines: String = </span><span style='background: #AEF1AE'>scala.io.Source.fromInputStream( stream ).getLines().foldLeft(&quot;&quot;)(_+_)</span><span style=''>
+</span>26 <span style=''>  private val accountList: List[Account] = </span><span style='background: #AEF1AE'>lines.decodeOption[List[Account]].getOrElse(</span><span style='background: #F0ADAD'>List.empty</span><span style='background: #AEF1AE'>)</span><span style=''>
+</span>27 <span style=''>
+</span>28 <span style=''>  private var credential: Map[String,Account] = </span><span style='background: #AEF1AE'>HashMap()</span><span style=''>
+</span>29 <span style=''>  </span><span style='background: #AEF1AE'>accountList.foreach(acc=&gt; credential = credential+(acc.username-&gt;acc))</span><span style=''>
+</span>30 <span style=''>
+</span>31 <span style=''>  /**
+</span>32 <span style=''>   * Logs a user returning the token if successful
+</span>33 <span style=''>   *
+</span>34 <span style=''>   * @param l Login data of a user
+</span>35 <span style=''>   * @return An optional token
+</span>36 <span style=''>   */
+</span>37 <span style=''>  def login(l: LoginData): Option[String] = {
+</span>38 <span style=''>    </span><span style='background: #AEF1AE'>credential get l.username flatMap(acc =&gt; if(acc.password == l.password) Some(genToken(l)) else </span><span style='background: #F0ADAD'>None</span><span style='background: #AEF1AE'>)</span><span style=''>
+</span>39 <span style=''>  }
+</span>40 <span style=''>
+</span>41 <span style=''>  /**
+</span>42 <span style=''>   * Registers a user returning the token if successful
+</span>43 <span style=''>   *
+</span>44 <span style=''>   * @param r Registration data of a user
+</span>45 <span style=''>   * @return An optional token
+</span>46 <span style=''>   */
+</span>47 <span style=''>  def register(r: RegistrationData): Option[String] = {
+</span>48 <span style=''>    if(</span><span style='background: #AEF1AE'>!credential.isDefinedAt(r.username)</span><span style=''>) </span><span style='background: #F0ADAD'>{
+</span>49 <span style=''></span><span style='background: #F0ADAD'>      credential = credential + (r.username -&gt; Account(r.username,r.password,r.email))
+</span>50 <span style=''></span><span style='background: #F0ADAD'>      Some(genToken(LoginData(r.username,r.password)))
+</span>51 <span style=''></span><span style='background: #F0ADAD'>    }</span><span style=''> else {
+</span>52 <span style=''>      </span><span style='background: #AEF1AE'>None</span><span style=''>
+</span>53 <span style=''>    }
+</span>54 <span style=''>  }
+</span>55 <span style=''>
+</span>56 <span style=''>  /**
+</span>57 <span style=''>   * Generates a token
+</span>58 <span style=''>   *
+</span>59 <span style=''>   * @param l User credentials
+</span>60 <span style=''>   * */
+</span>61 <span style=''>  private def genToken(l: LoginData): String = {
+</span>62 <span style=''>    import LoginJsonSupport._
+</span>63 <span style=''>    import spray.json._
+</span>64 <span style=''>    val claim = </span><span style='background: #AEF1AE'>l.toJson.prettyPrint</span><span style=''>
+</span>65 <span style=''>    </span><span style='background: #AEF1AE'>Jwt.encode(claim, secretKey, jwtAlgorithm)</span><span style=''>
+</span>66 <span style=''>  }
+</span>67 <span style=''>
+</span>68 <span style=''>  /**
+</span>69 <span style=''>   * Checks the validity of a token
+</span>70 <span style=''>   *
+</span>71 <span style=''>   * @param token A token
+</span>72 <span style=''>   * @return If token is valid
+</span>73 <span style=''>   */
+</span>74 <span style=''>  def checkToken(token: String): Boolean = {
+</span>75 <span style=''>    </span><span style='background: #AEF1AE'>Jwt.isValid(token, secretKey, Seq(jwtAlgorithm))</span><span style=''>
+</span>76 <span style=''>  }
+</span>77 <span style=''>
+</span>78 <span style=''>  /**
+</span>79 <span style=''>   * Given a token, the associated username is returned if present
+</span>80 <span style=''>   * @param token A token
+</span>81 <span style=''>   * @return An optional username
+</span>82 <span style=''>   */
+</span>83 <span style=''>  def getUserName(token: String): Option[String] = {
+</span>84 <span style=''>    </span><span style='background: #AEF1AE'>Jwt.decodeRawAll(token, secretKey, Seq(jwtAlgorithm))</span><span style=''> match {
+</span>85 <span style=''>      case Success(tuple) =&gt; tuple match {
+</span>86 <span style=''>        case (_, claim, _) =&gt;
+</span>87 <span style=''>            </span><span style='background: #AEF1AE'>Try(JsonParser(claim).convertTo[LoginData](LoginJsonSupport.LoginFormats))</span><span style=''> match {
+</span>88 <span style=''>              case Success(login) =&gt; </span><span style='background: #AEF1AE'>Some(login.username)</span><span style=''>
+</span>89 <span style=''>              case _ =&gt; </span><span style='background: #F0ADAD'>None</span><span style=''>
+</span>90 <span style=''>            }
+</span>91 <span style=''>      }
+</span>92 <span style=''>      case _ =&gt; </span><span style='background: #F0ADAD'>None</span><span style=''>
+</span>93 <span style=''>    }
+</span>94 <span style=''>  }
+</span>95 <span style=''>
+</span>96 <span style=''>  /**
+</span>97 <span style=''>   * Given a username, the email address is returned
+</span>98 <span style=''>   *
+</span>99 <span style=''>   * @param userName A username
+</span>100 <span style=''>   * @return An optional email address
+</span>101 <span style=''>   */
+</span>102 <span style=''>  def getUserMail(userName: String): Option[String] = {
+</span>103 <span style=''>    </span><span style='background: #F0ADAD'>credential.get(userName).map(user =&gt; user.email)</span><span style=''>
+</span>104 <span style=''>  }
+</span>105 <span style=''>}
+</span>106 <span style=''>
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          1688
+        </td>
+        <td>
+          632
+          -
+          632
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          spray.json.BasicFormats.StringJsonFormat
+        </td>
+        <td style="background: #AEF1AE">
+          LoginJsonSupport.this.StringJsonFormat
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          820
+        </td>
+        <td>
+          632
+          -
+          632
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          spray.json.BasicFormats.StringJsonFormat
+        </td>
+        <td style="background: #AEF1AE">
+          LoginJsonSupport.this.StringJsonFormat
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          476
+        </td>
+        <td>
+          621
+          -
+          643
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          spray.json.ProductFormatsInstances.jsonFormat2
+        </td>
+        <td style="background: #AEF1AE">
+          LoginJsonSupport.this.jsonFormat2[String, String, org.riskala.controller.auth.LoginData](LoginData)(LoginJsonSupport.this.StringJsonFormat, LoginJsonSupport.this.StringJsonFormat, (ClassTag.apply[org.riskala.controller.auth.LoginData](classOf[org.riskala.controller.auth.LoginData]): scala.reflect.ClassTag[org.riskala.controller.auth.LoginData]))
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          1813
+        </td>
+        <td>
+          723
+          -
+          723
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          spray.json.BasicFormats.StringJsonFormat
+        </td>
+        <td style="background: #AEF1AE">
+          LoginJsonSupport.this.StringJsonFormat
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          156
+        </td>
+        <td>
+          723
+          -
+          723
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          spray.json.BasicFormats.StringJsonFormat
+        </td>
+        <td style="background: #AEF1AE">
+          LoginJsonSupport.this.StringJsonFormat
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          2013
+        </td>
+        <td>
+          712
+          -
+          741
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          spray.json.ProductFormatsInstances.jsonFormat3
+        </td>
+        <td style="background: #AEF1AE">
+          LoginJsonSupport.this.jsonFormat3[String, String, String, org.riskala.controller.auth.RegistrationData](RegistrationData)(LoginJsonSupport.this.StringJsonFormat, LoginJsonSupport.this.StringJsonFormat, LoginJsonSupport.this.StringJsonFormat, (ClassTag.apply[org.riskala.controller.auth.RegistrationData](classOf[org.riskala.controller.auth.RegistrationData]): scala.reflect.ClassTag[org.riskala.controller.auth.RegistrationData]))
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          1011
+        </td>
+        <td>
+          723
+          -
+          723
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          spray.json.BasicFormats.StringJsonFormat
+        </td>
+        <td style="background: #AEF1AE">
+          LoginJsonSupport.this.StringJsonFormat
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          1099
+        </td>
+        <td>
+          796
+          -
+          809
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;PPSRiskala!&quot;
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          340
+        </td>
+        <td>
+          840
+          -
+          858
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          pdi.jwt.JwtAlgorithm.HS256
+        </td>
+        <td style="background: #AEF1AE">
+          pdi.jwt.JwtAlgorithm.HS256
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          1740
+        </td>
+        <td>
+          898
+          -
+          942
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Class.getResourceAsStream
+        </td>
+        <td style="background: #AEF1AE">
+          AuthManager.this.getClass().getResourceAsStream(&quot;/account.txt&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          1782
+        </td>
+        <td>
+          1040
+          -
+          1043
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #AEF1AE">
+          x$1.+(x$2)
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          824
+        </td>
+        <td>
+          1007
+          -
+          1013
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.controller.auth.AuthManager.stream
+        </td>
+        <td style="background: #AEF1AE">
+          AuthManager.this.stream
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          458
+        </td>
+        <td>
+          1036
+          -
+          1038
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          1017
+        </td>
+        <td>
+          974
+          -
+          1044
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.foldLeft
+        </td>
+        <td style="background: #AEF1AE">
+          scala.io.Source.fromInputStream(AuthManager.this.stream)(io.this.Codec.fallbackSystemCodec).getLines().foldLeft[String](&quot;&quot;)(((x$1: String, x$2: String) =&gt; x$1.+(x$2)))
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          1746
+        </td>
+        <td>
+          1089
+          -
+          1144
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.StringToParseWrap(AuthManager.this.lines).decodeOption[List[org.riskala.controller.auth.Account]](argonaut.Argonaut.ListDecodeJson[org.riskala.controller.auth.Account](auth.this.Account.BridgeCodecJson)).getOrElse[List[org.riskala.controller.auth.Account]](scala.collection.immutable.List.empty[Nothing])
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          304
+        </td>
+        <td>
+          1133
+          -
+          1143
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.immutable.List.empty
+        </td>
+        <td style="background: #F0ADAD">
+          scala.collection.immutable.List.empty[Nothing]
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          1494
+        </td>
+        <td>
+          1107
+          -
+          1107
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.controller.auth.Account.BridgeCodecJson
+        </td>
+        <td style="background: #AEF1AE">
+          auth.this.Account.BridgeCodecJson
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          256
+        </td>
+        <td>
+          1089
+          -
+          1094
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.controller.auth.AuthManager.lines
+        </td>
+        <td style="background: #AEF1AE">
+          AuthManager.this.lines
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          1197
+        </td>
+        <td>
+          1107
+          -
+          1107
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          argonaut.DecodeJsons.ListDecodeJson
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.ListDecodeJson[org.riskala.controller.auth.Account](auth.this.Account.BridgeCodecJson)
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          934
+        </td>
+        <td>
+          1196
+          -
+          1205
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenMapFactory.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.immutable.HashMap.apply[String, Nothing]()
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          465
+        </td>
+        <td>
+          1260
+          -
+          1277
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.ArrowAssoc.-&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.ArrowAssoc[String](acc.username).-&gt;[org.riskala.controller.auth.Account](acc)
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          1048
+        </td>
+        <td>
+          1235
+          -
+          1278
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.auth.AuthManager.credential_=
+        </td>
+        <td style="background: #AEF1AE">
+          AuthManager.this.credential_=(AuthManager.this.credential.+[org.riskala.controller.auth.Account](scala.Predef.ArrowAssoc[String](acc.username).-&gt;[org.riskala.controller.auth.Account](acc)))
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          261
+        </td>
+        <td>
+          1209
+          -
+          1279
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.immutable.List.foreach
+        </td>
+        <td style="background: #AEF1AE">
+          AuthManager.this.accountList.foreach[Unit](((acc: org.riskala.controller.auth.Account) =&gt; AuthManager.this.credential_=(AuthManager.this.credential.+[org.riskala.controller.auth.Account](scala.Predef.ArrowAssoc[String](acc.username).-&gt;[org.riskala.controller.auth.Account](acc)))))
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          1878
+        </td>
+        <td>
+          1248
+          -
+          1278
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.immutable.Map.+
+        </td>
+        <td style="background: #AEF1AE">
+          AuthManager.this.credential.+[org.riskala.controller.auth.Account](scala.Predef.ArrowAssoc[String](acc.username).-&gt;[org.riskala.controller.auth.Account](acc))
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          218
+        </td>
+        <td>
+          1474
+          -
+          1574
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.flatMap
+        </td>
+        <td style="background: #AEF1AE">
+          AuthManager.this.credential.get(l.username).flatMap[String](((acc: org.riskala.controller.auth.Account) =&gt; if (acc.password.==(l.password))
+  scala.Some.apply[String](AuthManager.this.genToken(l))
+else
+  scala.None))
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          1010
+        </td>
+        <td>
+          1569
+          -
+          1573
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          474
+        </td>
+        <td>
+          1546
+          -
+          1563
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[String](AuthManager.this.genToken(l))
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          1497
+        </td>
+        <td>
+          1489
+          -
+          1499
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.controller.auth.LoginData.username
+        </td>
+        <td style="background: #AEF1AE">
+          l.username
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          940
+        </td>
+        <td>
+          1546
+          -
+          1563
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[String](AuthManager.this.genToken(l))
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          1158
+        </td>
+        <td>
+          1534
+          -
+          1544
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.controller.auth.LoginData.password
+        </td>
+        <td style="background: #AEF1AE">
+          l.password
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          1852
+        </td>
+        <td>
+          1569
+          -
+          1573
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          1711
+        </td>
+        <td>
+          1551
+          -
+          1562
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.auth.AuthManager.genToken
+        </td>
+        <td style="background: #AEF1AE">
+          AuthManager.this.genToken(l)
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          389
+        </td>
+        <td>
+          1518
+          -
+          1544
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          acc.password.==(l.password)
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          1892
+        </td>
+        <td>
+          1836
+          -
+          1988
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          {
+  AuthManager.this.credential_=(AuthManager.this.credential.+[org.riskala.controller.auth.Account](scala.Predef.ArrowAssoc[String](r.username).-&gt;[org.riskala.controller.auth.Account](Account.apply(r.username, r.password, r.email))));
+  scala.Some.apply[String](AuthManager.this.genToken(LoginData.apply(r.username, r.password)))
+}
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          1545
+        </td>
+        <td>
+          1823
+          -
+          1833
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.controller.auth.RegistrationData.username
+        </td>
+        <td style="background: #AEF1AE">
+          r.username
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          1166
+        </td>
+        <td>
+          1799
+          -
+          1834
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Boolean.unary_!
+        </td>
+        <td style="background: #AEF1AE">
+          AuthManager.this.credential.isDefinedAt(r.username).unary_!
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          1677
+        </td>
+        <td>
+          1894
+          -
+          1904
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.controller.auth.RegistrationData.username
+        </td>
+        <td style="background: #F0ADAD">
+          r.username
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          977
+        </td>
+        <td>
+          1872
+          -
+          1924
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.ArrowAssoc.-&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Predef.ArrowAssoc[String](r.username).-&gt;[org.riskala.controller.auth.Account](Account.apply(r.username, r.password, r.email))
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          947
+        </td>
+        <td>
+          1905
+          -
+          1915
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.controller.auth.RegistrationData.password
+        </td>
+        <td style="background: #F0ADAD">
+          r.password
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          294
+        </td>
+        <td>
+          1872
+          -
+          1882
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.controller.auth.RegistrationData.username
+        </td>
+        <td style="background: #F0ADAD">
+          r.username
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          1550
+        </td>
+        <td>
+          1845
+          -
+          1925
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.auth.AuthManager.credential_=
+        </td>
+        <td style="background: #F0ADAD">
+          AuthManager.this.credential_=(AuthManager.this.credential.+[org.riskala.controller.auth.Account](scala.Predef.ArrowAssoc[String](r.username).-&gt;[org.riskala.controller.auth.Account](Account.apply(r.username, r.password, r.email))))
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          75
+        </td>
+        <td>
+          1916
+          -
+          1923
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.controller.auth.RegistrationData.email
+        </td>
+        <td style="background: #F0ADAD">
+          r.email
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          179
+        </td>
+        <td>
+          1858
+          -
+          1925
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.immutable.Map.+
+        </td>
+        <td style="background: #F0ADAD">
+          AuthManager.this.credential.+[org.riskala.controller.auth.Account](scala.Predef.ArrowAssoc[String](r.username).-&gt;[org.riskala.controller.auth.Account](Account.apply(r.username, r.password, r.email)))
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          1857
+        </td>
+        <td>
+          1886
+          -
+          1924
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.auth.Account.apply
+        </td>
+        <td style="background: #F0ADAD">
+          Account.apply(r.username, r.password, r.email)
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          1127
+        </td>
+        <td>
+          1957
+          -
+          1967
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.controller.auth.RegistrationData.username
+        </td>
+        <td style="background: #F0ADAD">
+          r.username
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          1653
+        </td>
+        <td>
+          1947
+          -
+          1979
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.auth.LoginData.apply
+        </td>
+        <td style="background: #F0ADAD">
+          LoginData.apply(r.username, r.password)
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          300
+        </td>
+        <td>
+          1968
+          -
+          1978
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.controller.auth.RegistrationData.password
+        </td>
+        <td style="background: #F0ADAD">
+          r.password
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          931
+        </td>
+        <td>
+          1938
+          -
+          1980
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.auth.AuthManager.genToken
+        </td>
+        <td style="background: #F0ADAD">
+          AuthManager.this.genToken(LoginData.apply(r.username, r.password))
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          81
+        </td>
+        <td>
+          1933
+          -
+          1981
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Some.apply[String](AuthManager.this.genToken(LoginData.apply(r.username, r.password)))
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          180
+        </td>
+        <td>
+          2003
+          -
+          2007
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          981
+        </td>
+        <td>
+          2003
+          -
+          2007
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          64
+        </td>
+        <td>
+          1614
+        </td>
+        <td>
+          2225
+          -
+          2225
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.controller.auth.LoginJsonSupport.LoginFormats
+        </td>
+        <td style="background: #AEF1AE">
+          LoginJsonSupport.LoginFormats
+        </td>
+      </tr><tr>
+        <td>
+          64
+        </td>
+        <td>
+          1130
+        </td>
+        <td>
+          2223
+          -
+          2243
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          spray.json.JsValue.prettyPrint
+        </td>
+        <td style="background: #AEF1AE">
+          spray.json.`package`.enrichAny[org.riskala.controller.auth.LoginData](l).toJson(LoginJsonSupport.LoginFormats).prettyPrint
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          406
+        </td>
+        <td>
+          2267
+          -
+          2276
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.controller.auth.AuthManager.secretKey
+        </td>
+        <td style="background: #AEF1AE">
+          AuthManager.this.secretKey
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          938
+        </td>
+        <td>
+          2249
+          -
+          2291
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          pdi.jwt.JwtCore.encode
+        </td>
+        <td style="background: #AEF1AE">
+          pdi.jwt.Jwt.encode(claim, AuthManager.this.secretKey, AuthManager.this.jwtAlgorithm)
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          1660
+        </td>
+        <td>
+          2278
+          -
+          2290
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.controller.auth.AuthManager.jwtAlgorithm
+        </td>
+        <td style="background: #AEF1AE">
+          AuthManager.this.jwtAlgorithm
+        </td>
+      </tr><tr>
+        <td>
+          75
+        </td>
+        <td>
+          986
+        </td>
+        <td>
+          2496
+          -
+          2513
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.Seq.apply[pdi.jwt.JwtAlgorithm.HS256.type](AuthManager.this.jwtAlgorithm)
+        </td>
+      </tr><tr>
+        <td>
+          75
+        </td>
+        <td>
+          132
+        </td>
+        <td>
+          2485
+          -
+          2494
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.controller.auth.AuthManager.secretKey
+        </td>
+        <td style="background: #AEF1AE">
+          AuthManager.this.secretKey
+        </td>
+      </tr><tr>
+        <td>
+          75
+        </td>
+        <td>
+          215
+        </td>
+        <td>
+          2466
+          -
+          2514
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          pdi.jwt.JwtCore.isValid
+        </td>
+        <td style="background: #AEF1AE">
+          pdi.jwt.Jwt.isValid(token, AuthManager.this.secretKey, scala.collection.Seq.apply[pdi.jwt.JwtAlgorithm.HS256.type](AuthManager.this.jwtAlgorithm))
+        </td>
+      </tr><tr>
+        <td>
+          75
+        </td>
+        <td>
+          1893
+        </td>
+        <td>
+          2500
+          -
+          2512
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.controller.auth.AuthManager.jwtAlgorithm
+        </td>
+        <td style="background: #AEF1AE">
+          AuthManager.this.jwtAlgorithm
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          762
+        </td>
+        <td>
+          2764
+          -
+          2776
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.controller.auth.AuthManager.jwtAlgorithm
+        </td>
+        <td style="background: #AEF1AE">
+          AuthManager.this.jwtAlgorithm
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          1619
+        </td>
+        <td>
+          2749
+          -
+          2758
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.controller.auth.AuthManager.secretKey
+        </td>
+        <td style="background: #AEF1AE">
+          AuthManager.this.secretKey
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          411
+        </td>
+        <td>
+          2760
+          -
+          2777
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.Seq.apply[pdi.jwt.JwtAlgorithm.HS256.type](AuthManager.this.jwtAlgorithm)
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          1663
+        </td>
+        <td>
+          2725
+          -
+          2778
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          pdi.jwt.JwtCore.decodeRawAll
+        </td>
+        <td style="background: #AEF1AE">
+          pdi.jwt.Jwt.decodeRawAll(token, AuthManager.this.secretKey, scala.collection.Seq.apply[pdi.jwt.JwtAlgorithm.HS256.type](AuthManager.this.jwtAlgorithm))
+        </td>
+      </tr><tr>
+        <td>
+          87
+        </td>
+        <td>
+          134
+        </td>
+        <td>
+          2918
+          -
+          2947
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.controller.auth.LoginJsonSupport.LoginFormats
+        </td>
+        <td style="background: #AEF1AE">
+          LoginJsonSupport.LoginFormats
+        </td>
+      </tr><tr>
+        <td>
+          87
+        </td>
+        <td>
+          1814
+        </td>
+        <td>
+          2879
+          -
+          2948
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          spray.json.JsValue.convertTo
+        </td>
+        <td style="background: #AEF1AE">
+          spray.json.JsonParser.apply(json.this.ParserInput.apply(claim)).convertTo[org.riskala.controller.auth.LoginData](LoginJsonSupport.LoginFormats)
+        </td>
+      </tr><tr>
+        <td>
+          87
+        </td>
+        <td>
+          1087
+        </td>
+        <td>
+          2875
+          -
+          2949
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.Try.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.util.Try.apply[org.riskala.controller.auth.LoginData](spray.json.JsonParser.apply(json.this.ParserInput.apply(claim)).convertTo[org.riskala.controller.auth.LoginData](LoginJsonSupport.LoginFormats))
+        </td>
+      </tr><tr>
+        <td>
+          87
+        </td>
+        <td>
+          900
+        </td>
+        <td>
+          2890
+          -
+          2895
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          spray.json.ParserInput.apply
+        </td>
+        <td style="background: #AEF1AE">
+          json.this.ParserInput.apply(claim)
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          1590
+        </td>
+        <td>
+          2996
+          -
+          3016
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[String](login.username)
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          221
+        </td>
+        <td>
+          3001
+          -
+          3015
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.controller.auth.LoginData.username
+        </td>
+        <td style="background: #AEF1AE">
+          login.username
+        </td>
+      </tr><tr>
+        <td>
+          89
+        </td>
+        <td>
+          768
+        </td>
+        <td>
+          3042
+          -
+          3046
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          92
+        </td>
+        <td>
+          374
+        </td>
+        <td>
+          3088
+          -
+          3092
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #F0ADAD">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          103
+        </td>
+        <td>
+          1692
+        </td>
+        <td>
+          3353
+          -
+          3363
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.controller.auth.Account.email
+        </td>
+        <td style="background: #F0ADAD">
+          user.email
+        </td>
+      </tr><tr>
+        <td>
+          103
+        </td>
+        <td>
+          905
+        </td>
+        <td>
+          3316
+          -
+          3364
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.map
+        </td>
+        <td style="background: #F0ADAD">
+          AuthManager.this.credential.get(userName).map[String](((user: org.riskala.controller.auth.Account) =&gt; user.email))
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

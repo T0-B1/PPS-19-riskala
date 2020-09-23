@@ -1,0 +1,701 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          src\main\scala\org\riskala\model\logic\GameSnapshot.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier, monospace;'>1 <span style=''>package org.riskala.model.logic
+</span>2 <span style=''>
+</span>3 <span style=''>import org.riskala.model.Cards.Cards
+</span>4 <span style=''>import org.riskala.model.Objectives.Objective
+</span>5 <span style=''>import org.riskala.model.map.{Geopolitics, MapGeography, PlayerState}
+</span>6 <span style=''>import org.riskala.model.{Objectives, Player}
+</span>7 <span style=''>import org.riskala.utils.{MapLoader, Utils}
+</span>8 <span style=''>
+</span>9 <span style=''>/**
+</span>10 <span style=''> * An instance of a game in a given moment
+</span>11 <span style=''> *
+</span>12 <span style=''> * @param players Players
+</span>13 <span style=''> * @param scenario Scenario
+</span>14 <span style=''> * @param geopolitics State of the map wrt the owners of the state and the troops stationed in every state
+</span>15 <span style=''> * @param nowPlaying Player whose turn it is
+</span>16 <span style=''> * @param turn Number of the current turn
+</span>17 <span style=''> * @param deployableTroops Max number of troops deployable by the current player
+</span>18 <span style=''> * @param cards Set of cards in the hands of every player
+</span>19 <span style=''> * @param objectives Objectives of every player
+</span>20 <span style=''> * @param winner Optional winner of the game
+</span>21 <span style=''> */
+</span>22 <span style=''>case class GameSnapshot(players: Seq[Player],
+</span>23 <span style=''>                        scenario: MapGeography,
+</span>24 <span style=''>                        geopolitics: Geopolitics,
+</span>25 <span style=''>                        nowPlaying: Player,
+</span>26 <span style=''>                        turn: Int,
+</span>27 <span style=''>                        deployableTroops: Int,
+</span>28 <span style=''>                        cards: Map[Player, Seq[Cards]],
+</span>29 <span style=''>                        objectives: Map[Player, Objective],
+</span>30 <span style=''>                        winner: Option[Player] = None)
+</span>31 <span style=''>
+</span>32 <span style=''>object GameSnapshot {
+</span>33 <span style=''>
+</span>34 <span style=''>  /**
+</span>35 <span style=''>   * Initializes a new game given a set of players and a scenario
+</span>36 <span style=''>   *
+</span>37 <span style=''>   * @param players Players
+</span>38 <span style=''>   * @param scenario A scenario
+</span>39 <span style=''>   * @return The initialized game
+</span>40 <span style=''>   */
+</span>41 <span style=''>  def newGame(players: Seq[Player],
+</span>42 <span style=''>              scenario: MapGeography) : GameSnapshot = {
+</span>43 <span style=''>    val geopolitics: Geopolitics = </span><span style='background: #AEF1AE'>Geopolitics(scenario.states.map(s=&gt; PlayerState(s, Utils.randomSetElement[Player](players.toSet), 1)))</span><span style=''>
+</span>44 <span style=''>    val nowPlaying: Player = </span><span style='background: #AEF1AE'>Utils.randomSetElement(players.toSet)</span><span style=''>
+</span>45 <span style=''>    val cards: Map[Player, Seq[Cards]] = </span><span style='background: #AEF1AE'>players.map(p =&gt; (p, Seq.empty[Cards])).toMap</span><span style=''>
+</span>46 <span style=''>    val objectives: Map[Player, Objective] = </span><span style='background: #AEF1AE'>players.map(p =&gt; (p, Objectives.generateRandomObjective(scenario, players.size))).toMap</span><span style=''>
+</span>47 <span style=''>    val deployable = </span><span style='background: #AEF1AE'>statesOwned(nowPlaying, geopolitics)</span><span style=''>
+</span>48 <span style=''>    </span><span style='background: #AEF1AE'>GameSnapshot(players, scenario, geopolitics, nowPlaying, 1, deployable, cards, objectives)</span><span style=''>
+</span>49 <span style=''>  }
+</span>50 <span style=''>
+</span>51 <span style=''>  /**
+</span>52 <span style=''>   * Initializes a new game given a set of players and the name of a scenario
+</span>53 <span style=''>   *
+</span>54 <span style=''>   * @param players Players
+</span>55 <span style=''>   * @param scenario A scenario
+</span>56 <span style=''>   * @return The initialized game
+</span>57 <span style=''>   */
+</span>58 <span style=''>  def newGame(players: Seq[Player],
+</span>59 <span style=''>              scenario: String) : GameSnapshot = {
+</span>60 <span style=''>    </span><span style='background: #AEF1AE'>newGame(players, MapLoader.loadMap(scenario).get)</span><span style=''>
+</span>61 <span style=''>  }
+</span>62 <span style=''>
+</span>63 <span style=''>  /**
+</span>64 <span style=''>   * Returns all the states owned by a player
+</span>65 <span style=''>   * @param player The owner
+</span>66 <span style=''>   * @param geopolitics The current status of the map
+</span>67 <span style=''>   * @return His states
+</span>68 <span style=''>   */
+</span>69 <span style=''>  def statesOwned(player: Player, geopolitics: Geopolitics) : Int =
+</span>70 <span style=''>    </span><span style='background: #AEF1AE'>geopolitics.states.count(s =&gt; s.owner.equals(player))</span><span style=''>
+</span>71 <span style=''>
+</span>72 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          1066
+        </td>
+        <td>
+          1705
+          -
+          1718
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toSet
+        </td>
+        <td style="background: #AEF1AE">
+          players.toSet[org.riskala.model.Player]
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          818
+        </td>
+        <td>
+          1623
+          -
+          1725
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.map.Geopolitics.apply
+        </td>
+        <td style="background: #AEF1AE">
+          org.riskala.model.map.Geopolitics.apply(scenario.states.map[org.riskala.model.map.PlayerState, Set[org.riskala.model.map.PlayerState]](((s: org.riskala.model.map.State.State) =&gt; org.riskala.model.map.PlayerState.apply(s, org.riskala.utils.Utils.randomSetElement[org.riskala.model.Player](players.toSet[org.riskala.model.Player]), 1)))(immutable.this.Set.canBuildFrom[org.riskala.model.map.PlayerState]))
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          1735
+        </td>
+        <td>
+          1635
+          -
+          1724
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.SetLike.map
+        </td>
+        <td style="background: #AEF1AE">
+          scenario.states.map[org.riskala.model.map.PlayerState, Set[org.riskala.model.map.PlayerState]](((s: org.riskala.model.map.State.State) =&gt; org.riskala.model.map.PlayerState.apply(s, org.riskala.utils.Utils.randomSetElement[org.riskala.model.Player](players.toSet[org.riskala.model.Player]), 1)))(immutable.this.Set.canBuildFrom[org.riskala.model.map.PlayerState])
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          150
+        </td>
+        <td>
+          1674
+          -
+          1719
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.utils.Utils.randomSetElement
+        </td>
+        <td style="background: #AEF1AE">
+          org.riskala.utils.Utils.randomSetElement[org.riskala.model.Player](players.toSet[org.riskala.model.Player])
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          332
+        </td>
+        <td>
+          1654
+          -
+          1654
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.immutable.Set.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.Set.canBuildFrom[org.riskala.model.map.PlayerState]
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          1504
+        </td>
+        <td>
+          1721
+          -
+          1722
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          1
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          1184
+        </td>
+        <td>
+          1659
+          -
+          1723
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.map.PlayerState.apply
+        </td>
+        <td style="background: #AEF1AE">
+          org.riskala.model.map.PlayerState.apply(s, org.riskala.utils.Utils.randomSetElement[org.riskala.model.Player](players.toSet[org.riskala.model.Player]), 1)
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          499
+        </td>
+        <td>
+          1779
+          -
+          1792
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toSet
+        </td>
+        <td style="background: #AEF1AE">
+          players.toSet[org.riskala.model.Player]
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          1869
+        </td>
+        <td>
+          1756
+          -
+          1793
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.utils.Utils.randomSetElement
+        </td>
+        <td style="background: #AEF1AE">
+          org.riskala.utils.Utils.randomSetElement[org.riskala.model.Player](players.toSet[org.riskala.model.Player])
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          155
+        </td>
+        <td>
+          1853
+          -
+          1874
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Tuple2.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Tuple2.apply[org.riskala.model.Player, Seq[org.riskala.model.Cards.Cards]](p, scala.collection.Seq.empty[org.riskala.model.Cards.Cards])
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          1069
+        </td>
+        <td>
+          1857
+          -
+          1873
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.empty
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.Seq.empty[org.riskala.model.Cards.Cards]
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          321
+        </td>
+        <td>
+          1836
+          -
+          1881
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toMap
+        </td>
+        <td style="background: #AEF1AE">
+          players.map[(org.riskala.model.Player, Seq[org.riskala.model.Cards.Cards]), Seq[(org.riskala.model.Player, Seq[org.riskala.model.Cards.Cards])]](((p: org.riskala.model.Player) =&gt; scala.Tuple2.apply[org.riskala.model.Player, Seq[org.riskala.model.Cards.Cards]](p, scala.collection.Seq.empty[org.riskala.model.Cards.Cards])))(collection.this.Seq.canBuildFrom[(org.riskala.model.Player, Seq[org.riskala.model.Cards.Cards])]).toMap[org.riskala.model.Player, Seq[org.riskala.model.Cards.Cards]](scala.Predef.$conforms[(org.riskala.model.Player, Seq[org.riskala.model.Cards.Cards])])
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          1191
+        </td>
+        <td>
+          1876
+          -
+          1876
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Predef.$conforms
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.$conforms[(org.riskala.model.Player, Seq[org.riskala.model.Cards.Cards])]
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          1573
+        </td>
+        <td>
+          1847
+          -
+          1847
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[(org.riskala.model.Player, Seq[org.riskala.model.Cards.Cards])]
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          1874
+        </td>
+        <td>
+          1939
+          -
+          1939
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[(org.riskala.model.Player, org.riskala.model.Objectives.Objective)]
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          1025
+        </td>
+        <td>
+          2010
+          -
+          2010
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.Predef.$conforms
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.$conforms[(org.riskala.model.Player, org.riskala.model.Objectives.Objective)]
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          456
+        </td>
+        <td>
+          1945
+          -
+          2008
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Tuple2.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Tuple2.apply[org.riskala.model.Player, org.riskala.model.Objectives.Objective](p, org.riskala.model.Objectives.generateRandomObjective(scenario, players.size))
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          255
+        </td>
+        <td>
+          1928
+          -
+          2015
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toMap
+        </td>
+        <td style="background: #AEF1AE">
+          players.map[(org.riskala.model.Player, org.riskala.model.Objectives.Objective), Seq[(org.riskala.model.Player, org.riskala.model.Objectives.Objective)]](((p: org.riskala.model.Player) =&gt; scala.Tuple2.apply[org.riskala.model.Player, org.riskala.model.Objectives.Objective](p, org.riskala.model.Objectives.generateRandomObjective(scenario, players.size))))(collection.this.Seq.canBuildFrom[(org.riskala.model.Player, org.riskala.model.Objectives.Objective)]).toMap[org.riskala.model.Player, org.riskala.model.Objectives.Objective](scala.Predef.$conforms[(org.riskala.model.Player, org.riskala.model.Objectives.Objective)])
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          1738
+        </td>
+        <td>
+          1994
+          -
+          2006
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.size
+        </td>
+        <td style="background: #AEF1AE">
+          players.size
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          823
+        </td>
+        <td>
+          1949
+          -
+          2007
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.Objectives.generateRandomObjective
+        </td>
+        <td style="background: #AEF1AE">
+          org.riskala.model.Objectives.generateRandomObjective(scenario, players.size)
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          1579
+        </td>
+        <td>
+          2038
+          -
+          2074
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.logic.GameSnapshot.statesOwned
+        </td>
+        <td style="background: #AEF1AE">
+          GameSnapshot.this.statesOwned(nowPlaying, geopolitics)
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          1147
+        </td>
+        <td>
+          2137
+          -
+          2138
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          1
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          327
+        </td>
+        <td>
+          2080
+          -
+          2080
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.logic.GameSnapshot.apply$default$9
+        </td>
+        <td style="background: #AEF1AE">
+          GameSnapshot.apply$default$9
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          1685
+        </td>
+        <td>
+          2080
+          -
+          2170
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.logic.GameSnapshot.apply
+        </td>
+        <td style="background: #AEF1AE">
+          GameSnapshot.apply(players, scenario, geopolitics, nowPlaying, 1, deployable, cards, objectives, GameSnapshot.apply$default$9)
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          855
+        </td>
+        <td>
+          2485
+          -
+          2516
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Option.get
+        </td>
+        <td style="background: #AEF1AE">
+          org.riskala.utils.MapLoader.loadMap(scenario).get
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          107
+        </td>
+        <td>
+          2468
+          -
+          2517
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.logic.GameSnapshot.newGame
+        </td>
+        <td style="background: #AEF1AE">
+          GameSnapshot.this.newGame(players, org.riskala.utils.MapLoader.loadMap(scenario).get)
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          1773
+        </td>
+        <td>
+          2800
+          -
+          2822
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.Player.equals
+        </td>
+        <td style="background: #AEF1AE">
+          s.owner.equals(player)
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          1004
+        </td>
+        <td>
+          2770
+          -
+          2823
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.count
+        </td>
+        <td style="background: #AEF1AE">
+          geopolitics.states.count(((s: org.riskala.model.map.PlayerState) =&gt; s.owner.equals(player)))
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

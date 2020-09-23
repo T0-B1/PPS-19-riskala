@@ -1,0 +1,1971 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          src\main\scala\org\riskala\controller\actors\player\LobbyPlayerBehavior.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier, monospace;'>1 <span style=''>package org.riskala.controller.actors.player
+</span>2 <span style=''>
+</span>3 <span style=''>import akka.actor
+</span>4 <span style=''>import akka.actor.typed.scaladsl.Behaviors
+</span>5 <span style=''>import akka.actor.typed.{ActorRef, Behavior}
+</span>6 <span style=''>import akka.http.scaladsl.model.ws.TextMessage
+</span>7 <span style=''>import org.riskala.controller.actors.player.PlayerMessages._
+</span>8 <span style=''>import org.riskala.controller.actors.Messages.{LobbyMessage, Logout}
+</span>9 <span style=''>import org.riskala.controller.actors.lobby.LobbyMessages.{CreateRoom, JoinTo, Subscribe}
+</span>10 <span style=''>import org.riskala.utils.Parser
+</span>11 <span style=''>import org.riskala.client.messages.FromClientMessages.{CreateMessage, JoinMessage}
+</span>12 <span style=''>import org.riskala.client.messages.ToClientMessages
+</span>13 <span style=''>import org.riskala.client.messages.ToClientMessages.{LobbyInfo, RoomBasicInfo, RoomInfo}
+</span>14 <span style=''>
+</span>15 <span style=''>object LobbyPlayerBehavior {
+</span>16 <span style=''>
+</span>17 <span style=''>  /**
+</span>18 <span style=''>   * Creates a PlayerLobbyBehavior which handles lobby messages
+</span>19 <span style=''>   * @param username Username of the player
+</span>20 <span style=''>   * @param lobby The actorRef of the lobbyManager
+</span>21 <span style=''>   * @param socket Classic Akka Actor which handles a socket
+</span>22 <span style=''>   * @return A new PlayerLobbyBehavior
+</span>23 <span style=''>   * */
+</span>24 <span style=''>  def apply(username: String, lobby: ActorRef[LobbyMessage], socket: actor.ActorRef): Behavior[PlayerMessage] = {
+</span>25 <span style=''>    </span><span style='background: #AEF1AE'>Behaviors.setup { context =&gt;
+</span>26 <span style=''></span><span style='background: #AEF1AE'>      context.log.info(&quot;PlayerLobbyBehavior subscribing to Lobby&quot;)
+</span>27 <span style=''></span><span style='background: #AEF1AE'>      lobby ! Subscribe(context.self)
+</span>28 <span style=''></span><span style='background: #AEF1AE'>      lobbyPlayerBehavior(username, lobby, socket)
+</span>29 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
+</span>30 <span style=''>  }
+</span>31 <span style=''>
+</span>32 <span style=''>  private def lobbyPlayerBehavior(username: String,
+</span>33 <span style=''>                          lobby: ActorRef[LobbyMessage],
+</span>34 <span style=''>                          socket: actor.ActorRef): Behavior[PlayerMessage] = {
+</span>35 <span style=''>    </span><span style='background: #AEF1AE'>Behaviors.receive { (context,message) =&gt;
+</span>36 <span style=''></span><span style='background: #AEF1AE'>
+</span>37 <span style=''></span><span style='background: #AEF1AE'>      message match {
+</span>38 <span style=''></span><span style='background: #AEF1AE'>
+</span>39 <span style=''></span><span style='background: #AEF1AE'>        case SocketMessage(payload) =&gt;
+</span>40 <span style=''></span><span style='background: #AEF1AE'>          context.log.info(s&quot;PlayerActor of $username received socket payload: $payload&quot;)
+</span>41 <span style=''></span><span style='background: #AEF1AE'>          val wrappedOpt = Parser.retrieveWrapped(payload)
+</span>42 <span style=''></span><span style='background: #AEF1AE'>          if(wrappedOpt.isDefined) {
+</span>43 <span style=''></span><span style='background: #AEF1AE'>            val wrapped = wrappedOpt.get
+</span>44 <span style=''></span><span style='background: #AEF1AE'>            wrapped.classType match {
+</span>45 <span style=''></span><span style='background: #AEF1AE'>
+</span>46 <span style=''></span><span style='background: #AEF1AE'>              case &quot;JoinMessage&quot; =&gt;
+</span>47 <span style=''></span><span style='background: #AEF1AE'>                context.log.info(&quot;PlayerLobbyActor received JoinMessage&quot;)
+</span>48 <span style=''></span><span style='background: #AEF1AE'>                Parser.retrieveMessage(wrapped.payload, JoinMessage.JoinCodecJson.Decoder)
+</span>49 <span style=''></span><span style='background: #AEF1AE'>                  .foreach(j =&gt; lobby ! JoinTo(context.self, j.name))
+</span>50 <span style=''></span><span style='background: #AEF1AE'>                Behaviors.same
+</span>51 <span style=''></span><span style='background: #AEF1AE'>
+</span>52 <span style=''></span><span style='background: #AEF1AE'>              case &quot;CreateMessage&quot; =&gt;
+</span>53 <span style=''></span><span style='background: #AEF1AE'>                </span><span style='background: #F0ADAD'>context.log.info(&quot;PlayerLobbyActor received CreateMessage&quot;)</span><span style='background: #AEF1AE'>
+</span>54 <span style=''></span><span style='background: #AEF1AE'>                </span><span style='background: #F0ADAD'>Parser.retrieveMessage(wrapped.payload, CreateMessage.CreateCodecJson.Decoder)
+</span>55 <span style=''></span><span style='background: #F0ADAD'>                  .foreach(r =&gt;
+</span>56 <span style=''></span><span style='background: #F0ADAD'>                    lobby ! CreateRoom(context.self, RoomInfo(RoomBasicInfo(r.name, 0, r.maxPlayer), Set.empty, r.scenario)))</span><span style='background: #AEF1AE'>
+</span>57 <span style=''></span><span style='background: #AEF1AE'>                </span><span style='background: #F0ADAD'>Behaviors.same</span><span style='background: #AEF1AE'>
+</span>58 <span style=''></span><span style='background: #AEF1AE'>
+</span>59 <span style=''></span><span style='background: #AEF1AE'>              case &quot;LogoutMessage&quot; =&gt;
+</span>60 <span style=''></span><span style='background: #AEF1AE'>                </span><span style='background: #F0ADAD'>context.log.info(&quot;PlayerLobbyActor received LogoutMessage&quot;)</span><span style='background: #AEF1AE'>
+</span>61 <span style=''></span><span style='background: #AEF1AE'>                </span><span style='background: #F0ADAD'>lobby ! Logout(context.self)</span><span style='background: #AEF1AE'>
+</span>62 <span style=''></span><span style='background: #AEF1AE'>                </span><span style='background: #F0ADAD'>Behaviors.stopped</span><span style='background: #AEF1AE'>
+</span>63 <span style=''></span><span style='background: #AEF1AE'>
+</span>64 <span style=''></span><span style='background: #AEF1AE'>              case _ =&gt;
+</span>65 <span style=''></span><span style='background: #AEF1AE'>                context.log.info(&quot;PlayerLobbyActor received an unhandled message, IGNORED&quot;)
+</span>66 <span style=''></span><span style='background: #AEF1AE'>                Behaviors.same
+</span>67 <span style=''></span><span style='background: #AEF1AE'>
+</span>68 <span style=''></span><span style='background: #AEF1AE'>            }
+</span>69 <span style=''></span><span style='background: #AEF1AE'>          } else </span><span style='background: #F0ADAD'>{
+</span>70 <span style=''></span><span style='background: #F0ADAD'>            context.log.info(&quot;PlayerLobbyActor failed to retrieve message, IGNORED&quot;)
+</span>71 <span style=''></span><span style='background: #F0ADAD'>            Behaviors.same
+</span>72 <span style=''></span><span style='background: #F0ADAD'>          }</span><span style='background: #AEF1AE'>
+</span>73 <span style=''></span><span style='background: #AEF1AE'>
+</span>74 <span style=''></span><span style='background: #AEF1AE'>        case LobbyInfoMessage(lobbyInfo) =&gt;
+</span>75 <span style=''></span><span style='background: #AEF1AE'>          context.log.info(s&quot;PlayerActor of $username received LobbyInfoMessage&quot;)
+</span>76 <span style=''></span><span style='background: #AEF1AE'>          socket ! TextMessage(Parser.wrap(&quot;LobbyInfo&quot;,lobbyInfo,LobbyInfo.LobbyInfoCodecJson.Encoder))
+</span>77 <span style=''></span><span style='background: #AEF1AE'>          Behaviors.same
+</span>78 <span style=''></span><span style='background: #AEF1AE'>
+</span>79 <span style=''></span><span style='background: #AEF1AE'>        case errorMessage: PlayerMessages.ErrorMessage =&gt;
+</span>80 <span style=''></span><span style='background: #AEF1AE'>          context.log.info(s&quot;PlayerActor of $username received ErrorMessage&quot;)
+</span>81 <span style=''></span><span style='background: #AEF1AE'>          val clientError = ToClientMessages.ErrorMessage(errorMessage.error)
+</span>82 <span style=''></span><span style='background: #AEF1AE'>          socket ! TextMessage(Parser.wrap(&quot;ErrorMessage&quot;,
+</span>83 <span style=''></span><span style='background: #AEF1AE'>            clientError,
+</span>84 <span style=''></span><span style='background: #AEF1AE'>            ToClientMessages.ErrorMessage.ErrorCodecJson.Encoder))
+</span>85 <span style=''></span><span style='background: #AEF1AE'>          Behaviors.same
+</span>86 <span style=''></span><span style='background: #AEF1AE'>
+</span>87 <span style=''></span><span style='background: #AEF1AE'>        case RegisterSocket(newSocketActor) =&gt;
+</span>88 <span style=''></span><span style='background: #AEF1AE'>          context.log.info(s&quot;PlayerActor of $username registering new socket&quot;)
+</span>89 <span style=''></span><span style='background: #AEF1AE'>          LobbyPlayerBehavior(username, lobby, newSocketActor)
+</span>90 <span style=''></span><span style='background: #AEF1AE'>
+</span>91 <span style=''></span><span style='background: #AEF1AE'>        case RoomReferent(room) =&gt;
+</span>92 <span style=''></span><span style='background: #AEF1AE'>          context.log.info(s&quot;PlayerActor of $username received RoomReferent&quot;)
+</span>93 <span style=''></span><span style='background: #AEF1AE'>          RoomPlayerBehavior(username,room,socket)
+</span>94 <span style=''></span><span style='background: #AEF1AE'>
+</span>95 <span style=''></span><span style='background: #AEF1AE'>        case GameReferent(game) =&gt;
+</span>96 <span style=''></span><span style='background: #AEF1AE'>          </span><span style='background: #F0ADAD'>context.log.info(s&quot;PlayerActor of $username received GameReferent&quot;)</span><span style='background: #AEF1AE'>
+</span>97 <span style=''></span><span style='background: #AEF1AE'>          </span><span style='background: #F0ADAD'>GamePlayerBehavior(username,game,socket)</span><span style='background: #AEF1AE'>
+</span>98 <span style=''></span><span style='background: #AEF1AE'>
+</span>99 <span style=''></span><span style='background: #AEF1AE'>        case other =&gt;
+</span>100 <span style=''></span><span style='background: #AEF1AE'>          context.log.info(s&quot;PlayerActor of $username received &quot;+ other +&quot;, IGNORED&quot;)
+</span>101 <span style=''></span><span style='background: #AEF1AE'>          Behaviors.same
+</span>102 <span style=''></span><span style='background: #AEF1AE'>
+</span>103 <span style=''></span><span style='background: #AEF1AE'>      }
+</span>104 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
+</span>105 <span style=''>  }
+</span>106 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          933
+        </td>
+        <td>
+          1120
+          -
+          1314
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.actor.typed.scaladsl.Behaviors.setup
+        </td>
+        <td style="background: #AEF1AE">
+          akka.actor.typed.scaladsl.Behaviors.setup[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage](((context: akka.actor.typed.scaladsl.ActorContext[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]) =&gt; {
+  context.log.info(&quot;PlayerLobbyBehavior subscribing to Lobby&quot;);
+  typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.Messages.LobbyMessage](lobby).!(org.riskala.controller.actors.lobby.LobbyMessages.Subscribe.apply(context.self));
+  LobbyPlayerBehavior.this.lobbyPlayerBehavior(username, lobby, socket)
+}))
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          226
+        </td>
+        <td>
+          1156
+          -
+          1216
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.slf4j.Logger.info
+        </td>
+        <td style="background: #AEF1AE">
+          context.log.info(&quot;PlayerLobbyBehavior subscribing to Lobby&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          1551
+        </td>
+        <td>
+          1242
+          -
+          1254
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          akka.actor.typed.scaladsl.ActorContext.self
+        </td>
+        <td style="background: #AEF1AE">
+          context.self
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          1173
+        </td>
+        <td>
+          1232
+          -
+          1255
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.lobby.LobbyMessages.Subscribe.apply
+        </td>
+        <td style="background: #AEF1AE">
+          org.riskala.controller.actors.lobby.LobbyMessages.Subscribe.apply(context.self)
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          302
+        </td>
+        <td>
+          1224
+          -
+          1255
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.actor.typed.ActorRef.ActorRefOps.!
+        </td>
+        <td style="background: #AEF1AE">
+          typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.Messages.LobbyMessage](lobby).!(org.riskala.controller.actors.lobby.LobbyMessages.Subscribe.apply(context.self))
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          1679
+        </td>
+        <td>
+          1263
+          -
+          1307
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.player.LobbyPlayerBehavior.lobbyPlayerBehavior
+        </td>
+        <td style="background: #AEF1AE">
+          LobbyPlayerBehavior.this.lobbyPlayerBehavior(username, lobby, socket)
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          183
+        </td>
+        <td>
+          1518
+          -
+          4473
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.actor.typed.scaladsl.Behaviors.receive
+        </td>
+        <td style="background: #AEF1AE">
+          akka.actor.typed.scaladsl.Behaviors.receive[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage](((context: akka.actor.typed.scaladsl.ActorContext[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage], message: org.riskala.controller.actors.player.PlayerMessages.PlayerMessage) =&gt; message match {
+  case (payload: String)org.riskala.controller.actors.player.PlayerMessages.SocketMessage((payload @ _)) =&gt; {
+    context.log.info(scala.StringContext.apply(&quot;PlayerActor of &quot;, &quot; received socket payload: &quot;, &quot;&quot;).s(username, payload));
+    val wrappedOpt: Option[org.riskala.client.messages.WrappedMessage] = org.riskala.utils.Parser.retrieveWrapped(payload);
+    if (wrappedOpt.isDefined)
+      {
+        val wrapped: org.riskala.client.messages.WrappedMessage = wrappedOpt.get;
+        wrapped.classType match {
+          case &quot;JoinMessage&quot; =&gt; {
+            context.log.info(&quot;PlayerLobbyActor received JoinMessage&quot;);
+            org.riskala.utils.Parser.retrieveMessage[org.riskala.client.messages.FromClientMessages.JoinMessage](wrapped.payload, org.riskala.client.messages.FromClientMessages.JoinMessage.JoinCodecJson.Decoder).foreach[Unit](((j: org.riskala.client.messages.FromClientMessages.JoinMessage) =&gt; typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.Messages.LobbyMessage](lobby).!(org.riskala.controller.actors.lobby.LobbyMessages.JoinTo.apply(context.self, j.name))));
+            akka.actor.typed.scaladsl.Behaviors.same[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]
+          }
+          case &quot;CreateMessage&quot; =&gt; {
+            context.log.info(&quot;PlayerLobbyActor received CreateMessage&quot;);
+            org.riskala.utils.Parser.retrieveMessage[org.riskala.client.messages.FromClientMessages.CreateMessage](wrapped.payload, org.riskala.client.messages.FromClientMessages.CreateMessage.CreateCodecJson.Decoder).foreach[Unit](((r: org.riskala.client.messages.FromClientMessages.CreateMessage) =&gt; typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.Messages.LobbyMessage](lobby).!(org.riskala.controller.actors.lobby.LobbyMessages.CreateRoom.apply(context.self, org.riskala.client.messages.ToClientMessages.RoomInfo.apply(org.riskala.client.messages.ToClientMessages.RoomBasicInfo.apply(r.name, 0, r.maxPlayer), scala.Predef.Set.empty[org.riskala.model.Player], r.scenario)))));
+            akka.actor.typed.scaladsl.Behaviors.same[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]
+          }
+          case &quot;LogoutMessage&quot; =&gt; {
+            context.log.info(&quot;PlayerLobbyActor received LogoutMessage&quot;);
+            typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.Messages.LobbyMessage](lobby).!(org.riskala.controller.actors.Messages.Logout.apply(context.self));
+            akka.actor.typed.scaladsl.Behaviors.stopped[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]
+          }
+          case _ =&gt; {
+            context.log.info(&quot;PlayerLobbyActor received an unhandled message, IGNORED&quot;);
+            akka.actor.typed.scaladsl.Behaviors.same[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]
+          }
+        }
+      }
+    else
+      {
+        context.log.info(&quot;PlayerLobbyActor failed to retrieve message, IGNORED&quot;);
+        akka.actor.typed.scaladsl.Behaviors.same[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]
+      }
+  }
+  case (lobbyInfo: org.riskala.client.messages.ToClientMessages.LobbyInfo)org.riskala.controller.actors.player.PlayerMessages.LobbyInfoMessage((lobbyInfo @ _)) =&gt; {
+    context.log.info(scala.StringContext.apply(&quot;PlayerActor of &quot;, &quot; received LobbyInfoMessage&quot;).s(username));
+    {
+      &lt;artifact&gt; val qual$1: akka.actor.ScalaActorRef = actor.this.`package`.actorRef2Scala(socket);
+      &lt;artifact&gt; val x$1: akka.http.scaladsl.model.ws.TextMessage.Strict = akka.http.scaladsl.model.ws.TextMessage.apply(org.riskala.utils.Parser.wrap[org.riskala.client.messages.ToClientMessages.LobbyInfo](&quot;LobbyInfo&quot;, lobbyInfo, org.riskala.client.messages.ToClientMessages.LobbyInfo.LobbyInfoCodecJson.Encoder));
+      &lt;artifact&gt; val x$2: akka.actor.ActorRef = qual$1.!$default$2(x$1);
+      qual$1.!(x$1)(x$2)
+    };
+    akka.actor.typed.scaladsl.Behaviors.same[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]
+  }
+  case (errorMessage @ (_: org.riskala.controller.actors.player.PlayerMessages.ErrorMessage)) =&gt; {
+    context.log.info(scala.StringContext.apply(&quot;PlayerActor of &quot;, &quot; received ErrorMessage&quot;).s(username));
+    val clientError: org.riskala.client.messages.ToClientMessages.ErrorMessage = org.riskala.client.messages.ToClientMessages.ErrorMessage.apply(errorMessage.error);
+    {
+      &lt;artifact&gt; val qual$2: akka.actor.ScalaActorRef = actor.this.`package`.actorRef2Scala(socket);
+      &lt;artifact&gt; val x$3: akka.http.scaladsl.model.ws.TextMessage.Strict = akka.http.scaladsl.model.ws.TextMessage.apply(org.riskala.utils.Parser.wrap[org.riskala.client.messages.ToClientMessages.ErrorMessage](&quot;ErrorMessage&quot;, clientError, org.riskala.client.messages.ToClientMessages.ErrorMessage.ErrorCodecJson.Encoder));
+      &lt;artifact&gt; val x$4: akka.actor.ActorRef = qual$2.!$default$2(x$3);
+      qual$2.!(x$3)(x$4)
+    };
+    akka.actor.typed.scaladsl.Behaviors.same[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]
+  }
+  case (socketActor: akka.actor.ActorRef)org.riskala.controller.actors.player.PlayerMessages.RegisterSocket((newSocketActor @ _)) =&gt; {
+    context.log.info(scala.StringContext.apply(&quot;PlayerActor of &quot;, &quot; registering new socket&quot;).s(username));
+    LobbyPlayerBehavior.apply(username, lobby, newSocketActor)
+  }
+  case (room: akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.RoomMessage])org.riskala.controller.actors.player.PlayerMessages.RoomReferent((room @ _)) =&gt; {
+    context.log.info(scala.StringContext.apply(&quot;PlayerActor of &quot;, &quot; received RoomReferent&quot;).s(username));
+    RoomPlayerBehavior.apply(username, room, socket)
+  }
+  case (game: akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.GameMessage])org.riskala.controller.actors.player.PlayerMessages.GameReferent((game @ _)) =&gt; {
+    context.log.info(scala.StringContext.apply(&quot;PlayerActor of &quot;, &quot; received GameReferent&quot;).s(username));
+    GamePlayerBehavior.apply(username, game, socket)
+  }
+  case (other @ _) =&gt; {
+    context.log.info(scala.StringContext.apply(&quot;PlayerActor of &quot;, &quot; received &quot;).s(username).+(other).+(&quot;, IGNORED&quot;));
+    akka.actor.typed.scaladsl.Behaviors.same[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]
+  }
+}))
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          441
+        </td>
+        <td>
+          1654
+          -
+          1715
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;PlayerActor of &quot;, &quot; received socket payload: &quot;, &quot;&quot;).s(username, payload)
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          1785
+        </td>
+        <td>
+          1637
+          -
+          1716
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.slf4j.Logger.info
+        </td>
+        <td style="background: #AEF1AE">
+          context.log.info(scala.StringContext.apply(&quot;PlayerActor of &quot;, &quot; received socket payload: &quot;, &quot;&quot;).s(username, payload))
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          983
+        </td>
+        <td>
+          1745
+          -
+          1776
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.utils.Parser.retrieveWrapped
+        </td>
+        <td style="background: #AEF1AE">
+          org.riskala.utils.Parser.retrieveWrapped(payload)
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          1825
+        </td>
+        <td>
+          1813
+          -
+          2991
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  val wrapped: org.riskala.client.messages.WrappedMessage = wrappedOpt.get;
+  wrapped.classType match {
+    case &quot;JoinMessage&quot; =&gt; {
+      context.log.info(&quot;PlayerLobbyActor received JoinMessage&quot;);
+      org.riskala.utils.Parser.retrieveMessage[org.riskala.client.messages.FromClientMessages.JoinMessage](wrapped.payload, org.riskala.client.messages.FromClientMessages.JoinMessage.JoinCodecJson.Decoder).foreach[Unit](((j: org.riskala.client.messages.FromClientMessages.JoinMessage) =&gt; typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.Messages.LobbyMessage](lobby).!(org.riskala.controller.actors.lobby.LobbyMessages.JoinTo.apply(context.self, j.name))));
+      akka.actor.typed.scaladsl.Behaviors.same[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]
+    }
+    case &quot;CreateMessage&quot; =&gt; {
+      context.log.info(&quot;PlayerLobbyActor received CreateMessage&quot;);
+      org.riskala.utils.Parser.retrieveMessage[org.riskala.client.messages.FromClientMessages.CreateMessage](wrapped.payload, org.riskala.client.messages.FromClientMessages.CreateMessage.CreateCodecJson.Decoder).foreach[Unit](((r: org.riskala.client.messages.FromClientMessages.CreateMessage) =&gt; typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.Messages.LobbyMessage](lobby).!(org.riskala.controller.actors.lobby.LobbyMessages.CreateRoom.apply(context.self, org.riskala.client.messages.ToClientMessages.RoomInfo.apply(org.riskala.client.messages.ToClientMessages.RoomBasicInfo.apply(r.name, 0, r.maxPlayer), scala.Predef.Set.empty[org.riskala.model.Player], r.scenario)))));
+      akka.actor.typed.scaladsl.Behaviors.same[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]
+    }
+    case &quot;LogoutMessage&quot; =&gt; {
+      context.log.info(&quot;PlayerLobbyActor received LogoutMessage&quot;);
+      typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.Messages.LobbyMessage](lobby).!(org.riskala.controller.actors.Messages.Logout.apply(context.self));
+      akka.actor.typed.scaladsl.Behaviors.stopped[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]
+    }
+    case _ =&gt; {
+      context.log.info(&quot;PlayerLobbyActor received an unhandled message, IGNORED&quot;);
+      akka.actor.typed.scaladsl.Behaviors.same[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]
+    }
+  }
+}
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          260
+        </td>
+        <td>
+          1791
+          -
+          1811
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Option.isDefined
+        </td>
+        <td style="background: #AEF1AE">
+          wrappedOpt.isDefined
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          1616
+        </td>
+        <td>
+          1842
+          -
+          1856
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Option.get
+        </td>
+        <td style="background: #AEF1AE">
+          wrappedOpt.get
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          1132
+        </td>
+        <td>
+          1870
+          -
+          1887
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.messages.WrappedMessage.classType
+        </td>
+        <td style="background: #AEF1AE">
+          wrapped.classType
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          309
+        </td>
+        <td>
+          1952
+          -
+          2009
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.slf4j.Logger.info
+        </td>
+        <td style="background: #AEF1AE">
+          context.log.info(&quot;PlayerLobbyActor received JoinMessage&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          1659
+        </td>
+        <td>
+          2050
+          -
+          2065
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.messages.WrappedMessage.payload
+        </td>
+        <td style="background: #AEF1AE">
+          wrapped.payload
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          937
+        </td>
+        <td>
+          2067
+          -
+          2100
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.CodecJson.Decoder
+        </td>
+        <td style="background: #AEF1AE">
+          org.riskala.client.messages.FromClientMessages.JoinMessage.JoinCodecJson.Decoder
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          1620
+        </td>
+        <td>
+          2027
+          -
+          2172
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.foreach
+        </td>
+        <td style="background: #AEF1AE">
+          org.riskala.utils.Parser.retrieveMessage[org.riskala.client.messages.FromClientMessages.JoinMessage](wrapped.payload, org.riskala.client.messages.FromClientMessages.JoinMessage.JoinCodecJson.Decoder).foreach[Unit](((j: org.riskala.client.messages.FromClientMessages.JoinMessage) =&gt; typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.Messages.LobbyMessage](lobby).!(org.riskala.controller.actors.lobby.LobbyMessages.JoinTo.apply(context.self, j.name))))
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          989
+        </td>
+        <td>
+          2143
+          -
+          2171
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.lobby.LobbyMessages.JoinTo.apply
+        </td>
+        <td style="background: #AEF1AE">
+          org.riskala.controller.actors.lobby.LobbyMessages.JoinTo.apply(context.self, j.name)
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          543
+        </td>
+        <td>
+          2150
+          -
+          2162
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          akka.actor.typed.scaladsl.ActorContext.self
+        </td>
+        <td style="background: #AEF1AE">
+          context.self
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          217
+        </td>
+        <td>
+          2135
+          -
+          2171
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.actor.typed.ActorRef.ActorRefOps.!
+        </td>
+        <td style="background: #AEF1AE">
+          typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.Messages.LobbyMessage](lobby).!(org.riskala.controller.actors.lobby.LobbyMessages.JoinTo.apply(context.self, j.name))
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          1894
+        </td>
+        <td>
+          2164
+          -
+          2170
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.messages.FromClientMessages.JoinMessage.name
+        </td>
+        <td style="background: #AEF1AE">
+          j.name
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          1165
+        </td>
+        <td>
+          2190
+          -
+          2204
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          akka.actor.typed.scaladsl.Behaviors.same
+        </td>
+        <td style="background: #AEF1AE">
+          akka.actor.typed.scaladsl.Behaviors.same[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          410
+        </td>
+        <td>
+          2263
+          -
+          2322
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.slf4j.Logger.info
+        </td>
+        <td style="background: #F0ADAD">
+          context.log.info(&quot;PlayerLobbyActor received CreateMessage&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          899
+        </td>
+        <td>
+          2380
+          -
+          2417
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.CodecJson.Decoder
+        </td>
+        <td style="background: #F0ADAD">
+          org.riskala.client.messages.FromClientMessages.CreateMessage.CreateCodecJson.Decoder
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          1712
+        </td>
+        <td>
+          2363
+          -
+          2378
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.messages.WrappedMessage.payload
+        </td>
+        <td style="background: #F0ADAD">
+          wrapped.payload
+        </td>
+      </tr><tr>
+        <td>
+          55
+        </td>
+        <td>
+          1822
+        </td>
+        <td>
+          2340
+          -
+          2578
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.foreach
+        </td>
+        <td style="background: #F0ADAD">
+          org.riskala.utils.Parser.retrieveMessage[org.riskala.client.messages.FromClientMessages.CreateMessage](wrapped.payload, org.riskala.client.messages.FromClientMessages.CreateMessage.CreateCodecJson.Decoder).foreach[Unit](((r: org.riskala.client.messages.FromClientMessages.CreateMessage) =&gt; typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.Messages.LobbyMessage](lobby).!(org.riskala.controller.actors.lobby.LobbyMessages.CreateRoom.apply(context.self, org.riskala.client.messages.ToClientMessages.RoomInfo.apply(org.riskala.client.messages.ToClientMessages.RoomBasicInfo.apply(r.name, 0, r.maxPlayer), scala.Predef.Set.empty[org.riskala.model.Player], r.scenario)))))
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          80
+        </td>
+        <td>
+          2473
+          -
+          2577
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.actor.typed.ActorRef.ActorRefOps.!
+        </td>
+        <td style="background: #F0ADAD">
+          typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.Messages.LobbyMessage](lobby).!(org.riskala.controller.actors.lobby.LobbyMessages.CreateRoom.apply(context.self, org.riskala.client.messages.ToClientMessages.RoomInfo.apply(org.riskala.client.messages.ToClientMessages.RoomBasicInfo.apply(r.name, 0, r.maxPlayer), scala.Predef.Set.empty[org.riskala.model.Player], r.scenario)))
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          1126
+        </td>
+        <td>
+          2554
+          -
+          2563
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.generic.ImmutableSetFactory.empty
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Predef.Set.empty[org.riskala.model.Player]
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          1856
+        </td>
+        <td>
+          2529
+          -
+          2535
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.messages.FromClientMessages.CreateMessage.name
+        </td>
+        <td style="background: #F0ADAD">
+          r.name
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          1691
+        </td>
+        <td>
+          2506
+          -
+          2576
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.messages.ToClientMessages.RoomInfo.apply
+        </td>
+        <td style="background: #F0ADAD">
+          org.riskala.client.messages.ToClientMessages.RoomInfo.apply(org.riskala.client.messages.ToClientMessages.RoomBasicInfo.apply(r.name, 0, r.maxPlayer), scala.Predef.Set.empty[org.riskala.model.Player], r.scenario)
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          1090
+        </td>
+        <td>
+          2537
+          -
+          2538
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          0
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          375
+        </td>
+        <td>
+          2565
+          -
+          2575
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.messages.FromClientMessages.CreateMessage.scenario
+        </td>
+        <td style="background: #F0ADAD">
+          r.scenario
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          1625
+        </td>
+        <td>
+          2515
+          -
+          2552
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.messages.ToClientMessages.RoomBasicInfo.apply
+        </td>
+        <td style="background: #F0ADAD">
+          org.riskala.client.messages.ToClientMessages.RoomBasicInfo.apply(r.name, 0, r.maxPlayer)
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          907
+        </td>
+        <td>
+          2481
+          -
+          2577
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.lobby.LobbyMessages.CreateRoom.apply
+        </td>
+        <td style="background: #F0ADAD">
+          org.riskala.controller.actors.lobby.LobbyMessages.CreateRoom.apply(context.self, org.riskala.client.messages.ToClientMessages.RoomInfo.apply(org.riskala.client.messages.ToClientMessages.RoomBasicInfo.apply(r.name, 0, r.maxPlayer), scala.Predef.Set.empty[org.riskala.model.Player], r.scenario))
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          222
+        </td>
+        <td>
+          2540
+          -
+          2551
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.messages.FromClientMessages.CreateMessage.maxPlayer
+        </td>
+        <td style="background: #F0ADAD">
+          r.maxPlayer
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          135
+        </td>
+        <td>
+          2492
+          -
+          2504
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          akka.actor.typed.scaladsl.ActorContext.self
+        </td>
+        <td style="background: #F0ADAD">
+          context.self
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          979
+        </td>
+        <td>
+          2596
+          -
+          2610
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          akka.actor.typed.scaladsl.Behaviors.same
+        </td>
+        <td style="background: #F0ADAD">
+          akka.actor.typed.scaladsl.Behaviors.same[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          232
+        </td>
+        <td>
+          2669
+          -
+          2728
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.slf4j.Logger.info
+        </td>
+        <td style="background: #F0ADAD">
+          context.log.info(&quot;PlayerLobbyActor received LogoutMessage&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          61
+        </td>
+        <td>
+          776
+        </td>
+        <td>
+          2754
+          -
+          2774
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.Messages.Logout.apply
+        </td>
+        <td style="background: #F0ADAD">
+          org.riskala.controller.actors.Messages.Logout.apply(context.self)
+        </td>
+      </tr><tr>
+        <td>
+          61
+        </td>
+        <td>
+          1598
+        </td>
+        <td>
+          2761
+          -
+          2773
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          akka.actor.typed.scaladsl.ActorContext.self
+        </td>
+        <td style="background: #F0ADAD">
+          context.self
+        </td>
+      </tr><tr>
+        <td>
+          61
+        </td>
+        <td>
+          347
+        </td>
+        <td>
+          2746
+          -
+          2774
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.actor.typed.ActorRef.ActorRefOps.!
+        </td>
+        <td style="background: #F0ADAD">
+          typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.Messages.LobbyMessage](lobby).!(org.riskala.controller.actors.Messages.Logout.apply(context.self))
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          1658
+        </td>
+        <td>
+          2792
+          -
+          2809
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          akka.actor.typed.scaladsl.Behaviors.stopped
+        </td>
+        <td style="background: #F0ADAD">
+          akka.actor.typed.scaladsl.Behaviors.stopped[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          914
+        </td>
+        <td>
+          2854
+          -
+          2929
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.slf4j.Logger.info
+        </td>
+        <td style="background: #AEF1AE">
+          context.log.info(&quot;PlayerLobbyActor received an unhandled message, IGNORED&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          66
+        </td>
+        <td>
+          41
+        </td>
+        <td>
+          2947
+          -
+          2961
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          akka.actor.typed.scaladsl.Behaviors.same
+        </td>
+        <td style="background: #AEF1AE">
+          akka.actor.typed.scaladsl.Behaviors.same[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]
+        </td>
+      </tr><tr>
+        <td>
+          69
+        </td>
+        <td>
+          1521
+        </td>
+        <td>
+          2997
+          -
+          3125
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          {
+  context.log.info(&quot;PlayerLobbyActor failed to retrieve message, IGNORED&quot;);
+  akka.actor.typed.scaladsl.Behaviors.same[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]
+}
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          1081
+        </td>
+        <td>
+          3012
+          -
+          3084
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.slf4j.Logger.info
+        </td>
+        <td style="background: #F0ADAD">
+          context.log.info(&quot;PlayerLobbyActor failed to retrieve message, IGNORED&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          168
+        </td>
+        <td>
+          3098
+          -
+          3112
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          akka.actor.typed.scaladsl.Behaviors.same
+        </td>
+        <td style="background: #F0ADAD">
+          akka.actor.typed.scaladsl.Behaviors.same[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]
+        </td>
+      </tr><tr>
+        <td>
+          75
+        </td>
+        <td>
+          735
+        </td>
+        <td>
+          3201
+          -
+          3254
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;PlayerActor of &quot;, &quot; received LobbyInfoMessage&quot;).s(username)
+        </td>
+      </tr><tr>
+        <td>
+          75
+        </td>
+        <td>
+          350
+        </td>
+        <td>
+          3184
+          -
+          3255
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.slf4j.Logger.info
+        </td>
+        <td style="background: #AEF1AE">
+          context.log.info(scala.StringContext.apply(&quot;PlayerActor of &quot;, &quot; received LobbyInfoMessage&quot;).s(username))
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          47
+        </td>
+        <td>
+          3322
+          -
+          3358
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.CodecJson.Encoder
+        </td>
+        <td style="background: #AEF1AE">
+          org.riskala.client.messages.ToClientMessages.LobbyInfo.LobbyInfoCodecJson.Encoder
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          1793
+        </td>
+        <td>
+          3288
+          -
+          3359
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.utils.Parser.wrap
+        </td>
+        <td style="background: #AEF1AE">
+          org.riskala.utils.Parser.wrap[org.riskala.client.messages.ToClientMessages.LobbyInfo](&quot;LobbyInfo&quot;, lobbyInfo, org.riskala.client.messages.ToClientMessages.LobbyInfo.LobbyInfoCodecJson.Encoder)
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          169
+        </td>
+        <td>
+          3274
+          -
+          3274
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.actor.ScalaActorRef.!$default$2
+        </td>
+        <td style="background: #AEF1AE">
+          qual$1.!$default$2(x$1)
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          1661
+        </td>
+        <td>
+          3267
+          -
+          3273
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          akka.actor.actorRef2Scala
+        </td>
+        <td style="background: #AEF1AE">
+          actor.this.`package`.actorRef2Scala(socket)
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          1589
+        </td>
+        <td>
+          3267
+          -
+          3360
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          akka.actor.ScalaActorRef.!
+        </td>
+        <td style="background: #AEF1AE">
+          qual$1.!(x$1)(x$2)
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          829
+        </td>
+        <td>
+          3300
+          -
+          3311
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;LobbyInfo&quot;
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          1086
+        </td>
+        <td>
+          3276
+          -
+          3360
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.http.scaladsl.model.ws.TextMessage.apply
+        </td>
+        <td style="background: #AEF1AE">
+          akka.http.scaladsl.model.ws.TextMessage.apply(org.riskala.utils.Parser.wrap[org.riskala.client.messages.ToClientMessages.LobbyInfo](&quot;LobbyInfo&quot;, lobbyInfo, org.riskala.client.messages.ToClientMessages.LobbyInfo.LobbyInfoCodecJson.Encoder))
+        </td>
+      </tr><tr>
+        <td>
+          77
+        </td>
+        <td>
+          743
+        </td>
+        <td>
+          3372
+          -
+          3386
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          akka.actor.typed.scaladsl.Behaviors.same
+        </td>
+        <td style="background: #AEF1AE">
+          akka.actor.typed.scaladsl.Behaviors.same[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          279
+        </td>
+        <td>
+          3476
+          -
+          3525
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;PlayerActor of &quot;, &quot; received ErrorMessage&quot;).s(username)
+        </td>
+      </tr><tr>
+        <td>
+          80
+        </td>
+        <td>
+          1762
+        </td>
+        <td>
+          3459
+          -
+          3526
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.slf4j.Logger.info
+        </td>
+        <td style="background: #AEF1AE">
+          context.log.info(scala.StringContext.apply(&quot;PlayerActor of &quot;, &quot; received ErrorMessage&quot;).s(username))
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          116
+        </td>
+        <td>
+          3556
+          -
+          3605
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.messages.ToClientMessages.ErrorMessage.apply
+        </td>
+        <td style="background: #AEF1AE">
+          org.riskala.client.messages.ToClientMessages.ErrorMessage.apply(errorMessage.error)
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          903
+        </td>
+        <td>
+          3586
+          -
+          3604
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.controller.actors.player.PlayerMessages.ErrorMessage.error
+        </td>
+        <td style="background: #AEF1AE">
+          errorMessage.error
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          393
+        </td>
+        <td>
+          3624
+          -
+          3624
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.actor.ScalaActorRef.!$default$2
+        </td>
+        <td style="background: #AEF1AE">
+          qual$2.!$default$2(x$3)
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          1439
+        </td>
+        <td>
+          3617
+          -
+          3623
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          akka.actor.actorRef2Scala
+        </td>
+        <td style="background: #AEF1AE">
+          actor.this.`package`.actorRef2Scala(socket)
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          1633
+        </td>
+        <td>
+          3617
+          -
+          3759
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          akka.actor.ScalaActorRef.!
+        </td>
+        <td style="background: #AEF1AE">
+          qual$2.!(x$3)(x$4)
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          954
+        </td>
+        <td>
+          3650
+          -
+          3664
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;ErrorMessage&quot;
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          1594
+        </td>
+        <td>
+          3638
+          -
+          3758
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.utils.Parser.wrap
+        </td>
+        <td style="background: #AEF1AE">
+          org.riskala.utils.Parser.wrap[org.riskala.client.messages.ToClientMessages.ErrorMessage](&quot;ErrorMessage&quot;, clientError, org.riskala.client.messages.ToClientMessages.ErrorMessage.ErrorCodecJson.Encoder)
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          798
+        </td>
+        <td>
+          3626
+          -
+          3759
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.http.scaladsl.model.ws.TextMessage.apply
+        </td>
+        <td style="background: #AEF1AE">
+          akka.http.scaladsl.model.ws.TextMessage.apply(org.riskala.utils.Parser.wrap[org.riskala.client.messages.ToClientMessages.ErrorMessage](&quot;ErrorMessage&quot;, clientError, org.riskala.client.messages.ToClientMessages.ErrorMessage.ErrorCodecJson.Encoder))
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          278
+        </td>
+        <td>
+          3705
+          -
+          3757
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.CodecJson.Encoder
+        </td>
+        <td style="background: #AEF1AE">
+          org.riskala.client.messages.ToClientMessages.ErrorMessage.ErrorCodecJson.Encoder
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          866
+        </td>
+        <td>
+          3771
+          -
+          3785
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          akka.actor.typed.scaladsl.Behaviors.same
+        </td>
+        <td style="background: #AEF1AE">
+          akka.actor.typed.scaladsl.Behaviors.same[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          1463
+        </td>
+        <td>
+          3847
+          -
+          3915
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.slf4j.Logger.info
+        </td>
+        <td style="background: #AEF1AE">
+          context.log.info(scala.StringContext.apply(&quot;PlayerActor of &quot;, &quot; registering new socket&quot;).s(username))
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          120
+        </td>
+        <td>
+          3864
+          -
+          3914
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;PlayerActor of &quot;, &quot; registering new socket&quot;).s(username)
+        </td>
+      </tr><tr>
+        <td>
+          89
+        </td>
+        <td>
+          1058
+        </td>
+        <td>
+          3927
+          -
+          3979
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.player.LobbyPlayerBehavior.apply
+        </td>
+        <td style="background: #AEF1AE">
+          LobbyPlayerBehavior.apply(username, lobby, newSocketActor)
+        </td>
+      </tr><tr>
+        <td>
+          92
+        </td>
+        <td>
+          1557
+        </td>
+        <td>
+          4029
+          -
+          4096
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.slf4j.Logger.info
+        </td>
+        <td style="background: #AEF1AE">
+          context.log.info(scala.StringContext.apply(&quot;PlayerActor of &quot;, &quot; received RoomReferent&quot;).s(username))
+        </td>
+      </tr><tr>
+        <td>
+          92
+        </td>
+        <td>
+          195
+        </td>
+        <td>
+          4046
+          -
+          4095
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;PlayerActor of &quot;, &quot; received RoomReferent&quot;).s(username)
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          800
+        </td>
+        <td>
+          4108
+          -
+          4148
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.player.RoomPlayerBehavior.apply
+        </td>
+        <td style="background: #AEF1AE">
+          RoomPlayerBehavior.apply(username, room, socket)
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          349
+        </td>
+        <td>
+          4215
+          -
+          4264
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;PlayerActor of &quot;, &quot; received GameReferent&quot;).s(username)
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          1727
+        </td>
+        <td>
+          4198
+          -
+          4265
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.slf4j.Logger.info
+        </td>
+        <td style="background: #F0ADAD">
+          context.log.info(scala.StringContext.apply(&quot;PlayerActor of &quot;, &quot; received GameReferent&quot;).s(username))
+        </td>
+      </tr><tr>
+        <td>
+          97
+        </td>
+        <td>
+          871
+        </td>
+        <td>
+          4277
+          -
+          4317
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.player.GamePlayerBehavior.apply
+        </td>
+        <td style="background: #F0ADAD">
+          GamePlayerBehavior.apply(username, game, socket)
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          1432
+        </td>
+        <td>
+          4354
+          -
+          4429
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.slf4j.Logger.info
+        </td>
+        <td style="background: #AEF1AE">
+          context.log.info(scala.StringContext.apply(&quot;PlayerActor of &quot;, &quot; received &quot;).s(username).+(other).+(&quot;, IGNORED&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          89
+        </td>
+        <td>
+          4371
+          -
+          4428
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;PlayerActor of &quot;, &quot; received &quot;).s(username).+(other).+(&quot;, IGNORED&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          101
+        </td>
+        <td>
+          1021
+        </td>
+        <td>
+          4441
+          -
+          4455
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          akka.actor.typed.scaladsl.Behaviors.same
+        </td>
+        <td style="background: #AEF1AE">
+          akka.actor.typed.scaladsl.Behaviors.same[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

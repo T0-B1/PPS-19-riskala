@@ -1,0 +1,523 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          src\main\scala\org\riskala\model\map\Bridge.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier, monospace;'>1 <span style=''>package org.riskala.model.map
+</span>2 <span style=''>
+</span>3 <span style=''>import argonaut.Argonaut._
+</span>4 <span style=''>import argonaut.CodecJson
+</span>5 <span style=''>import org.riskala.model.map.State.State
+</span>6 <span style=''>import scala.scalajs.js.annotation.{JSExportAll, JSExportTopLevel}
+</span>7 <span style=''>
+</span>8 <span style=''>/**
+</span>9 <span style=''> * A link between two states #scala.js
+</span>10 <span style=''> *
+</span>11 <span style=''> * @param state1         first state
+</span>12 <span style=''> * @param state2         second state
+</span>13 <span style=''> * @param userCreated    true if bridge is defined by user
+</span>14 <span style=''> */
+</span>15 <span style=''>@JSExportTopLevel(&quot;Bridge&quot;)
+</span>16 <span style=''>@JSExportAll
+</span>17 <span style=''>case class Bridge(state1: State,
+</span>18 <span style=''>                  state2: State,
+</span>19 <span style=''>                  userCreated: Boolean) {
+</span>20 <span style=''>
+</span>21 <span style=''>  /**
+</span>22 <span style=''>   * Checks if the object is a bridge and if this bridge link the same states
+</span>23 <span style=''>   *
+</span>24 <span style=''>   * @return true if equal
+</span>25 <span style=''>   */
+</span>26 <span style=''>  override def equals(obj: Any): Boolean = obj match {
+</span>27 <span style=''>    case Bridge(s1,s2,_) =&gt; </span><span style='background: #AEF1AE'>(s1 == state1 &amp;&amp; s2 == state2) || (s2 == state1 &amp;&amp; s1 == state2)</span><span style=''>
+</span>28 <span style=''>    case _ =&gt; </span><span style='background: #F0ADAD'>false</span><span style=''>
+</span>29 <span style=''>  }
+</span>30 <span style=''>
+</span>31 <span style=''>}
+</span>32 <span style=''>
+</span>33 <span style=''>object Bridge {
+</span>34 <span style=''>  implicit def BridgeCodecJson: CodecJson[Bridge] =
+</span>35 <span style=''>    </span><span style='background: #AEF1AE'>casecodec3(Bridge.apply,Bridge.unapply)(&quot;state1&quot;,&quot;state2&quot;,&quot;userCreated&quot;)</span><span style=''>
+</span>36 <span style=''>}
+</span>37 <span style=''>
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          331
+        </td>
+        <td>
+          765
+          -
+          771
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.map.Bridge.state1
+        </td>
+        <td style="background: #AEF1AE">
+          Bridge.this.state1
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          71
+        </td>
+        <td>
+          799
+          -
+          805
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.map.Bridge.state1
+        </td>
+        <td style="background: #AEF1AE">
+          Bridge.this.state1
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          250
+        </td>
+        <td>
+          793
+          -
+          821
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.&amp;&amp;
+        </td>
+        <td style="background: #AEF1AE">
+          s2.==(Bridge.this.state1).&amp;&amp;(s1.==(Bridge.this.state2))
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          1491
+        </td>
+        <td>
+          758
+          -
+          822
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.||
+        </td>
+        <td style="background: #AEF1AE">
+          s1.==(Bridge.this.state1).&amp;&amp;(s2.==(Bridge.this.state2)).||(s2.==(Bridge.this.state1).&amp;&amp;(s1.==(Bridge.this.state2)))
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          1673
+        </td>
+        <td>
+          781
+          -
+          787
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.map.Bridge.state2
+        </td>
+        <td style="background: #AEF1AE">
+          Bridge.this.state2
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          817
+        </td>
+        <td>
+          775
+          -
+          787
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          s2.==(Bridge.this.state2)
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          1008
+        </td>
+        <td>
+          809
+          -
+          821
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          s1.==(Bridge.this.state2)
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          1776
+        </td>
+        <td>
+          815
+          -
+          821
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.map.Bridge.state2
+        </td>
+        <td style="background: #AEF1AE">
+          Bridge.this.state2
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          1164
+        </td>
+        <td>
+          838
+          -
+          843
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          false
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          1707
+        </td>
+        <td>
+          970
+          -
+          970
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.DecodeJsons.BooleanDecodeJson
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.BooleanDecodeJson
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          1779
+        </td>
+        <td>
+          989
+          -
+          1002
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;userCreated&quot;
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          298
+        </td>
+        <td>
+          970
+          -
+          970
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.EncodeJsons.BooleanEncodeJson
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.BooleanEncodeJson
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          253
+        </td>
+        <td>
+          970
+          -
+          970
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.DecodeJsons.StringDecodeJson
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.StringDecodeJson
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          1610
+        </td>
+        <td>
+          970
+          -
+          970
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.EncodeJsons.StringEncodeJson
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.StringEncodeJson
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          1
+        </td>
+        <td>
+          980
+          -
+          988
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;state2&quot;
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          1675
+        </td>
+        <td>
+          955
+          -
+          969
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.map.Bridge.unapply
+        </td>
+        <td style="background: #AEF1AE">
+          Bridge.unapply(x$0)
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          790
+        </td>
+        <td>
+          970
+          -
+          970
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.DecodeJsons.StringDecodeJson
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.StringDecodeJson
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          972
+        </td>
+        <td>
+          970
+          -
+          970
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.EncodeJsons.StringEncodeJson
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.StringEncodeJson
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          927
+        </td>
+        <td>
+          971
+          -
+          979
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;state1&quot;
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          930
+        </td>
+        <td>
+          931
+          -
+          1003
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          argonaut.GeneratedCodecJsons.casecodec3
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.casecodec3[org.riskala.model.map.State.State, org.riskala.model.map.State.State, Boolean, org.riskala.model.map.Bridge]({
+  ((state1: org.riskala.model.map.State.State, state2: org.riskala.model.map.State.State, userCreated: Boolean) =&gt; Bridge.apply(state1, state2, userCreated))
+}, {
+  ((x$0: org.riskala.model.map.Bridge) =&gt; Bridge.unapply(x$0))
+})(&quot;state1&quot;, &quot;state2&quot;, &quot;userCreated&quot;)(argonaut.Argonaut.StringEncodeJson, argonaut.Argonaut.StringDecodeJson, argonaut.Argonaut.StringEncodeJson, argonaut.Argonaut.StringDecodeJson, argonaut.Argonaut.BooleanEncodeJson, argonaut.Argonaut.BooleanDecodeJson)
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          293
+        </td>
+        <td>
+          942
+          -
+          954
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.map.Bridge.apply
+        </td>
+        <td style="background: #AEF1AE">
+          Bridge.apply(state1, state2, userCreated)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

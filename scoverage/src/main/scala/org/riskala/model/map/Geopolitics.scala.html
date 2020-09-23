@@ -1,0 +1,778 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          src\main\scala\org\riskala\model\map\Geopolitics.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier, monospace;'>1 <span style=''>package org.riskala.model.map
+</span>2 <span style=''>
+</span>3 <span style=''>import org.riskala.model.Player
+</span>4 <span style=''>import org.riskala.model.map.State.State
+</span>5 <span style=''>
+</span>6 <span style=''>/**
+</span>7 <span style=''> * State of the map wrt the owners of the state and the troops stationed in every state
+</span>8 <span style=''> * #scala.js
+</span>9 <span style=''> *
+</span>10 <span style=''> * @param states The geographical states that compose the scenario
+</span>11 <span style=''> */
+</span>12 <span style=''>case class Geopolitics(states: Set[PlayerState]) {
+</span>13 <span style=''>
+</span>14 <span style=''>  implicit def states2geopolitics(states: Set[PlayerState]): Geopolitics = </span><span style='background: #F0ADAD'>Geopolitics(states)</span><span style=''>
+</span>15 <span style=''>
+</span>16 <span style=''>  /**
+</span>17 <span style=''>   * Update the state of a PlayerState inside the global geopolitics
+</span>18 <span style=''>   *
+</span>19 <span style=''>   * @param state New state
+</span>20 <span style=''>   * @return New geopolitics
+</span>21 <span style=''>   */
+</span>22 <span style=''>  def updatePlayerState(state: PlayerState): Geopolitics = {
+</span>23 <span style=''>    </span><span style='background: #AEF1AE'>Geopolitics(states.filterNot(p =&gt; p.state.equals(state.state)) + state)</span><span style=''>
+</span>24 <span style=''>  }
+</span>25 <span style=''>
+</span>26 <span style=''>  /**
+</span>27 <span style=''>   * Returns a PlayerState given a state name
+</span>28 <span style=''>   * @param state State name
+</span>29 <span style=''>   * @return PlayerState
+</span>30 <span style=''>   */
+</span>31 <span style=''>  def getPlayerStateByName(state: State): Option[PlayerState] = {
+</span>32 <span style=''>    </span><span style='background: #AEF1AE'>states.collectFirst({ case p if p.state.equals(state) =&gt; p })</span><span style=''>
+</span>33 <span style=''>  }
+</span>34 <span style=''>
+</span>35 <span style=''>  /**
+</span>36 <span style=''>   * Returns all the states of a player
+</span>37 <span style=''>   * @param player A player
+</span>38 <span style=''>   * @return His states
+</span>39 <span style=''>   */
+</span>40 <span style=''>  def getStatesOfPlayer(player: Player): Set[State] = {
+</span>41 <span style=''>    </span><span style='background: #AEF1AE'>states.collect({case ps if ps.owner.equals(player) =&gt; ps.state})</span><span style=''>
+</span>42 <span style=''>  }
+</span>43 <span style=''>
+</span>44 <span style=''>  /**
+</span>45 <span style=''>   * Updates the owner of a state
+</span>46 <span style=''>   * @param state State to own
+</span>47 <span style=''>   * @param newOwner New owner
+</span>48 <span style=''>   * @return New geopolitics
+</span>49 <span style=''>   */
+</span>50 <span style=''>  def updateStateOwner(state: State, newOwner: Player): Geopolitics = {
+</span>51 <span style=''>    </span><span style='background: #AEF1AE'>getPlayerStateByName(state).fold(this)(ps=&gt;updatePlayerState(ps.copy(owner = newOwner)))</span><span style=''>
+</span>52 <span style=''>  }
+</span>53 <span style=''>
+</span>54 <span style=''>  /**
+</span>55 <span style=''>   * Modifies the amount of troops in a state
+</span>56 <span style=''>   *
+</span>57 <span style=''>   * @param state A state
+</span>58 <span style=''>   * @param troopsDelta Increment or decrement in the number of troops mobilized
+</span>59 <span style=''>   * @return New geopolitics
+</span>60 <span style=''>   */
+</span>61 <span style=''>  def modifyStateTroops(state: State, troopsDelta: Int): Geopolitics = {
+</span>62 <span style=''>    </span><span style='background: #AEF1AE'>alterStateTroops(state, troopsDelta, additive = true)</span><span style=''>
+</span>63 <span style=''>  }
+</span>64 <span style=''>
+</span>65 <span style=''>  /**
+</span>66 <span style=''>   * Sets the amount of troops in a state
+</span>67 <span style=''>   *
+</span>68 <span style=''>   * @param state A state
+</span>69 <span style=''>   * @param troops The number of troops mobilized
+</span>70 <span style=''>   * @return New geopolitics
+</span>71 <span style=''>   */
+</span>72 <span style=''>  def setStateTroops(state: State, troops: Int): Geopolitics = {
+</span>73 <span style=''>    </span><span style='background: #AEF1AE'>alterStateTroops(state, troops, additive = false)</span><span style=''>
+</span>74 <span style=''>  }
+</span>75 <span style=''>
+</span>76 <span style=''>  private def alterStateTroops(state: State, troops: Int, additive: Boolean): Geopolitics = {
+</span>77 <span style=''>    </span><span style='background: #AEF1AE'>getPlayerStateByName(state).fold(this)(ps=&gt;{
+</span>78 <span style=''></span><span style='background: #AEF1AE'>      updatePlayerState(ps.copy(troops = if(additive) ps.troops + troops else troops))
+</span>79 <span style=''></span><span style='background: #AEF1AE'>    })</span><span style=''>
+</span>80 <span style=''>  }
+</span>81 <span style=''>
+</span>82 <span style=''>}
+</span>83 <span style=''>
+</span>84 <span style=''>
+</span>85 <span style=''>object Geopolitics {
+</span>86 <span style=''>
+</span>87 <span style=''>  implicit def states2geopolitics(states: Set[PlayerState]): Geopolitics = </span><span style='background: #AEF1AE'>Geopolitics(states)</span><span style=''>
+</span>88 <span style=''>
+</span>89 <span style=''>  implicit def geopolitics2states(geopolitics: Geopolitics): Set[PlayerState] = </span><span style='background: #AEF1AE'>geopolitics.states</span><span style=''>
+</span>90 <span style=''>
+</span>91 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          3
+        </td>
+        <td>
+          424
+          -
+          443
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.map.Geopolitics.apply
+        </td>
+        <td style="background: #F0ADAD">
+          Geopolitics.apply(states)
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          980
+        </td>
+        <td>
+          662
+          -
+          733
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.map.Geopolitics.apply
+        </td>
+        <td style="background: #AEF1AE">
+          Geopolitics.apply(Geopolitics.this.states.filterNot(((p: org.riskala.model.map.PlayerState) =&gt; p.state.equals(state.state))).+(state))
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          1841
+        </td>
+        <td>
+          674
+          -
+          732
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.SetLike.+
+        </td>
+        <td style="background: #AEF1AE">
+          Geopolitics.this.states.filterNot(((p: org.riskala.model.map.PlayerState) =&gt; p.state.equals(state.state))).+(state)
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          792
+        </td>
+        <td>
+          930
+          -
+          991
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.collectFirst
+        </td>
+        <td style="background: #AEF1AE">
+          Geopolitics.this.states.collectFirst[org.riskala.model.map.PlayerState](({
+  @SerialVersionUID(value = 0) final &lt;synthetic&gt; class $anonfun extends scala.runtime.AbstractPartialFunction[org.riskala.model.map.PlayerState,org.riskala.model.map.PlayerState] with Serializable {
+    def &lt;init&gt;(): &lt;$anon: org.riskala.model.map.PlayerState =&gt; org.riskala.model.map.PlayerState&gt; = {
+      $anonfun.super.&lt;init&gt;();
+      ()
+    };
+    final override def applyOrElse[A1 &lt;: org.riskala.model.map.PlayerState, B1 &gt;: org.riskala.model.map.PlayerState](x1: A1, default: A1 =&gt; B1): B1 = ((x1.asInstanceOf[org.riskala.model.map.PlayerState]: org.riskala.model.map.PlayerState): org.riskala.model.map.PlayerState @unchecked) match {
+      case (p @ _) if p.state.equals(state) =&gt; p
+      case (defaultCase$ @ _) =&gt; default.apply(x1)
+    };
+    final def isDefinedAt(x1: org.riskala.model.map.PlayerState): Boolean = ((x1.asInstanceOf[org.riskala.model.map.PlayerState]: org.riskala.model.map.PlayerState): org.riskala.model.map.PlayerState @unchecked) match {
+      case (p @ _) if p.state.equals(state) =&gt; true
+      case (defaultCase$ @ _) =&gt; false
+    }
+  };
+  new $anonfun()
+}: PartialFunction[org.riskala.model.map.PlayerState,org.riskala.model.map.PlayerState]))
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          211
+        </td>
+        <td>
+          962
+          -
+          983
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.equals
+        </td>
+        <td style="background: #AEF1AE">
+          p.state.equals(state)
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          1613
+        </td>
+        <td>
+          950
+          -
+          950
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.map.Geopolitics.$anonfun.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anonfun()
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          1470
+        </td>
+        <td>
+          1170
+          -
+          1234
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.collect
+        </td>
+        <td style="background: #AEF1AE">
+          Geopolitics.this.states.collect[org.riskala.model.map.State.State, Set[org.riskala.model.map.State.State]](({
+  @SerialVersionUID(value = 0) final &lt;synthetic&gt; class $anonfun extends scala.runtime.AbstractPartialFunction[org.riskala.model.map.PlayerState,org.riskala.model.map.State.State] with Serializable {
+    def &lt;init&gt;(): &lt;$anon: org.riskala.model.map.PlayerState =&gt; org.riskala.model.map.State.State&gt; = {
+      $anonfun.super.&lt;init&gt;();
+      ()
+    };
+    final override def applyOrElse[A1 &lt;: org.riskala.model.map.PlayerState, B1 &gt;: org.riskala.model.map.State.State](x1: A1, default: A1 =&gt; B1): B1 = ((x1.asInstanceOf[org.riskala.model.map.PlayerState]: org.riskala.model.map.PlayerState): org.riskala.model.map.PlayerState @unchecked) match {
+      case (ps @ _) if ps.owner.equals(player) =&gt; ps.state
+      case (defaultCase$ @ _) =&gt; default.apply(x1)
+    };
+    final def isDefinedAt(x1: org.riskala.model.map.PlayerState): Boolean = ((x1.asInstanceOf[org.riskala.model.map.PlayerState]: org.riskala.model.map.PlayerState): org.riskala.model.map.PlayerState @unchecked) match {
+      case (ps @ _) if ps.owner.equals(player) =&gt; true
+      case (defaultCase$ @ _) =&gt; false
+    }
+  };
+  new $anonfun()
+}: PartialFunction[org.riskala.model.map.PlayerState,org.riskala.model.map.State.State]))(immutable.this.Set.canBuildFrom[org.riskala.model.map.State.State])
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          1709
+        </td>
+        <td>
+          1224
+          -
+          1232
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.map.PlayerState.state
+        </td>
+        <td style="background: #AEF1AE">
+          ps.state
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          363
+        </td>
+        <td>
+          1197
+          -
+          1220
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.Player.equals
+        </td>
+        <td style="background: #AEF1AE">
+          ps.owner.equals(player)
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          69
+        </td>
+        <td>
+          1184
+          -
+          1184
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.immutable.Set.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.Set.canBuildFrom[org.riskala.model.map.State.State]
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          894
+        </td>
+        <td>
+          1185
+          -
+          1185
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.map.Geopolitics.$anonfun.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anonfun()
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          1617
+        </td>
+        <td>
+          1524
+          -
+          1549
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.map.PlayerState.copy
+        </td>
+        <td style="background: #AEF1AE">
+          ps.copy(x$2, x$1, x$3)
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          370
+        </td>
+        <td>
+          1463
+          -
+          1551
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.fold
+        </td>
+        <td style="background: #AEF1AE">
+          Geopolitics.this.getPlayerStateByName(state).fold[org.riskala.model.map.Geopolitics](this)(((ps: org.riskala.model.map.PlayerState) =&gt; Geopolitics.this.updatePlayerState({
+  &lt;artifact&gt; val x$1: org.riskala.model.Player = newOwner;
+  &lt;artifact&gt; val x$2: org.riskala.model.map.State.State = ps.copy$default$1;
+  &lt;artifact&gt; val x$3: Int = ps.copy$default$3;
+  ps.copy(x$2, x$1, x$3)
+})))
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          214
+        </td>
+        <td>
+          1527
+          -
+          1527
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.map.PlayerState.copy$default$3
+        </td>
+        <td style="background: #AEF1AE">
+          ps.copy$default$3
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          761
+        </td>
+        <td>
+          1506
+          -
+          1550
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.map.Geopolitics.updatePlayerState
+        </td>
+        <td style="background: #AEF1AE">
+          Geopolitics.this.updatePlayerState({
+  &lt;artifact&gt; val x$1: org.riskala.model.Player = newOwner;
+  &lt;artifact&gt; val x$2: org.riskala.model.map.State.State = ps.copy$default$1;
+  &lt;artifact&gt; val x$3: Int = ps.copy$default$3;
+  ps.copy(x$2, x$1, x$3)
+})
+        </td>
+      </tr><tr>
+        <td>
+          51
+        </td>
+        <td>
+          966
+        </td>
+        <td>
+          1527
+          -
+          1527
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.map.PlayerState.copy$default$1
+        </td>
+        <td style="background: #AEF1AE">
+          ps.copy$default$1
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          1645
+        </td>
+        <td>
+          1844
+          -
+          1897
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.map.Geopolitics.alterStateTroops
+        </td>
+        <td style="background: #AEF1AE">
+          Geopolitics.this.alterStateTroops(state, troopsDelta, true)
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          897
+        </td>
+        <td>
+          2147
+          -
+          2196
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.map.Geopolitics.alterStateTroops
+        </td>
+        <td style="background: #AEF1AE">
+          Geopolitics.this.alterStateTroops(state, troops, false)
+        </td>
+      </tr><tr>
+        <td>
+          77
+        </td>
+        <td>
+          1649
+        </td>
+        <td>
+          2304
+          -
+          2444
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.fold
+        </td>
+        <td style="background: #AEF1AE">
+          Geopolitics.this.getPlayerStateByName(state).fold[org.riskala.model.map.Geopolitics](this)(((ps: org.riskala.model.map.PlayerState) =&gt; Geopolitics.this.updatePlayerState({
+  &lt;artifact&gt; val x$1: Int = if (additive)
+    ps.troops.+(troops)
+  else
+    troops;
+  &lt;artifact&gt; val x$2: org.riskala.model.map.State.State = ps.copy$default$1;
+  &lt;artifact&gt; val x$3: org.riskala.model.Player = ps.copy$default$2;
+  ps.copy(x$2, x$3, x$1)
+})))
+        </td>
+      </tr><tr>
+        <td>
+          78
+        </td>
+        <td>
+          971
+        </td>
+        <td>
+          2428
+          -
+          2434
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          org.riskala.model.map.Geopolitics.troops
+        </td>
+        <td style="background: #AEF1AE">
+          troops
+        </td>
+      </tr><tr>
+        <td>
+          78
+        </td>
+        <td>
+          73
+        </td>
+        <td>
+          2404
+          -
+          2422
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.+
+        </td>
+        <td style="background: #AEF1AE">
+          ps.troops.+(troops)
+        </td>
+      </tr><tr>
+        <td>
+          78
+        </td>
+        <td>
+          402
+        </td>
+        <td>
+          2356
+          -
+          2436
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.map.Geopolitics.updatePlayerState
+        </td>
+        <td style="background: #AEF1AE">
+          Geopolitics.this.updatePlayerState({
+  &lt;artifact&gt; val x$1: Int = if (additive)
+    ps.troops.+(troops)
+  else
+    troops;
+  &lt;artifact&gt; val x$2: org.riskala.model.map.State.State = ps.copy$default$1;
+  &lt;artifact&gt; val x$3: org.riskala.model.Player = ps.copy$default$2;
+  ps.copy(x$2, x$3, x$1)
+})
+        </td>
+      </tr><tr>
+        <td>
+          78
+        </td>
+        <td>
+          1454
+        </td>
+        <td>
+          2404
+          -
+          2422
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.Int.+
+        </td>
+        <td style="background: #AEF1AE">
+          ps.troops.+(troops)
+        </td>
+      </tr><tr>
+        <td>
+          78
+        </td>
+        <td>
+          766
+        </td>
+        <td>
+          2374
+          -
+          2435
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.map.PlayerState.copy
+        </td>
+        <td style="background: #AEF1AE">
+          ps.copy(x$2, x$3, x$1)
+        </td>
+      </tr><tr>
+        <td>
+          78
+        </td>
+        <td>
+          177
+        </td>
+        <td>
+          2377
+          -
+          2377
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.map.PlayerState.copy$default$1
+        </td>
+        <td style="background: #AEF1AE">
+          ps.copy$default$1
+        </td>
+      </tr><tr>
+        <td>
+          78
+        </td>
+        <td>
+          1516
+        </td>
+        <td>
+          2377
+          -
+          2377
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.map.PlayerState.copy$default$2
+        </td>
+        <td style="background: #AEF1AE">
+          ps.copy$default$2
+        </td>
+      </tr><tr>
+        <td>
+          87
+        </td>
+        <td>
+          838
+        </td>
+        <td>
+          2559
+          -
+          2578
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.map.Geopolitics.apply
+        </td>
+        <td style="background: #AEF1AE">
+          Geopolitics.apply(states)
+        </td>
+      </tr><tr>
+        <td>
+          89
+        </td>
+        <td>
+          128
+        </td>
+        <td>
+          2662
+          -
+          2680
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.map.Geopolitics.states
+        </td>
+        <td style="background: #AEF1AE">
+          geopolitics.states
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

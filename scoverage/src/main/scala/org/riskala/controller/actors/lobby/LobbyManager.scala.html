@@ -1,0 +1,3353 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          src\main\scala\org\riskala\controller\actors\lobby\LobbyManager.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier, monospace;'>1 <span style=''>package org.riskala.controller.actors.lobby
+</span>2 <span style=''>
+</span>3 <span style=''>import akka.actor.typed.receptionist.{Receptionist, ServiceKey}
+</span>4 <span style=''>import akka.actor.typed.scaladsl.Behaviors
+</span>5 <span style=''>import akka.actor.typed.{ActorRef, Behavior}
+</span>6 <span style=''>import org.riskala.controller.actors.player.PlayerMessages._
+</span>7 <span style=''>import org.riskala.controller.actors.Messages._
+</span>8 <span style=''>import org.riskala.controller.actors.game.GameManager
+</span>9 <span style=''>import org.riskala.controller.actors.game.GameMessages.JoinGame
+</span>10 <span style=''>import org.riskala.controller.actors.lobby.LobbyMessages._
+</span>11 <span style=''>import org.riskala.controller.actors.room.RoomManager
+</span>12 <span style=''>import org.riskala.controller.actors.room.RoomMessages.Join
+</span>13 <span style=''>import org.riskala.client.messages.ToClientMessages.{LobbyInfo, RoomBasicInfo, RoomNameInfo}
+</span>14 <span style=''>
+</span>15 <span style=''>object LobbyManager {
+</span>16 <span style=''>
+</span>17 <span style=''>  def apply(): Behavior[LobbyMessage] = </span><span style='background: #AEF1AE'>setupLobbyManager()</span><span style=''>
+</span>18 <span style=''>
+</span>19 <span style=''>  val lobbyServiceKey: ServiceKey[LobbyMessage] = </span><span style='background: #AEF1AE'>ServiceKey[LobbyMessage](&quot;LobbyManager&quot;)</span><span style=''>
+</span>20 <span style=''>
+</span>21 <span style=''>  private def setupLobbyManager(): Behavior[LobbyMessage] = {
+</span>22 <span style=''>    </span><span style='background: #AEF1AE'>Behaviors.setup { context =&gt;
+</span>23 <span style=''></span><span style='background: #AEF1AE'>      context.system.receptionist ! Receptionist.register(lobbyServiceKey, context.self)
+</span>24 <span style=''></span><span style='background: #AEF1AE'>      context.log.info(&quot;SetupLobbyManager&quot;)
+</span>25 <span style=''></span><span style='background: #AEF1AE'>      lobbyManager(Set.empty,Map.empty,Map.empty,Map.empty)
+</span>26 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
+</span>27 <span style=''>  }
+</span>28 <span style=''>
+</span>29 <span style=''>  private def lobbyManager(subscribers: Set[ActorRef[PlayerMessage]],
+</span>30 <span style=''>                   rooms: Map[String, (ActorRef[RoomMessage], RoomBasicInfo)],
+</span>31 <span style=''>                   games: Map[String, ActorRef[GameMessage]],
+</span>32 <span style=''>                   terminatedGames: Map[String, (ActorRef[GameMessage], Boolean)]): Behavior[LobbyMessage] =
+</span>33 <span style=''>    </span><span style='background: #AEF1AE'>Behaviors.receive { (context, message) =&gt; {
+</span>34 <span style=''></span><span style='background: #AEF1AE'>      
+</span>35 <span style=''></span><span style='background: #AEF1AE'>      def nextBehavior(nextSubscribers: Set[ActorRef[PlayerMessage]] = subscribers,
+</span>36 <span style=''></span><span style='background: #AEF1AE'>                       nextRooms: Map[String, (ActorRef[RoomMessage], RoomBasicInfo)] = rooms,
+</span>37 <span style=''></span><span style='background: #AEF1AE'>                       nextGames: Map[String, ActorRef[GameMessage]] = games,
+</span>38 <span style=''></span><span style='background: #AEF1AE'>                       nextTerminatedGames: Map[String, (ActorRef[GameMessage], Boolean)] = terminatedGames
+</span>39 <span style=''></span><span style='background: #AEF1AE'>                      ): Behavior[LobbyMessage] = lobbyManager(nextSubscribers,nextRooms,nextGames,nextTerminatedGames)
+</span>40 <span style=''></span><span style='background: #AEF1AE'>
+</span>41 <span style=''></span><span style='background: #AEF1AE'>      def getInfo(nextRooms: Map[String, (ActorRef[RoomMessage], RoomBasicInfo)] = rooms,
+</span>42 <span style=''></span><span style='background: #AEF1AE'>                  nextGames: Map[String, ActorRef[GameMessage]] = games,
+</span>43 <span style=''></span><span style='background: #AEF1AE'>                  nextTerminatedGames: Map[String, (ActorRef[GameMessage], Boolean)] = terminatedGames
+</span>44 <span style=''></span><span style='background: #AEF1AE'>                 ): PlayerMessage = {
+</span>45 <span style=''></span><span style='background: #AEF1AE'>        val roomList: Set[RoomNameInfo] = nextRooms.map(kv =&gt; RoomNameInfo(kv._1,
+</span>46 <span style=''></span><span style='background: #AEF1AE'>          kv._2._2.actualNumberOfPlayer + &quot;/&quot; + kv._2._2.maxNumberOfPlayer)).toSet
+</span>47 <span style=''></span><span style='background: #AEF1AE'>        val gameList: Set[String] = nextGames.keys.toSet
+</span>48 <span style=''></span><span style='background: #AEF1AE'>        val terminatedGameList: Set[String] = nextTerminatedGames.keys.toSet
+</span>49 <span style=''></span><span style='background: #AEF1AE'>        LobbyInfoMessage(LobbyInfo(roomList, gameList, terminatedGameList))
+</span>50 <span style=''></span><span style='background: #AEF1AE'>      }
+</span>51 <span style=''></span><span style='background: #AEF1AE'>
+</span>52 <span style=''></span><span style='background: #AEF1AE'>      def notifyAllSubscribers(info: PlayerMessage,
+</span>53 <span style=''></span><span style='background: #AEF1AE'>                               subs: Set[ActorRef[PlayerMessage]] = subscribers): Unit = {
+</span>54 <span style=''></span><span style='background: #AEF1AE'>        subs.foreach(s =&gt; s ! info)
+</span>55 <span style=''></span><span style='background: #AEF1AE'>      }
+</span>56 <span style=''></span><span style='background: #AEF1AE'>
+</span>57 <span style=''></span><span style='background: #AEF1AE'>      message match {
+</span>58 <span style=''></span><span style='background: #AEF1AE'>        case Subscribe(subscriber) =&gt;
+</span>59 <span style=''></span><span style='background: #AEF1AE'>          subscriber ! LobbyReferent(context.self)
+</span>60 <span style=''></span><span style='background: #AEF1AE'>          subscriber ! getInfo()
+</span>61 <span style=''></span><span style='background: #AEF1AE'>          context.log.info(s&quot;Subscribe from $subscriber&quot;)
+</span>62 <span style=''></span><span style='background: #AEF1AE'>          nextBehavior(nextSubscribers = subscribers + subscriber)
+</span>63 <span style=''></span><span style='background: #AEF1AE'>
+</span>64 <span style=''></span><span style='background: #AEF1AE'>        case CreateRoom(creator, roomInfo) =&gt;
+</span>65 <span style=''></span><span style='background: #AEF1AE'>          if(!games.contains(roomInfo.basicInfo.name) &amp;&amp;
+</span>66 <span style=''></span><span style='background: #AEF1AE'>            !terminatedGames.contains(roomInfo.basicInfo.name) &amp;&amp;
+</span>67 <span style=''></span><span style='background: #AEF1AE'>            !rooms.contains(roomInfo.basicInfo.name)) {
+</span>68 <span style=''></span><span style='background: #AEF1AE'>            val room = context.spawn(RoomManager(roomInfo, context.self),
+</span>69 <span style=''></span><span style='background: #AEF1AE'>              &quot;RoomManager-&quot; + roomInfo.basicInfo.name)
+</span>70 <span style=''></span><span style='background: #AEF1AE'>            room ! Join(creator)
+</span>71 <span style=''></span><span style='background: #AEF1AE'>            val newRooms = rooms + (roomInfo.basicInfo.name -&gt; (room, roomInfo.basicInfo))
+</span>72 <span style=''></span><span style='background: #AEF1AE'>            val newSubs = subscribers - creator
+</span>73 <span style=''></span><span style='background: #AEF1AE'>            notifyAllSubscribers(getInfo(nextRooms = newRooms),newSubs)
+</span>74 <span style=''></span><span style='background: #AEF1AE'>            nextBehavior(nextSubscribers = newSubs,nextRooms = newRooms)
+</span>75 <span style=''></span><span style='background: #AEF1AE'>          } else </span><span style='background: #F0ADAD'>{
+</span>76 <span style=''></span><span style='background: #F0ADAD'>            creator ! ErrorMessage(&quot;Room already exists&quot;)
+</span>77 <span style=''></span><span style='background: #F0ADAD'>            nextBehavior()
+</span>78 <span style=''></span><span style='background: #F0ADAD'>          }</span><span style='background: #AEF1AE'>
+</span>79 <span style=''></span><span style='background: #AEF1AE'>
+</span>80 <span style=''></span><span style='background: #AEF1AE'>        case JoinTo(actor, name) =&gt;
+</span>81 <span style=''></span><span style='background: #AEF1AE'>          if(rooms.contains(name) || games.contains(name) || terminatedGames.contains(name)){
+</span>82 <span style=''></span><span style='background: #AEF1AE'>            val newSubs = subscribers - actor
+</span>83 <span style=''></span><span style='background: #AEF1AE'>            rooms.get(name).foreach(_._1 ! Join(actor))
+</span>84 <span style=''></span><span style='background: #AEF1AE'>            games.get(name).foreach(</span><span style='background: #F0ADAD'>_ ! JoinGame(actor)</span><span style='background: #AEF1AE'>)
+</span>85 <span style=''></span><span style='background: #AEF1AE'>            terminatedGames.get(name).filter(</span><span style='background: #F0ADAD'>_._2</span><span style='background: #AEF1AE'>).foreach(</span><span style='background: #F0ADAD'>_._1 ! JoinGame(actor)</span><span style='background: #AEF1AE'>)
+</span>86 <span style=''></span><span style='background: #AEF1AE'>            nextBehavior(nextSubscribers = newSubs)
+</span>87 <span style=''></span><span style='background: #AEF1AE'>          } else {
+</span>88 <span style=''></span><span style='background: #AEF1AE'>            actor ! ErrorMessage(&quot;Room not found&quot;)
+</span>89 <span style=''></span><span style='background: #AEF1AE'>            nextBehavior()
+</span>90 <span style=''></span><span style='background: #AEF1AE'>          }
+</span>91 <span style=''></span><span style='background: #AEF1AE'>
+</span>92 <span style=''></span><span style='background: #AEF1AE'>        case StartGame(info, players, roomSubscribers) =&gt;
+</span>93 <span style=''></span><span style='background: #AEF1AE'>          context.log.info(&quot;info -&gt; &quot;+info)
+</span>94 <span style=''></span><span style='background: #AEF1AE'>          context.log.info(&quot;players -&gt; &quot;+players)
+</span>95 <span style=''></span><span style='background: #AEF1AE'>          context.log.info(&quot;roomSubscribers -&gt; &quot;+roomSubscribers)
+</span>96 <span style=''></span><span style='background: #AEF1AE'>          val newRooms = rooms - info.basicInfo.name
+</span>97 <span style=''></span><span style='background: #AEF1AE'>          val game = context.spawn(GameManager(info.basicInfo.name, roomSubscribers, players,
+</span>98 <span style=''></span><span style='background: #AEF1AE'>            players.keySet, info.scenario, context.self), &quot;GameManager-&quot;+info.basicInfo.name)
+</span>99 <span style=''></span><span style='background: #AEF1AE'>          val newGames = games + (info.basicInfo.name -&gt; game)
+</span>100 <span style=''></span><span style='background: #AEF1AE'>          notifyAllSubscribers(getInfo(nextRooms = newRooms,nextGames = newGames))
+</span>101 <span style=''></span><span style='background: #AEF1AE'>          nextBehavior(nextRooms = newRooms,nextGames = newGames)
+</span>102 <span style=''></span><span style='background: #AEF1AE'>
+</span>103 <span style=''></span><span style='background: #AEF1AE'>        case EndGame(name, game) =&gt;
+</span>104 <span style=''></span><span style='background: #AEF1AE'>          val newTerminatedGames = terminatedGames + (name -&gt; (game, true))
+</span>105 <span style=''></span><span style='background: #AEF1AE'>          val newGames = games - name
+</span>106 <span style=''></span><span style='background: #AEF1AE'>          notifyAllSubscribers(getInfo(nextGames = newGames,nextTerminatedGames = newTerminatedGames))
+</span>107 <span style=''></span><span style='background: #AEF1AE'>          nextBehavior(nextGames = newGames,nextTerminatedGames = newTerminatedGames)
+</span>108 <span style=''></span><span style='background: #AEF1AE'>
+</span>109 <span style=''></span><span style='background: #AEF1AE'>        case GameClosed(name, subs) =&gt;
+</span>110 <span style=''></span><span style='background: #AEF1AE'>          val newTerminatedGames = terminatedGames + (name -&gt; (terminatedGames(name)._1, false))
+</span>111 <span style=''></span><span style='background: #AEF1AE'>          val newSubs = subscribers ++ subs
+</span>112 <span style=''></span><span style='background: #AEF1AE'>          notifyAllSubscribers(getInfo(nextTerminatedGames = newTerminatedGames),newSubs)
+</span>113 <span style=''></span><span style='background: #AEF1AE'>          nextBehavior(nextSubscribers = newSubs,nextTerminatedGames = newTerminatedGames)
+</span>114 <span style=''></span><span style='background: #AEF1AE'>
+</span>115 <span style=''></span><span style='background: #AEF1AE'>        case UpdateRoomInfo(info) =&gt;
+</span>116 <span style=''></span><span style='background: #AEF1AE'>          val newRooms = rooms + (info.name -&gt; (rooms(info.name)._1, info))
+</span>117 <span style=''></span><span style='background: #AEF1AE'>          notifyAllSubscribers(getInfo(nextRooms = newRooms))
+</span>118 <span style=''></span><span style='background: #AEF1AE'>          nextBehavior(nextRooms = newRooms)
+</span>119 <span style=''></span><span style='background: #AEF1AE'>
+</span>120 <span style=''></span><span style='background: #AEF1AE'>        case EmptyRoom(roomName) =&gt;
+</span>121 <span style=''></span><span style='background: #AEF1AE'>          val newRooms = rooms - roomName
+</span>122 <span style=''></span><span style='background: #AEF1AE'>          notifyAllSubscribers(getInfo(nextRooms = newRooms))
+</span>123 <span style=''></span><span style='background: #AEF1AE'>          nextBehavior(nextRooms = newRooms)
+</span>124 <span style=''></span><span style='background: #AEF1AE'>
+</span>125 <span style=''></span><span style='background: #AEF1AE'>        case Logout(actor) =&gt; nextBehavior(nextSubscribers = subscribers - actor)
+</span>126 <span style=''></span><span style='background: #AEF1AE'>      }
+</span>127 <span style=''></span><span style='background: #AEF1AE'>    }
+</span>128 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
+</span>129 <span style=''>
+</span>130 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          1634
+        </td>
+        <td>
+          770
+          -
+          789
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.lobby.LobbyManager.setupLobbyManager
+        </td>
+        <td style="background: #AEF1AE">
+          LobbyManager.this.setupLobbyManager()
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          121
+        </td>
+        <td>
+          843
+          -
+          883
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          akka.actor.typed.receptionist.ServiceKey.apply
+        </td>
+        <td style="background: #AEF1AE">
+          akka.actor.typed.receptionist.ServiceKey.apply[org.riskala.controller.actors.Messages.LobbyMessage](&quot;LobbyManager&quot;)((ClassTag.apply[org.riskala.controller.actors.Messages.LobbyMessage](classOf[org.riskala.controller.actors.Messages$$LobbyMessage]): scala.reflect.ClassTag[org.riskala.controller.actors.Messages.LobbyMessage]))
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          912
+        </td>
+        <td>
+          868
+          -
+          882
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;LobbyManager&quot;
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          199
+        </td>
+        <td>
+          954
+          -
+          1185
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.actor.typed.scaladsl.Behaviors.setup
+        </td>
+        <td style="background: #AEF1AE">
+          akka.actor.typed.scaladsl.Behaviors.setup[org.riskala.controller.actors.Messages.LobbyMessage](((context: akka.actor.typed.scaladsl.ActorContext[org.riskala.controller.actors.Messages.LobbyMessage]) =&gt; {
+  typed.this.ActorRef.ActorRefOps[akka.actor.typed.receptionist.Receptionist.Command](context.system.receptionist).!(akka.actor.typed.receptionist.Receptionist.register[org.riskala.controller.actors.Messages.LobbyMessage](LobbyManager.this.lobbyServiceKey, context.self));
+  context.log.info(&quot;SetupLobbyManager&quot;);
+  LobbyManager.this.lobbyManager(scala.Predef.Set.empty[akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]], scala.Predef.Map.empty[String, Nothing], scala.Predef.Map.empty[String, Nothing], scala.Predef.Map.empty[String, Nothing])
+}))
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          1886
+        </td>
+        <td>
+          990
+          -
+          1017
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          akka.actor.typed.ActorSystem.receptionist
+        </td>
+        <td style="background: #AEF1AE">
+          context.system.receptionist
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          196
+        </td>
+        <td>
+          1059
+          -
+          1071
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          akka.actor.typed.scaladsl.ActorContext.self
+        </td>
+        <td style="background: #AEF1AE">
+          context.self
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          734
+        </td>
+        <td>
+          990
+          -
+          1072
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.actor.typed.ActorRef.ActorRefOps.!
+        </td>
+        <td style="background: #AEF1AE">
+          typed.this.ActorRef.ActorRefOps[akka.actor.typed.receptionist.Receptionist.Command](context.system.receptionist).!(akka.actor.typed.receptionist.Receptionist.register[org.riskala.controller.actors.Messages.LobbyMessage](LobbyManager.this.lobbyServiceKey, context.self))
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          1059
+        </td>
+        <td>
+          1042
+          -
+          1057
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.controller.actors.lobby.LobbyManager.lobbyServiceKey
+        </td>
+        <td style="background: #AEF1AE">
+          LobbyManager.this.lobbyServiceKey
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          1600
+        </td>
+        <td>
+          1020
+          -
+          1072
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.actor.typed.receptionist.Receptionist.register
+        </td>
+        <td style="background: #AEF1AE">
+          akka.actor.typed.receptionist.Receptionist.register[org.riskala.controller.actors.Messages.LobbyMessage](LobbyManager.this.lobbyServiceKey, context.self)
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          396
+        </td>
+        <td>
+          1080
+          -
+          1117
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.slf4j.Logger.info
+        </td>
+        <td style="background: #AEF1AE">
+          context.log.info(&quot;SetupLobbyManager&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          1728
+        </td>
+        <td>
+          1138
+          -
+          1147
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.generic.ImmutableSetFactory.empty
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.Set.empty[akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]]
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          872
+        </td>
+        <td>
+          1148
+          -
+          1157
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.immutable.Map.empty
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.Map.empty[String, Nothing]
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          124
+        </td>
+        <td>
+          1158
+          -
+          1167
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.immutable.Map.empty
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.Map.empty[String, Nothing]
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          1431
+        </td>
+        <td>
+          1168
+          -
+          1177
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.immutable.Map.empty
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.Map.empty[String, Nothing]
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          1062
+        </td>
+        <td>
+          1125
+          -
+          1178
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.lobby.LobbyManager.lobbyManager
+        </td>
+        <td style="background: #AEF1AE">
+          LobbyManager.this.lobbyManager(scala.Predef.Set.empty[akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]], scala.Predef.Map.empty[String, Nothing], scala.Predef.Map.empty[String, Nothing], scala.Predef.Map.empty[String, Nothing])
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          2083
+        </td>
+        <td>
+          1522
+          -
+          6503
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.actor.typed.scaladsl.Behaviors.receive
+        </td>
+        <td style="background: #AEF1AE">
+          akka.actor.typed.scaladsl.Behaviors.receive[org.riskala.controller.actors.Messages.LobbyMessage](((context: akka.actor.typed.scaladsl.ActorContext[org.riskala.controller.actors.Messages.LobbyMessage], message: org.riskala.controller.actors.Messages.LobbyMessage) =&gt; {
+  def nextBehavior(nextSubscribers: Set[akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]] = subscribers, nextRooms: Map[String,(akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.RoomMessage], org.riskala.client.messages.ToClientMessages.RoomBasicInfo)] = rooms, nextGames: Map[String,akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.GameMessage]] = games, nextTerminatedGames: Map[String,(akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.GameMessage], Boolean)] = terminatedGames): akka.actor.typed.Behavior[org.riskala.controller.actors.Messages.LobbyMessage] = LobbyManager.this.lobbyManager(nextSubscribers, nextRooms, nextGames, nextTerminatedGames);
+  &lt;synthetic&gt; def nextBehavior$default$1: Set[akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]] @scala.annotation.unchecked.uncheckedVariance = subscribers;
+  &lt;synthetic&gt; def nextBehavior$default$2: Map[String,(akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.RoomMessage], org.riskala.client.messages.ToClientMessages.RoomBasicInfo)] @scala.annotation.unchecked.uncheckedVariance = rooms;
+  &lt;synthetic&gt; def nextBehavior$default$3: Map[String,akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.GameMessage]] @scala.annotation.unchecked.uncheckedVariance = games;
+  &lt;synthetic&gt; def nextBehavior$default$4: Map[String,(akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.GameMessage], Boolean)] @scala.annotation.unchecked.uncheckedVariance = terminatedGames;
+  def getInfo(nextRooms: Map[String,(akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.RoomMessage], org.riskala.client.messages.ToClientMessages.RoomBasicInfo)] = rooms, nextGames: Map[String,akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.GameMessage]] = games, nextTerminatedGames: Map[String,(akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.GameMessage], Boolean)] = terminatedGames): org.riskala.controller.actors.player.PlayerMessages.PlayerMessage = {
+    val roomList: Set[org.riskala.client.messages.ToClientMessages.RoomNameInfo] = nextRooms.map[org.riskala.client.messages.ToClientMessages.RoomNameInfo, scala.collection.immutable.Iterable[org.riskala.client.messages.ToClientMessages.RoomNameInfo]](((kv: (String, (akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.RoomMessage], org.riskala.client.messages.ToClientMessages.RoomBasicInfo))) =&gt; org.riskala.client.messages.ToClientMessages.RoomNameInfo.apply(kv._1, kv._2._2.actualNumberOfPlayer.+(&quot;/&quot;).+(kv._2._2.maxNumberOfPlayer))))(immutable.this.Iterable.canBuildFrom[org.riskala.client.messages.ToClientMessages.RoomNameInfo]).toSet[org.riskala.client.messages.ToClientMessages.RoomNameInfo];
+    val gameList: Set[String] = nextGames.keys.toSet[String];
+    val terminatedGameList: Set[String] = nextTerminatedGames.keys.toSet[String];
+    org.riskala.controller.actors.player.PlayerMessages.LobbyInfoMessage.apply(org.riskala.client.messages.ToClientMessages.LobbyInfo.apply(roomList, gameList, terminatedGameList))
+  };
+  &lt;synthetic&gt; def getInfo$default$1: Map[String,(akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.RoomMessage], org.riskala.client.messages.ToClientMessages.RoomBasicInfo)] @scala.annotation.unchecked.uncheckedVariance = rooms;
+  &lt;synthetic&gt; def getInfo$default$2: Map[String,akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.GameMessage]] @scala.annotation.unchecked.uncheckedVariance = games;
+  &lt;synthetic&gt; def getInfo$default$3: Map[String,(akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.GameMessage], Boolean)] @scala.annotation.unchecked.uncheckedVariance = terminatedGames;
+  def notifyAllSubscribers(info: org.riskala.controller.actors.player.PlayerMessages.PlayerMessage, subs: Set[akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]] = subscribers): Unit = subs.foreach[Unit](((s: akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]) =&gt; typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage](s).!(info)));
+  &lt;synthetic&gt; def notifyAllSubscribers$default$2: Set[akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]] @scala.annotation.unchecked.uncheckedVariance = subscribers;
+  message match {
+    case (subscriber: akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage])org.riskala.controller.actors.lobby.LobbyMessages.Subscribe((subscriber @ _)) =&gt; {
+      typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage](subscriber).!(org.riskala.controller.actors.player.PlayerMessages.LobbyReferent.apply(context.self));
+      typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage](subscriber).!(getInfo(getInfo$default$1, getInfo$default$2, getInfo$default$3));
+      context.log.info(scala.StringContext.apply(&quot;Subscribe from &quot;, &quot;&quot;).s(subscriber));
+      nextBehavior(subscribers.+(subscriber), nextBehavior$default$2, nextBehavior$default$3, nextBehavior$default$4)
+    }
+    case (creator: akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage], roomInfo: org.riskala.client.messages.ToClientMessages.RoomInfo)org.riskala.controller.actors.lobby.LobbyMessages.CreateRoom((creator @ _), (roomInfo @ _)) =&gt; if (games.contains(roomInfo.basicInfo.name).unary_!.&amp;&amp;(terminatedGames.contains(roomInfo.basicInfo.name).unary_!).&amp;&amp;(rooms.contains(roomInfo.basicInfo.name).unary_!))
+      {
+        val room: akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.RoomMessage] = context.spawn[org.riskala.controller.actors.Messages.RoomMessage](org.riskala.controller.actors.room.RoomManager.apply(roomInfo, context.self), &quot;RoomManager-&quot;.+(roomInfo.basicInfo.name), context.spawn$default$3[Nothing]);
+        typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.Messages.RoomMessage](room).!(org.riskala.controller.actors.room.RoomMessages.Join.apply(creator));
+        val newRooms: scala.collection.immutable.Map[String,(akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.RoomMessage], org.riskala.client.messages.ToClientMessages.RoomBasicInfo)] = rooms.+[(akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.RoomMessage], org.riskala.client.messages.ToClientMessages.RoomBasicInfo)](scala.Predef.ArrowAssoc[String](roomInfo.basicInfo.name).-&gt;[(akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.RoomMessage], org.riskala.client.messages.ToClientMessages.RoomBasicInfo)](scala.Tuple2.apply[akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.RoomMessage], org.riskala.client.messages.ToClientMessages.RoomBasicInfo](room, roomInfo.basicInfo)));
+        val newSubs: scala.collection.immutable.Set[akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]] = subscribers.-(creator);
+        notifyAllSubscribers(getInfo(newRooms, getInfo$default$2, getInfo$default$3), newSubs);
+        nextBehavior(newSubs, newRooms, nextBehavior$default$3, nextBehavior$default$4)
+      }
+    else
+      {
+        typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage](creator).!(org.riskala.controller.actors.player.PlayerMessages.ErrorMessage.apply(&quot;Room already exists&quot;));
+        nextBehavior(nextBehavior$default$1, nextBehavior$default$2, nextBehavior$default$3, nextBehavior$default$4)
+      }
+    case (actor: akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage], name: String)org.riskala.controller.actors.lobby.LobbyMessages.JoinTo((actor @ _), (name @ _)) =&gt; if (rooms.contains(name).||(games.contains(name)).||(terminatedGames.contains(name)))
+      {
+        val newSubs: scala.collection.immutable.Set[akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]] = subscribers.-(actor);
+        rooms.get(name).foreach[Unit](((x$1: (akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.RoomMessage], org.riskala.client.messages.ToClientMessages.RoomBasicInfo)) =&gt; typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.Messages.RoomMessage](x$1._1).!(org.riskala.controller.actors.room.RoomMessages.Join.apply(actor))));
+        games.get(name).foreach[Unit](((x$2: akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.GameMessage]) =&gt; typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.Messages.GameMessage](x$2).!(org.riskala.controller.actors.game.GameMessages.JoinGame.apply(actor))));
+        terminatedGames.get(name).filter(((x$3: (akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.GameMessage], Boolean)) =&gt; x$3._2)).foreach[Unit](((x$4: (akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.GameMessage], Boolean)) =&gt; typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.Messages.GameMessage](x$4._1).!(org.riskala.controller.actors.game.GameMessages.JoinGame.apply(actor))));
+        nextBehavior(newSubs, nextBehavior$default$2, nextBehavior$default$3, nextBehavior$default$4)
+      }
+    else
+      {
+        typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage](actor).!(org.riskala.controller.actors.player.PlayerMessages.ErrorMessage.apply(&quot;Room not found&quot;));
+        nextBehavior(nextBehavior$default$1, nextBehavior$default$2, nextBehavior$default$3, nextBehavior$default$4)
+      }
+    case (info: org.riskala.client.messages.ToClientMessages.RoomInfo, players: Map[org.riskala.model.Player,akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]], roomSubscribers: Set[akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]])org.riskala.controller.actors.lobby.LobbyMessages.StartGame((info @ _), (players @ _), (roomSubscribers @ _)) =&gt; {
+      context.log.info(&quot;info -&gt; &quot;.+(info));
+      context.log.info(&quot;players -&gt; &quot;.+(players));
+      context.log.info(&quot;roomSubscribers -&gt; &quot;.+(roomSubscribers));
+      val newRooms: scala.collection.immutable.Map[String,(akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.RoomMessage], org.riskala.client.messages.ToClientMessages.RoomBasicInfo)] = rooms.-(info.basicInfo.name);
+      val game: akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.GameMessage] = context.spawn[org.riskala.controller.actors.Messages.GameMessage](org.riskala.controller.actors.game.GameManager.apply(info.basicInfo.name, roomSubscribers, players, players.keySet, info.scenario, context.self), &quot;GameManager-&quot;.+(info.basicInfo.name), context.spawn$default$3[Nothing]);
+      val newGames: scala.collection.immutable.Map[String,akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.GameMessage]] = games.+[akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.GameMessage]](scala.Predef.ArrowAssoc[String](info.basicInfo.name).-&gt;[akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.GameMessage]](game));
+      notifyAllSubscribers(getInfo(newRooms, newGames, getInfo$default$3), notifyAllSubscribers$default$2);
+      {
+        &lt;artifact&gt; val x$1: scala.collection.immutable.Map[String,(akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.RoomMessage], org.riskala.client.messages.ToClientMessages.RoomBasicInfo)] @scala.reflect.internal.annotations.uncheckedBounds = newRooms;
+        &lt;artifact&gt; val x$2: scala.collection.immutable.Map[String,akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.GameMessage]] @scala.reflect.internal.annotations.uncheckedBounds = newGames;
+        &lt;artifact&gt; val x$3: Set[akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]] @scala.reflect.internal.annotations.uncheckedBounds @scala.annotation.unchecked.uncheckedVariance = nextBehavior$default$1;
+        &lt;artifact&gt; val x$4: Map[String,(akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.GameMessage], Boolean)] @scala.reflect.internal.annotations.uncheckedBounds @scala.annotation.unchecked.uncheckedVariance = nextBehavior$default$4;
+        nextBehavior(x$3, x$1, x$2, x$4)
+      }
+    }
+    case (name: String, game: akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.GameMessage])org.riskala.controller.actors.lobby.LobbyMessages.EndGame((name @ _), (game @ _)) =&gt; {
+      val newTerminatedGames: scala.collection.immutable.Map[String,(akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.GameMessage], Boolean)] = terminatedGames.+[(akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.GameMessage], Boolean)](scala.Predef.ArrowAssoc[String](name).-&gt;[(akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.GameMessage], Boolean)](scala.Tuple2.apply[akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.GameMessage], Boolean](game, true)));
+      val newGames: scala.collection.immutable.Map[String,akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.GameMessage]] = games.-(name);
+      notifyAllSubscribers({
+        &lt;artifact&gt; val x$5: scala.collection.immutable.Map[String,akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.GameMessage]] @scala.reflect.internal.annotations.uncheckedBounds = newGames;
+        &lt;artifact&gt; val x$6: scala.collection.immutable.Map[String,(akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.GameMessage], Boolean)] @scala.reflect.internal.annotations.uncheckedBounds = newTerminatedGames;
+        &lt;artifact&gt; val x$7: Map[String,(akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.RoomMessage], org.riskala.client.messages.ToClientMessages.RoomBasicInfo)] @scala.reflect.internal.annotations.uncheckedBounds @scala.annotation.unchecked.uncheckedVariance = getInfo$default$1;
+        getInfo(x$7, x$5, x$6)
+      }, notifyAllSubscribers$default$2);
+      {
+        &lt;artifact&gt; val x$8: scala.collection.immutable.Map[String,akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.GameMessage]] @scala.reflect.internal.annotations.uncheckedBounds = newGames;
+        &lt;artifact&gt; val x$9: scala.collection.immutable.Map[String,(akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.GameMessage], Boolean)] @scala.reflect.internal.annotations.uncheckedBounds = newTerminatedGames;
+        &lt;artifact&gt; val x$10: Set[akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]] @scala.reflect.internal.annotations.uncheckedBounds @scala.annotation.unchecked.uncheckedVariance = nextBehavior$default$1;
+        &lt;artifact&gt; val x$11: Map[String,(akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.RoomMessage], org.riskala.client.messages.ToClientMessages.RoomBasicInfo)] @scala.reflect.internal.annotations.uncheckedBounds @scala.annotation.unchecked.uncheckedVariance = nextBehavior$default$2;
+        nextBehavior(x$10, x$11, x$8, x$9)
+      }
+    }
+    case (name: String, subscribers: Seq[akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]])org.riskala.controller.actors.lobby.LobbyMessages.GameClosed((name @ _), (subs @ _)) =&gt; {
+      val newTerminatedGames: scala.collection.immutable.Map[String,(akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.GameMessage], Boolean)] = terminatedGames.+[(akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.GameMessage], Boolean)](scala.Predef.ArrowAssoc[String](name).-&gt;[(akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.GameMessage], Boolean)](scala.Tuple2.apply[akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.GameMessage], Boolean](terminatedGames.apply(name)._1, false)));
+      val newSubs: scala.collection.immutable.Set[akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]] = subscribers.++(subs);
+      notifyAllSubscribers({
+        &lt;artifact&gt; val x$12: scala.collection.immutable.Map[String,(akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.GameMessage], Boolean)] @scala.reflect.internal.annotations.uncheckedBounds = newTerminatedGames;
+        &lt;artifact&gt; val x$13: Map[String,(akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.RoomMessage], org.riskala.client.messages.ToClientMessages.RoomBasicInfo)] @scala.reflect.internal.annotations.uncheckedBounds @scala.annotation.unchecked.uncheckedVariance = getInfo$default$1;
+        &lt;artifact&gt; val x$14: Map[String,akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.GameMessage]] @scala.reflect.internal.annotations.uncheckedBounds @scala.annotation.unchecked.uncheckedVariance = getInfo$default$2;
+        getInfo(x$13, x$14, x$12)
+      }, newSubs);
+      {
+        &lt;artifact&gt; val x$15: scala.collection.immutable.Set[akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]] @scala.reflect.internal.annotations.uncheckedBounds = newSubs;
+        &lt;artifact&gt; val x$16: scala.collection.immutable.Map[String,(akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.GameMessage], Boolean)] @scala.reflect.internal.annotations.uncheckedBounds = newTerminatedGames;
+        &lt;artifact&gt; val x$17: Map[String,(akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.RoomMessage], org.riskala.client.messages.ToClientMessages.RoomBasicInfo)] @scala.reflect.internal.annotations.uncheckedBounds @scala.annotation.unchecked.uncheckedVariance = nextBehavior$default$2;
+        &lt;artifact&gt; val x$18: Map[String,akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.GameMessage]] @scala.reflect.internal.annotations.uncheckedBounds @scala.annotation.unchecked.uncheckedVariance = nextBehavior$default$3;
+        nextBehavior(x$15, x$17, x$18, x$16)
+      }
+    }
+    case (info: org.riskala.client.messages.ToClientMessages.RoomBasicInfo)org.riskala.controller.actors.lobby.LobbyMessages.UpdateRoomInfo((info @ _)) =&gt; {
+      val newRooms: scala.collection.immutable.Map[String,(akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.RoomMessage], org.riskala.client.messages.ToClientMessages.RoomBasicInfo)] = rooms.+[(akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.RoomMessage], org.riskala.client.messages.ToClientMessages.RoomBasicInfo)](scala.Predef.ArrowAssoc[String](info.name).-&gt;[(akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.RoomMessage], org.riskala.client.messages.ToClientMessages.RoomBasicInfo)](scala.Tuple2.apply[akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.RoomMessage], org.riskala.client.messages.ToClientMessages.RoomBasicInfo](rooms.apply(info.name)._1, info)));
+      notifyAllSubscribers(getInfo(newRooms, getInfo$default$2, getInfo$default$3), notifyAllSubscribers$default$2);
+      {
+        &lt;artifact&gt; val x$19: scala.collection.immutable.Map[String,(akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.RoomMessage], org.riskala.client.messages.ToClientMessages.RoomBasicInfo)] @scala.reflect.internal.annotations.uncheckedBounds = newRooms;
+        &lt;artifact&gt; val x$20: Set[akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]] @scala.reflect.internal.annotations.uncheckedBounds @scala.annotation.unchecked.uncheckedVariance = nextBehavior$default$1;
+        &lt;artifact&gt; val x$21: Map[String,akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.GameMessage]] @scala.reflect.internal.annotations.uncheckedBounds @scala.annotation.unchecked.uncheckedVariance = nextBehavior$default$3;
+        &lt;artifact&gt; val x$22: Map[String,(akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.GameMessage], Boolean)] @scala.reflect.internal.annotations.uncheckedBounds @scala.annotation.unchecked.uncheckedVariance = nextBehavior$default$4;
+        nextBehavior(x$20, x$19, x$21, x$22)
+      }
+    }
+    case (roomName: String)org.riskala.controller.actors.lobby.LobbyMessages.EmptyRoom((roomName @ _)) =&gt; {
+      val newRooms: scala.collection.immutable.Map[String,(akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.RoomMessage], org.riskala.client.messages.ToClientMessages.RoomBasicInfo)] = rooms.-(roomName);
+      notifyAllSubscribers(getInfo(newRooms, getInfo$default$2, getInfo$default$3), notifyAllSubscribers$default$2);
+      {
+        &lt;artifact&gt; val x$23: scala.collection.immutable.Map[String,(akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.RoomMessage], org.riskala.client.messages.ToClientMessages.RoomBasicInfo)] @scala.reflect.internal.annotations.uncheckedBounds = newRooms;
+        &lt;artifact&gt; val x$24: Set[akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]] @scala.reflect.internal.annotations.uncheckedBounds @scala.annotation.unchecked.uncheckedVariance = nextBehavior$default$1;
+        &lt;artifact&gt; val x$25: Map[String,akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.GameMessage]] @scala.reflect.internal.annotations.uncheckedBounds @scala.annotation.unchecked.uncheckedVariance = nextBehavior$default$3;
+        &lt;artifact&gt; val x$26: Map[String,(akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.GameMessage], Boolean)] @scala.reflect.internal.annotations.uncheckedBounds @scala.annotation.unchecked.uncheckedVariance = nextBehavior$default$4;
+        nextBehavior(x$24, x$23, x$25, x$26)
+      }
+    }
+    case (actor: akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage])org.riskala.controller.actors.Messages.Logout((actor @ _)) =&gt; nextBehavior(subscribers.-(actor), nextBehavior$default$2, nextBehavior$default$3, nextBehavior$default$4)
+  }
+}))
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          1563
+        </td>
+        <td>
+          1994
+          -
+          2063
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.lobby.LobbyManager.lobbyManager
+        </td>
+        <td style="background: #AEF1AE">
+          LobbyManager.this.lobbyManager(nextSubscribers, nextRooms, nextGames, nextTerminatedGames)
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          14
+        </td>
+        <td>
+          2437
+          -
+          2533
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.messages.ToClientMessages.RoomNameInfo.apply
+        </td>
+        <td style="background: #AEF1AE">
+          org.riskala.client.messages.ToClientMessages.RoomNameInfo.apply(kv._1, kv._2._2.actualNumberOfPlayer.+(&quot;/&quot;).+(kv._2._2.maxNumberOfPlayer))
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          1437
+        </td>
+        <td>
+          2430
+          -
+          2430
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.immutable.Iterable.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.Iterable.canBuildFrom[org.riskala.client.messages.ToClientMessages.RoomNameInfo]
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          740
+        </td>
+        <td>
+          2450
+          -
+          2455
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Tuple2._1
+        </td>
+        <td style="background: #AEF1AE">
+          kv._1
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          1683
+        </td>
+        <td>
+          2506
+          -
+          2532
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.messages.ToClientMessages.RoomBasicInfo.maxNumberOfPlayer
+        </td>
+        <td style="background: #AEF1AE">
+          kv._2._2.maxNumberOfPlayer
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          313
+        </td>
+        <td>
+          2500
+          -
+          2503
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;/&quot;
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          878
+        </td>
+        <td>
+          2468
+          -
+          2532
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #AEF1AE">
+          kv._2._2.actualNumberOfPlayer.+(&quot;/&quot;).+(kv._2._2.maxNumberOfPlayer)
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          1023
+        </td>
+        <td>
+          2417
+          -
+          2540
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toSet
+        </td>
+        <td style="background: #AEF1AE">
+          nextRooms.map[org.riskala.client.messages.ToClientMessages.RoomNameInfo, scala.collection.immutable.Iterable[org.riskala.client.messages.ToClientMessages.RoomNameInfo]](((kv: (String, (akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.RoomMessage], org.riskala.client.messages.ToClientMessages.RoomBasicInfo))) =&gt; org.riskala.client.messages.ToClientMessages.RoomNameInfo.apply(kv._1, kv._2._2.actualNumberOfPlayer.+(&quot;/&quot;).+(kv._2._2.maxNumberOfPlayer))))(immutable.this.Iterable.canBuildFrom[org.riskala.client.messages.ToClientMessages.RoomNameInfo]).toSet[org.riskala.client.messages.ToClientMessages.RoomNameInfo]
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          275
+        </td>
+        <td>
+          2578
+          -
+          2598
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toSet
+        </td>
+        <td style="background: #AEF1AE">
+          nextGames.keys.toSet[String]
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          1570
+        </td>
+        <td>
+          2646
+          -
+          2676
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toSet
+        </td>
+        <td style="background: #AEF1AE">
+          nextTerminatedGames.keys.toSet[String]
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          702
+        </td>
+        <td>
+          2703
+          -
+          2752
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.messages.ToClientMessages.LobbyInfo.apply
+        </td>
+        <td style="background: #AEF1AE">
+          org.riskala.client.messages.ToClientMessages.LobbyInfo.apply(roomList, gameList, terminatedGameList)
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          319
+        </td>
+        <td>
+          2686
+          -
+          2753
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.player.PlayerMessages.LobbyInfoMessage.apply
+        </td>
+        <td style="background: #AEF1AE">
+          org.riskala.controller.actors.player.PlayerMessages.LobbyInfoMessage.apply(org.riskala.client.messages.ToClientMessages.LobbyInfo.apply(roomList, gameList, terminatedGameList))
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          1631
+        </td>
+        <td>
+          2937
+          -
+          2945
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.actor.typed.ActorRef.ActorRefOps.!
+        </td>
+        <td style="background: #AEF1AE">
+          typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage](s).!(info)
+        </td>
+      </tr><tr>
+        <td>
+          54
+        </td>
+        <td>
+          952
+        </td>
+        <td>
+          2919
+          -
+          2946
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.foreach
+        </td>
+        <td style="background: #AEF1AE">
+          subs.foreach[Unit](((s: akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]) =&gt; typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage](s).!(info)))
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          1055
+        </td>
+        <td>
+          3031
+          -
+          3071
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.actor.typed.ActorRef.ActorRefOps.!
+        </td>
+        <td style="background: #AEF1AE">
+          typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage](subscriber).!(org.riskala.controller.actors.player.PlayerMessages.LobbyReferent.apply(context.self))
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          17
+        </td>
+        <td>
+          3058
+          -
+          3070
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          akka.actor.typed.scaladsl.ActorContext.self
+        </td>
+        <td style="background: #AEF1AE">
+          context.self
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          1394
+        </td>
+        <td>
+          3044
+          -
+          3071
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.player.PlayerMessages.LobbyReferent.apply
+        </td>
+        <td style="background: #AEF1AE">
+          org.riskala.controller.actors.player.PlayerMessages.LobbyReferent.apply(context.self)
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          1554
+        </td>
+        <td>
+          3083
+          -
+          3105
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.actor.typed.ActorRef.ActorRefOps.!
+        </td>
+        <td style="background: #AEF1AE">
+          typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage](subscriber).!(getInfo(getInfo$default$1, getInfo$default$2, getInfo$default$3))
+        </td>
+      </tr><tr>
+        <td>
+          60
+        </td>
+        <td>
+          142
+        </td>
+        <td>
+          3096
+          -
+          3105
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.lobby.LobbyManager.getInfo
+        </td>
+        <td style="background: #AEF1AE">
+          getInfo(getInfo$default$1, getInfo$default$2, getInfo$default$3)
+        </td>
+      </tr><tr>
+        <td>
+          61
+        </td>
+        <td>
+          2110
+        </td>
+        <td>
+          3117
+          -
+          3164
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.slf4j.Logger.info
+        </td>
+        <td style="background: #AEF1AE">
+          context.log.info(scala.StringContext.apply(&quot;Subscribe from &quot;, &quot;&quot;).s(subscriber))
+        </td>
+      </tr><tr>
+        <td>
+          61
+        </td>
+        <td>
+          709
+        </td>
+        <td>
+          3134
+          -
+          3163
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;Subscribe from &quot;, &quot;&quot;).s(subscriber)
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          1724
+        </td>
+        <td>
+          3207
+          -
+          3231
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.SetLike.+
+        </td>
+        <td style="background: #AEF1AE">
+          subscribers.+(subscriber)
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          816
+        </td>
+        <td>
+          3176
+          -
+          3232
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.lobby.LobbyManager.nextBehavior
+        </td>
+        <td style="background: #AEF1AE">
+          nextBehavior(subscribers.+(subscriber), nextBehavior$default$2, nextBehavior$default$3, nextBehavior$default$4)
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          87
+        </td>
+        <td>
+          3312
+          -
+          3335
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.messages.ToClientMessages.RoomBasicInfo.name
+        </td>
+        <td style="background: #AEF1AE">
+          roomInfo.basicInfo.name
+        </td>
+      </tr><tr>
+        <td>
+          66
+        </td>
+        <td>
+          1061
+        </td>
+        <td>
+          3353
+          -
+          3403
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Boolean.unary_!
+        </td>
+        <td style="background: #AEF1AE">
+          terminatedGames.contains(roomInfo.basicInfo.name).unary_!
+        </td>
+      </tr><tr>
+        <td>
+          66
+        </td>
+        <td>
+          803
+        </td>
+        <td>
+          3296
+          -
+          3460
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.&amp;&amp;
+        </td>
+        <td style="background: #AEF1AE">
+          games.contains(roomInfo.basicInfo.name).unary_!.&amp;&amp;(terminatedGames.contains(roomInfo.basicInfo.name).unary_!).&amp;&amp;(rooms.contains(roomInfo.basicInfo.name).unary_!)
+        </td>
+      </tr><tr>
+        <td>
+          66
+        </td>
+        <td>
+          1403
+        </td>
+        <td>
+          3379
+          -
+          3402
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.messages.ToClientMessages.RoomBasicInfo.name
+        </td>
+        <td style="background: #AEF1AE">
+          roomInfo.basicInfo.name
+        </td>
+      </tr><tr>
+        <td>
+          67
+        </td>
+        <td>
+          1560
+        </td>
+        <td>
+          3420
+          -
+          3460
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Boolean.unary_!
+        </td>
+        <td style="background: #AEF1AE">
+          rooms.contains(roomInfo.basicInfo.name).unary_!
+        </td>
+      </tr><tr>
+        <td>
+          67
+        </td>
+        <td>
+          241
+        </td>
+        <td>
+          3436
+          -
+          3459
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.messages.ToClientMessages.RoomBasicInfo.name
+        </td>
+        <td style="background: #AEF1AE">
+          roomInfo.basicInfo.name
+        </td>
+      </tr><tr>
+        <td>
+          67
+        </td>
+        <td>
+          2067
+        </td>
+        <td>
+          3462
+          -
+          3930
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  val room: akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.RoomMessage] = context.spawn[org.riskala.controller.actors.Messages.RoomMessage](org.riskala.controller.actors.room.RoomManager.apply(roomInfo, context.self), &quot;RoomManager-&quot;.+(roomInfo.basicInfo.name), context.spawn$default$3[Nothing]);
+  typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.Messages.RoomMessage](room).!(org.riskala.controller.actors.room.RoomMessages.Join.apply(creator));
+  val newRooms: scala.collection.immutable.Map[String,(akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.RoomMessage], org.riskala.client.messages.ToClientMessages.RoomBasicInfo)] = rooms.+[(akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.RoomMessage], org.riskala.client.messages.ToClientMessages.RoomBasicInfo)](scala.Predef.ArrowAssoc[String](roomInfo.basicInfo.name).-&gt;[(akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.RoomMessage], org.riskala.client.messages.ToClientMessages.RoomBasicInfo)](scala.Tuple2.apply[akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.RoomMessage], org.riskala.client.messages.ToClientMessages.RoomBasicInfo](room, roomInfo.basicInfo)));
+  val newSubs: scala.collection.immutable.Set[akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]] = subscribers.-(creator);
+  notifyAllSubscribers(getInfo(newRooms, getInfo$default$2, getInfo$default$3), newSubs);
+  nextBehavior(newSubs, newRooms, nextBehavior$default$3, nextBehavior$default$4)
+}
+        </td>
+      </tr><tr>
+        <td>
+          68
+        </td>
+        <td>
+          1042
+        </td>
+        <td>
+          3496
+          -
+          3496
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          akka.actor.typed.scaladsl.ActorContext.spawn$default$3
+        </td>
+        <td style="background: #AEF1AE">
+          context.spawn$default$3[Nothing]
+        </td>
+      </tr><tr>
+        <td>
+          68
+        </td>
+        <td>
+          1733
+        </td>
+        <td>
+          3502
+          -
+          3537
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.room.RoomManager.apply
+        </td>
+        <td style="background: #AEF1AE">
+          org.riskala.controller.actors.room.RoomManager.apply(roomInfo, context.self)
+        </td>
+      </tr><tr>
+        <td>
+          68
+        </td>
+        <td>
+          248
+        </td>
+        <td>
+          3488
+          -
+          3595
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.actor.typed.scaladsl.ActorContext.spawn
+        </td>
+        <td style="background: #AEF1AE">
+          context.spawn[org.riskala.controller.actors.Messages.RoomMessage](org.riskala.controller.actors.room.RoomManager.apply(roomInfo, context.self), &quot;RoomManager-&quot;.+(roomInfo.basicInfo.name), context.spawn$default$3[Nothing])
+        </td>
+      </tr><tr>
+        <td>
+          68
+        </td>
+        <td>
+          2132
+        </td>
+        <td>
+          3524
+          -
+          3536
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          akka.actor.typed.scaladsl.ActorContext.self
+        </td>
+        <td style="background: #AEF1AE">
+          context.self
+        </td>
+      </tr><tr>
+        <td>
+          69
+        </td>
+        <td>
+          92
+        </td>
+        <td>
+          3571
+          -
+          3594
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.messages.ToClientMessages.RoomBasicInfo.name
+        </td>
+        <td style="background: #AEF1AE">
+          roomInfo.basicInfo.name
+        </td>
+      </tr><tr>
+        <td>
+          69
+        </td>
+        <td>
+          1477
+        </td>
+        <td>
+          3554
+          -
+          3594
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;RoomManager-&quot;.+(roomInfo.basicInfo.name)
+        </td>
+      </tr><tr>
+        <td>
+          69
+        </td>
+        <td>
+          921
+        </td>
+        <td>
+          3554
+          -
+          3568
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;RoomManager-&quot;
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          785
+        </td>
+        <td>
+          3609
+          -
+          3629
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.actor.typed.ActorRef.ActorRefOps.!
+        </td>
+        <td style="background: #AEF1AE">
+          typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.Messages.RoomMessage](room).!(org.riskala.controller.actors.room.RoomMessages.Join.apply(creator))
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          1529
+        </td>
+        <td>
+          3616
+          -
+          3629
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.room.RoomMessages.Join.apply
+        </td>
+        <td style="background: #AEF1AE">
+          org.riskala.controller.actors.room.RoomMessages.Join.apply(creator)
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          1390
+        </td>
+        <td>
+          3658
+          -
+          3721
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.immutable.Map.+
+        </td>
+        <td style="background: #AEF1AE">
+          rooms.+[(akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.RoomMessage], org.riskala.client.messages.ToClientMessages.RoomBasicInfo)](scala.Predef.ArrowAssoc[String](roomInfo.basicInfo.name).-&gt;[(akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.RoomMessage], org.riskala.client.messages.ToClientMessages.RoomBasicInfo)](scala.Tuple2.apply[akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.RoomMessage], org.riskala.client.messages.ToClientMessages.RoomBasicInfo](room, roomInfo.basicInfo)))
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          98
+        </td>
+        <td>
+          3667
+          -
+          3720
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.ArrowAssoc.-&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.ArrowAssoc[String](roomInfo.basicInfo.name).-&gt;[(akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.RoomMessage], org.riskala.client.messages.ToClientMessages.RoomBasicInfo)](scala.Tuple2.apply[akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.RoomMessage], org.riskala.client.messages.ToClientMessages.RoomBasicInfo](room, roomInfo.basicInfo))
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          848
+        </td>
+        <td>
+          3667
+          -
+          3720
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Tuple2.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Tuple2.apply[akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.RoomMessage], org.riskala.client.messages.ToClientMessages.RoomBasicInfo](room, roomInfo.basicInfo)
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          1700
+        </td>
+        <td>
+          3701
+          -
+          3719
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.messages.ToClientMessages.RoomInfo.basicInfo
+        </td>
+        <td style="background: #AEF1AE">
+          roomInfo.basicInfo
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          2103
+        </td>
+        <td>
+          3667
+          -
+          3690
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.messages.ToClientMessages.RoomBasicInfo.name
+        </td>
+        <td style="background: #AEF1AE">
+          roomInfo.basicInfo.name
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          615
+        </td>
+        <td>
+          3749
+          -
+          3770
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.SetLike.-
+        </td>
+        <td style="background: #AEF1AE">
+          subscribers.-(creator)
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          207
+        </td>
+        <td>
+          3805
+          -
+          3834
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.lobby.LobbyManager.getInfo
+        </td>
+        <td style="background: #AEF1AE">
+          getInfo(newRooms, getInfo$default$2, getInfo$default$3)
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          1534
+        </td>
+        <td>
+          3784
+          -
+          3843
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.lobby.LobbyManager.notifyAllSubscribers
+        </td>
+        <td style="background: #AEF1AE">
+          notifyAllSubscribers(getInfo(newRooms, getInfo$default$2, getInfo$default$3), newSubs)
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          789
+        </td>
+        <td>
+          3857
+          -
+          3917
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.lobby.LobbyManager.nextBehavior
+        </td>
+        <td style="background: #AEF1AE">
+          nextBehavior(newSubs, newRooms, nextBehavior$default$3, nextBehavior$default$4)
+        </td>
+      </tr><tr>
+        <td>
+          75
+        </td>
+        <td>
+          1397
+        </td>
+        <td>
+          3936
+          -
+          4037
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          {
+  typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage](creator).!(org.riskala.controller.actors.player.PlayerMessages.ErrorMessage.apply(&quot;Room already exists&quot;));
+  nextBehavior(nextBehavior$default$1, nextBehavior$default$2, nextBehavior$default$3, nextBehavior$default$4)
+}
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          1670
+        </td>
+        <td>
+          3961
+          -
+          3996
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.player.PlayerMessages.ErrorMessage.apply
+        </td>
+        <td style="background: #F0ADAD">
+          org.riskala.controller.actors.player.PlayerMessages.ErrorMessage.apply(&quot;Room already exists&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          834
+        </td>
+        <td>
+          3951
+          -
+          3996
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.actor.typed.ActorRef.ActorRefOps.!
+        </td>
+        <td style="background: #F0ADAD">
+          typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage](creator).!(org.riskala.controller.actors.player.PlayerMessages.ErrorMessage.apply(&quot;Room already exists&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          77
+        </td>
+        <td>
+          63
+        </td>
+        <td>
+          4010
+          -
+          4024
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.lobby.LobbyManager.nextBehavior
+        </td>
+        <td style="background: #F0ADAD">
+          nextBehavior(nextBehavior$default$1, nextBehavior$default$2, nextBehavior$default$3, nextBehavior$default$4)
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          1366
+        </td>
+        <td>
+          4170
+          -
+          4483
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  val newSubs: scala.collection.immutable.Set[akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]] = subscribers.-(actor);
+  rooms.get(name).foreach[Unit](((x$1: (akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.RoomMessage], org.riskala.client.messages.ToClientMessages.RoomBasicInfo)) =&gt; typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.Messages.RoomMessage](x$1._1).!(org.riskala.controller.actors.room.RoomMessages.Join.apply(actor))));
+  games.get(name).foreach[Unit](((x$2: akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.GameMessage]) =&gt; typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.Messages.GameMessage](x$2).!(org.riskala.controller.actors.game.GameMessages.JoinGame.apply(actor))));
+  terminatedGames.get(name).filter(((x$3: (akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.GameMessage], Boolean)) =&gt; x$3._2)).foreach[Unit](((x$4: (akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.GameMessage], Boolean)) =&gt; typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.Messages.GameMessage](x$4._1).!(org.riskala.controller.actors.game.GameMessages.JoinGame.apply(actor))));
+  nextBehavior(newSubs, nextBehavior$default$2, nextBehavior$default$3, nextBehavior$default$4)
+}
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          236
+        </td>
+        <td>
+          4139
+          -
+          4169
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.MapLike.contains
+        </td>
+        <td style="background: #AEF1AE">
+          terminatedGames.contains(name)
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          1539
+        </td>
+        <td>
+          4091
+          -
+          4169
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.||
+        </td>
+        <td style="background: #AEF1AE">
+          rooms.contains(name).||(games.contains(name)).||(terminatedGames.contains(name))
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          591
+        </td>
+        <td>
+          4115
+          -
+          4135
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.MapLike.contains
+        </td>
+        <td style="background: #AEF1AE">
+          games.contains(name)
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          679
+        </td>
+        <td>
+          4199
+          -
+          4218
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.SetLike.-
+        </td>
+        <td style="background: #AEF1AE">
+          subscribers.-(actor)
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          67
+        </td>
+        <td>
+          4232
+          -
+          4275
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.foreach
+        </td>
+        <td style="background: #AEF1AE">
+          rooms.get(name).foreach[Unit](((x$1: (akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.RoomMessage], org.riskala.client.messages.ToClientMessages.RoomBasicInfo)) =&gt; typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.Messages.RoomMessage](x$1._1).!(org.riskala.controller.actors.room.RoomMessages.Join.apply(actor))))
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          1251
+        </td>
+        <td>
+          4263
+          -
+          4274
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.room.RoomMessages.Join.apply
+        </td>
+        <td style="background: #AEF1AE">
+          org.riskala.controller.actors.room.RoomMessages.Join.apply(actor)
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          919
+        </td>
+        <td>
+          4256
+          -
+          4274
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.actor.typed.ActorRef.ActorRefOps.!
+        </td>
+        <td style="background: #AEF1AE">
+          typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.Messages.RoomMessage](x$1._1).!(org.riskala.controller.actors.room.RoomMessages.Join.apply(actor))
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          2073
+        </td>
+        <td>
+          4256
+          -
+          4260
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Tuple2._1
+        </td>
+        <td style="background: #AEF1AE">
+          x$1._1
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          244
+        </td>
+        <td>
+          4289
+          -
+          4333
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.foreach
+        </td>
+        <td style="background: #AEF1AE">
+          games.get(name).foreach[Unit](((x$2: akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.GameMessage]) =&gt; typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.Messages.GameMessage](x$2).!(org.riskala.controller.actors.game.GameMessages.JoinGame.apply(actor))))
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          1362
+        </td>
+        <td>
+          4317
+          -
+          4332
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.game.GameMessages.JoinGame.apply
+        </td>
+        <td style="background: #F0ADAD">
+          org.riskala.controller.actors.game.GameMessages.JoinGame.apply(actor)
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          596
+        </td>
+        <td>
+          4313
+          -
+          4332
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.actor.typed.ActorRef.ActorRefOps.!
+        </td>
+        <td style="background: #F0ADAD">
+          typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.Messages.GameMessage](x$2).!(org.riskala.controller.actors.game.GameMessages.JoinGame.apply(actor))
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          681
+        </td>
+        <td>
+          4394
+          -
+          4398
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Tuple2._1
+        </td>
+        <td style="background: #F0ADAD">
+          x$4._1
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          1320
+        </td>
+        <td>
+          4394
+          -
+          4416
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.actor.typed.ActorRef.ActorRefOps.!
+        </td>
+        <td style="background: #F0ADAD">
+          typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.Messages.GameMessage](x$4._1).!(org.riskala.controller.actors.game.GameMessages.JoinGame.apply(actor))
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          2032
+        </td>
+        <td>
+          4401
+          -
+          4416
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.game.GameMessages.JoinGame.apply
+        </td>
+        <td style="background: #F0ADAD">
+          org.riskala.controller.actors.game.GameMessages.JoinGame.apply(actor)
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          1606
+        </td>
+        <td>
+          4380
+          -
+          4384
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Tuple2._2
+        </td>
+        <td style="background: #F0ADAD">
+          x$3._2
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          924
+        </td>
+        <td>
+          4347
+          -
+          4417
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.foreach
+        </td>
+        <td style="background: #AEF1AE">
+          terminatedGames.get(name).filter(((x$3: (akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.GameMessage], Boolean)) =&gt; x$3._2)).foreach[Unit](((x$4: (akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.GameMessage], Boolean)) =&gt; typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.Messages.GameMessage](x$4._1).!(org.riskala.controller.actors.game.GameMessages.JoinGame.apply(actor))))
+        </td>
+      </tr><tr>
+        <td>
+          86
+        </td>
+        <td>
+          50
+        </td>
+        <td>
+          4431
+          -
+          4470
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.lobby.LobbyManager.nextBehavior
+        </td>
+        <td style="background: #AEF1AE">
+          nextBehavior(newSubs, nextBehavior$default$2, nextBehavior$default$3, nextBehavior$default$4)
+        </td>
+      </tr><tr>
+        <td>
+          87
+        </td>
+        <td>
+          749
+        </td>
+        <td>
+          4489
+          -
+          4583
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage](actor).!(org.riskala.controller.actors.player.PlayerMessages.ErrorMessage.apply(&quot;Room not found&quot;));
+  nextBehavior(nextBehavior$default$1, nextBehavior$default$2, nextBehavior$default$3, nextBehavior$default$4)
+}
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          559
+        </td>
+        <td>
+          4512
+          -
+          4542
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.player.PlayerMessages.ErrorMessage.apply
+        </td>
+        <td style="background: #AEF1AE">
+          org.riskala.controller.actors.player.PlayerMessages.ErrorMessage.apply(&quot;Room not found&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          204
+        </td>
+        <td>
+          4504
+          -
+          4542
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.actor.typed.ActorRef.ActorRefOps.!
+        </td>
+        <td style="background: #AEF1AE">
+          typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage](actor).!(org.riskala.controller.actors.player.PlayerMessages.ErrorMessage.apply(&quot;Room not found&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          89
+        </td>
+        <td>
+          1608
+        </td>
+        <td>
+          4556
+          -
+          4570
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.lobby.LobbyManager.nextBehavior
+        </td>
+        <td style="background: #AEF1AE">
+          nextBehavior(nextBehavior$default$1, nextBehavior$default$2, nextBehavior$default$3, nextBehavior$default$4)
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          2039
+        </td>
+        <td>
+          4673
+          -
+          4688
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;info -&gt; &quot;.+(info)
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          1329
+        </td>
+        <td>
+          4656
+          -
+          4689
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.slf4j.Logger.info
+        </td>
+        <td style="background: #AEF1AE">
+          context.log.info(&quot;info -&gt; &quot;.+(info))
+        </td>
+      </tr><tr>
+        <td>
+          94
+        </td>
+        <td>
+          884
+        </td>
+        <td>
+          4718
+          -
+          4739
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;players -&gt; &quot;.+(players)
+        </td>
+      </tr><tr>
+        <td>
+          94
+        </td>
+        <td>
+          57
+        </td>
+        <td>
+          4701
+          -
+          4740
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.slf4j.Logger.info
+        </td>
+        <td style="background: #AEF1AE">
+          context.log.info(&quot;players -&gt; &quot;.+(players))
+        </td>
+      </tr><tr>
+        <td>
+          95
+        </td>
+        <td>
+          629
+        </td>
+        <td>
+          4752
+          -
+          4807
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.slf4j.Logger.info
+        </td>
+        <td style="background: #AEF1AE">
+          context.log.info(&quot;roomSubscribers -&gt; &quot;.+(roomSubscribers))
+        </td>
+      </tr><tr>
+        <td>
+          95
+        </td>
+        <td>
+          1444
+        </td>
+        <td>
+          4769
+          -
+          4806
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;roomSubscribers -&gt; &quot;.+(roomSubscribers)
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          1578
+        </td>
+        <td>
+          4834
+          -
+          4861
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.MapLike.-
+        </td>
+        <td style="background: #AEF1AE">
+          rooms.-(info.basicInfo.name)
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          2004
+        </td>
+        <td>
+          4842
+          -
+          4861
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.messages.ToClientMessages.RoomBasicInfo.name
+        </td>
+        <td style="background: #AEF1AE">
+          info.basicInfo.name
+        </td>
+      </tr><tr>
+        <td>
+          97
+        </td>
+        <td>
+          1510
+        </td>
+        <td>
+          4892
+          -
+          4892
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          akka.actor.typed.scaladsl.ActorContext.spawn$default$3
+        </td>
+        <td style="background: #AEF1AE">
+          context.spawn$default$3[Nothing]
+        </td>
+      </tr><tr>
+        <td>
+          97
+        </td>
+        <td>
+          715
+        </td>
+        <td>
+          4884
+          -
+          5051
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.actor.typed.scaladsl.ActorContext.spawn
+        </td>
+        <td style="background: #AEF1AE">
+          context.spawn[org.riskala.controller.actors.Messages.GameMessage](org.riskala.controller.actors.game.GameManager.apply(info.basicInfo.name, roomSubscribers, players, players.keySet, info.scenario, context.self), &quot;GameManager-&quot;.+(info.basicInfo.name), context.spawn$default$3[Nothing])
+        </td>
+      </tr><tr>
+        <td>
+          97
+        </td>
+        <td>
+          754
+        </td>
+        <td>
+          4910
+          -
+          4929
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.messages.ToClientMessages.RoomBasicInfo.name
+        </td>
+        <td style="background: #AEF1AE">
+          info.basicInfo.name
+        </td>
+      </tr><tr>
+        <td>
+          97
+        </td>
+        <td>
+          21
+        </td>
+        <td>
+          4898
+          -
+          5014
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.game.GameManager.apply
+        </td>
+        <td style="background: #AEF1AE">
+          org.riskala.controller.actors.game.GameManager.apply(info.basicInfo.name, roomSubscribers, players, players.keySet, info.scenario, context.self)
+        </td>
+      </tr><tr>
+        <td>
+          98
+        </td>
+        <td>
+          1447
+        </td>
+        <td>
+          5016
+          -
+          5030
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;GameManager-&quot;
+        </td>
+      </tr><tr>
+        <td>
+          98
+        </td>
+        <td>
+          1964
+        </td>
+        <td>
+          5016
+          -
+          5050
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.+
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;GameManager-&quot;.+(info.basicInfo.name)
+        </td>
+      </tr><tr>
+        <td>
+          98
+        </td>
+        <td>
+          594
+        </td>
+        <td>
+          5031
+          -
+          5050
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.messages.ToClientMessages.RoomBasicInfo.name
+        </td>
+        <td style="background: #AEF1AE">
+          info.basicInfo.name
+        </td>
+      </tr><tr>
+        <td>
+          98
+        </td>
+        <td>
+          890
+        </td>
+        <td>
+          5001
+          -
+          5013
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          akka.actor.typed.scaladsl.ActorContext.self
+        </td>
+        <td style="background: #AEF1AE">
+          context.self
+        </td>
+      </tr><tr>
+        <td>
+          98
+        </td>
+        <td>
+          2122
+        </td>
+        <td>
+          4970
+          -
+          4984
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.MapLike.keySet
+        </td>
+        <td style="background: #AEF1AE">
+          players.keySet
+        </td>
+      </tr><tr>
+        <td>
+          98
+        </td>
+        <td>
+          1293
+        </td>
+        <td>
+          4986
+          -
+          4999
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.messages.ToClientMessages.RoomInfo.scenario
+        </td>
+        <td style="background: #AEF1AE">
+          info.scenario
+        </td>
+      </tr><tr>
+        <td>
+          99
+        </td>
+        <td>
+          1255
+        </td>
+        <td>
+          5078
+          -
+          5115
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.immutable.Map.+
+        </td>
+        <td style="background: #AEF1AE">
+          games.+[akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.GameMessage]](scala.Predef.ArrowAssoc[String](info.basicInfo.name).-&gt;[akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.GameMessage]](game))
+        </td>
+      </tr><tr>
+        <td>
+          99
+        </td>
+        <td>
+          2029
+        </td>
+        <td>
+          5087
+          -
+          5114
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.ArrowAssoc.-&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.ArrowAssoc[String](info.basicInfo.name).-&gt;[akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.GameMessage]](game)
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          29
+        </td>
+        <td>
+          5127
+          -
+          5199
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.lobby.LobbyManager.notifyAllSubscribers
+        </td>
+        <td style="background: #AEF1AE">
+          notifyAllSubscribers(getInfo(newRooms, newGames, getInfo$default$3), notifyAllSubscribers$default$2)
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          859
+        </td>
+        <td>
+          5148
+          -
+          5198
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.lobby.LobbyManager.getInfo
+        </td>
+        <td style="background: #AEF1AE">
+          getInfo(newRooms, newGames, getInfo$default$3)
+        </td>
+      </tr><tr>
+        <td>
+          101
+        </td>
+        <td>
+          1451
+        </td>
+        <td>
+          5211
+          -
+          5266
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.lobby.LobbyManager.nextBehavior
+        </td>
+        <td style="background: #AEF1AE">
+          nextBehavior(x$3, x$1, x$2, x$4)
+        </td>
+      </tr><tr>
+        <td>
+          104
+        </td>
+        <td>
+          1914
+        </td>
+        <td>
+          5361
+          -
+          5381
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.ArrowAssoc.-&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.ArrowAssoc[String](name).-&gt;[(akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.GameMessage], Boolean)](scala.Tuple2.apply[akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.GameMessage], Boolean](game, true))
+        </td>
+      </tr><tr>
+        <td>
+          104
+        </td>
+        <td>
+          1495
+        </td>
+        <td>
+          5342
+          -
+          5382
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.immutable.Map.+
+        </td>
+        <td style="background: #AEF1AE">
+          terminatedGames.+[(akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.GameMessage], Boolean)](scala.Predef.ArrowAssoc[String](name).-&gt;[(akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.GameMessage], Boolean)](scala.Tuple2.apply[akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.GameMessage], Boolean](game, true)))
+        </td>
+      </tr><tr>
+        <td>
+          104
+        </td>
+        <td>
+          556
+        </td>
+        <td>
+          5361
+          -
+          5381
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Tuple2.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Tuple2.apply[akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.GameMessage], Boolean](game, true)
+        </td>
+      </tr><tr>
+        <td>
+          105
+        </td>
+        <td>
+          722
+        </td>
+        <td>
+          5409
+          -
+          5421
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.MapLike.-
+        </td>
+        <td style="background: #AEF1AE">
+          games.-(name)
+        </td>
+      </tr><tr>
+        <td>
+          106
+        </td>
+        <td>
+          1231
+        </td>
+        <td>
+          5433
+          -
+          5525
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.lobby.LobbyManager.notifyAllSubscribers
+        </td>
+        <td style="background: #AEF1AE">
+          notifyAllSubscribers({
+  &lt;artifact&gt; val x$5: scala.collection.immutable.Map[String,akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.GameMessage]] @scala.reflect.internal.annotations.uncheckedBounds = newGames;
+  &lt;artifact&gt; val x$6: scala.collection.immutable.Map[String,(akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.GameMessage], Boolean)] @scala.reflect.internal.annotations.uncheckedBounds = newTerminatedGames;
+  &lt;artifact&gt; val x$7: Map[String,(akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.RoomMessage], org.riskala.client.messages.ToClientMessages.RoomBasicInfo)] @scala.reflect.internal.annotations.uncheckedBounds @scala.annotation.unchecked.uncheckedVariance = getInfo$default$1;
+  getInfo(x$7, x$5, x$6)
+}, notifyAllSubscribers$default$2)
+        </td>
+      </tr><tr>
+        <td>
+          106
+        </td>
+        <td>
+          2035
+        </td>
+        <td>
+          5454
+          -
+          5524
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.lobby.LobbyManager.getInfo
+        </td>
+        <td style="background: #AEF1AE">
+          getInfo(x$7, x$5, x$6)
+        </td>
+      </tr><tr>
+        <td>
+          107
+        </td>
+        <td>
+          524
+        </td>
+        <td>
+          5537
+          -
+          5612
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.lobby.LobbyManager.nextBehavior
+        </td>
+        <td style="background: #AEF1AE">
+          nextBehavior(x$10, x$11, x$8, x$9)
+        </td>
+      </tr><tr>
+        <td>
+          110
+        </td>
+        <td>
+          8
+        </td>
+        <td>
+          5719
+          -
+          5743
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Tuple2._1
+        </td>
+        <td style="background: #AEF1AE">
+          terminatedGames.apply(name)._1
+        </td>
+      </tr><tr>
+        <td>
+          110
+        </td>
+        <td>
+          1904
+        </td>
+        <td>
+          5710
+          -
+          5751
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.ArrowAssoc.-&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.ArrowAssoc[String](name).-&gt;[(akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.GameMessage], Boolean)](scala.Tuple2.apply[akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.GameMessage], Boolean](terminatedGames.apply(name)._1, false))
+        </td>
+      </tr><tr>
+        <td>
+          110
+        </td>
+        <td>
+          1575
+        </td>
+        <td>
+          5691
+          -
+          5752
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.immutable.Map.+
+        </td>
+        <td style="background: #AEF1AE">
+          terminatedGames.+[(akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.GameMessage], Boolean)](scala.Predef.ArrowAssoc[String](name).-&gt;[(akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.GameMessage], Boolean)](scala.Tuple2.apply[akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.GameMessage], Boolean](terminatedGames.apply(name)._1, false)))
+        </td>
+      </tr><tr>
+        <td>
+          110
+        </td>
+        <td>
+          564
+        </td>
+        <td>
+          5710
+          -
+          5751
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Tuple2.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Tuple2.apply[akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.GameMessage], Boolean](terminatedGames.apply(name)._1, false)
+        </td>
+      </tr><tr>
+        <td>
+          110
+        </td>
+        <td>
+          1480
+        </td>
+        <td>
+          5745
+          -
+          5750
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          false
+        </td>
+      </tr><tr>
+        <td>
+          111
+        </td>
+        <td>
+          728
+        </td>
+        <td>
+          5778
+          -
+          5797
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.SetLike.++
+        </td>
+        <td style="background: #AEF1AE">
+          subscribers.++(subs)
+        </td>
+      </tr><tr>
+        <td>
+          112
+        </td>
+        <td>
+          1237
+        </td>
+        <td>
+          5809
+          -
+          5888
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.lobby.LobbyManager.notifyAllSubscribers
+        </td>
+        <td style="background: #AEF1AE">
+          notifyAllSubscribers({
+  &lt;artifact&gt; val x$12: scala.collection.immutable.Map[String,(akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.GameMessage], Boolean)] @scala.reflect.internal.annotations.uncheckedBounds = newTerminatedGames;
+  &lt;artifact&gt; val x$13: Map[String,(akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.RoomMessage], org.riskala.client.messages.ToClientMessages.RoomBasicInfo)] @scala.reflect.internal.annotations.uncheckedBounds @scala.annotation.unchecked.uncheckedVariance = getInfo$default$1;
+  &lt;artifact&gt; val x$14: Map[String,akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.GameMessage]] @scala.reflect.internal.annotations.uncheckedBounds @scala.annotation.unchecked.uncheckedVariance = getInfo$default$2;
+  getInfo(x$13, x$14, x$12)
+}, newSubs)
+        </td>
+      </tr><tr>
+        <td>
+          112
+        </td>
+        <td>
+          2137
+        </td>
+        <td>
+          5830
+          -
+          5879
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.lobby.LobbyManager.getInfo
+        </td>
+        <td style="background: #AEF1AE">
+          getInfo(x$13, x$14, x$12)
+        </td>
+      </tr><tr>
+        <td>
+          113
+        </td>
+        <td>
+          488
+        </td>
+        <td>
+          5900
+          -
+          5980
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.lobby.LobbyManager.nextBehavior
+        </td>
+        <td style="background: #AEF1AE">
+          nextBehavior(x$15, x$17, x$18, x$16)
+        </td>
+      </tr><tr>
+        <td>
+          116
+        </td>
+        <td>
+          1214
+        </td>
+        <td>
+          6056
+          -
+          6096
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.ArrowAssoc.-&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.ArrowAssoc[String](info.name).-&gt;[(akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.RoomMessage], org.riskala.client.messages.ToClientMessages.RoomBasicInfo)](scala.Tuple2.apply[akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.RoomMessage], org.riskala.client.messages.ToClientMessages.RoomBasicInfo](rooms.apply(info.name)._1, info))
+        </td>
+      </tr><tr>
+        <td>
+          116
+        </td>
+        <td>
+          1961
+        </td>
+        <td>
+          6056
+          -
+          6096
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Tuple2.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Tuple2.apply[akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.RoomMessage], org.riskala.client.messages.ToClientMessages.RoomBasicInfo](rooms.apply(info.name)._1, info)
+        </td>
+      </tr><tr>
+        <td>
+          116
+        </td>
+        <td>
+          660
+        </td>
+        <td>
+          6070
+          -
+          6089
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Tuple2._1
+        </td>
+        <td style="background: #AEF1AE">
+          rooms.apply(info.name)._1
+        </td>
+      </tr><tr>
+        <td>
+          116
+        </td>
+        <td>
+          1481
+        </td>
+        <td>
+          6076
+          -
+          6085
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.messages.ToClientMessages.RoomBasicInfo.name
+        </td>
+        <td style="background: #AEF1AE">
+          info.name
+        </td>
+      </tr><tr>
+        <td>
+          116
+        </td>
+        <td>
+          102
+        </td>
+        <td>
+          6056
+          -
+          6065
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.messages.ToClientMessages.RoomBasicInfo.name
+        </td>
+        <td style="background: #AEF1AE">
+          info.name
+        </td>
+      </tr><tr>
+        <td>
+          116
+        </td>
+        <td>
+          712
+        </td>
+        <td>
+          6047
+          -
+          6097
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.immutable.Map.+
+        </td>
+        <td style="background: #AEF1AE">
+          rooms.+[(akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.RoomMessage], org.riskala.client.messages.ToClientMessages.RoomBasicInfo)](scala.Predef.ArrowAssoc[String](info.name).-&gt;[(akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.RoomMessage], org.riskala.client.messages.ToClientMessages.RoomBasicInfo)](scala.Tuple2.apply[akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.RoomMessage], org.riskala.client.messages.ToClientMessages.RoomBasicInfo](rooms.apply(info.name)._1, info)))
+        </td>
+      </tr><tr>
+        <td>
+          117
+        </td>
+        <td>
+          1338
+        </td>
+        <td>
+          6109
+          -
+          6160
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.lobby.LobbyManager.notifyAllSubscribers
+        </td>
+        <td style="background: #AEF1AE">
+          notifyAllSubscribers(getInfo(newRooms, getInfo$default$2, getInfo$default$3), notifyAllSubscribers$default$2)
+        </td>
+      </tr><tr>
+        <td>
+          117
+        </td>
+        <td>
+          2142
+        </td>
+        <td>
+          6130
+          -
+          6159
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.lobby.LobbyManager.getInfo
+        </td>
+        <td style="background: #AEF1AE">
+          getInfo(newRooms, getInfo$default$2, getInfo$default$3)
+        </td>
+      </tr><tr>
+        <td>
+          118
+        </td>
+        <td>
+          496
+        </td>
+        <td>
+          6172
+          -
+          6206
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.lobby.LobbyManager.nextBehavior
+        </td>
+        <td style="background: #AEF1AE">
+          nextBehavior(x$20, x$19, x$21, x$22)
+        </td>
+      </tr><tr>
+        <td>
+          121
+        </td>
+        <td>
+          108
+        </td>
+        <td>
+          6272
+          -
+          6288
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.MapLike.-
+        </td>
+        <td style="background: #AEF1AE">
+          rooms.-(roomName)
+        </td>
+      </tr><tr>
+        <td>
+          122
+        </td>
+        <td>
+          663
+        </td>
+        <td>
+          6300
+          -
+          6351
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.lobby.LobbyManager.notifyAllSubscribers
+        </td>
+        <td style="background: #AEF1AE">
+          notifyAllSubscribers(getInfo(newRooms, getInfo$default$2, getInfo$default$3), notifyAllSubscribers$default$2)
+        </td>
+      </tr><tr>
+        <td>
+          122
+        </td>
+        <td>
+          1409
+        </td>
+        <td>
+          6321
+          -
+          6350
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.lobby.LobbyManager.getInfo
+        </td>
+        <td style="background: #AEF1AE">
+          getInfo(newRooms, getInfo$default$2, getInfo$default$3)
+        </td>
+      </tr><tr>
+        <td>
+          123
+        </td>
+        <td>
+          1932
+        </td>
+        <td>
+          6363
+          -
+          6397
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.lobby.LobbyManager.nextBehavior
+        </td>
+        <td style="background: #AEF1AE">
+          nextBehavior(x$24, x$23, x$25, x$26)
+        </td>
+      </tr><tr>
+        <td>
+          125
+        </td>
+        <td>
+          720
+        </td>
+        <td>
+          6431
+          -
+          6482
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.lobby.LobbyManager.nextBehavior
+        </td>
+        <td style="background: #AEF1AE">
+          nextBehavior(subscribers.-(actor), nextBehavior$default$2, nextBehavior$default$3, nextBehavior$default$4)
+        </td>
+      </tr><tr>
+        <td>
+          125
+        </td>
+        <td>
+          1189
+        </td>
+        <td>
+          6462
+          -
+          6481
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.SetLike.-
+        </td>
+        <td style="background: #AEF1AE">
+          subscribers.-(actor)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

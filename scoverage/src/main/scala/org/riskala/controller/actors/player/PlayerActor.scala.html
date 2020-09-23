@@ -1,0 +1,424 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          src\main\scala\org\riskala\controller\actors\player\PlayerActor.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier, monospace;'>1 <span style=''>package org.riskala.controller.actors.player
+</span>2 <span style=''>
+</span>3 <span style=''>import akka.actor
+</span>4 <span style=''>import akka.actor.typed.Behavior
+</span>5 <span style=''>import akka.actor.typed.receptionist.Receptionist
+</span>6 <span style=''>import akka.actor.typed.scaladsl.Behaviors
+</span>7 <span style=''>import org.riskala.controller.actors.player.PlayerMessages.PlayerMessage
+</span>8 <span style=''>import org.riskala.controller.actors.lobby.LobbyManager.lobbyServiceKey
+</span>9 <span style=''>
+</span>10 <span style=''>object PlayerActor {
+</span>11 <span style=''>
+</span>12 <span style=''>  private final case class AdaptedListing(listing: Receptionist.Listing) extends PlayerMessage
+</span>13 <span style=''>
+</span>14 <span style=''>  /**
+</span>15 <span style=''>   * Apply of PlayerActor that returns a playerLobbyBehavior
+</span>16 <span style=''>   * @param username  Username of the player
+</span>17 <span style=''>   * @param socket Classic Akka Actor which handles a socket
+</span>18 <span style=''>   * */
+</span>19 <span style=''>  def apply(username: String, socket: actor.ActorRef): Behavior[PlayerMessage] = {
+</span>20 <span style=''>    </span><span style='background: #AEF1AE'>discoverLobbyManager(username, socket)</span><span style=''>
+</span>21 <span style=''>  }
+</span>22 <span style=''>
+</span>23 <span style=''>  private def discoverLobbyManager(username: String, socket: actor.ActorRef): Behavior[PlayerMessage] =
+</span>24 <span style=''>    </span><span style='background: #AEF1AE'>Behaviors.setup { context =&gt;
+</span>25 <span style=''></span><span style='background: #AEF1AE'>      context.log.info(&quot;PlayerActor looking for Lobby&quot;)
+</span>26 <span style=''></span><span style='background: #AEF1AE'>      context.system.receptionist ! Receptionist.Find(lobbyServiceKey, context.messageAdapter[Receptionist.Listing](AdaptedListing))
+</span>27 <span style=''></span><span style='background: #AEF1AE'>
+</span>28 <span style=''></span><span style='background: #AEF1AE'>      Behaviors.receiveMessage {
+</span>29 <span style=''></span><span style='background: #AEF1AE'>        case AdaptedListing(lobbyServiceKey.Listing(listings)) =&gt;
+</span>30 <span style=''></span><span style='background: #AEF1AE'>          listings.headOption match {
+</span>31 <span style=''></span><span style='background: #AEF1AE'>            case Some(lobbyManager) =&gt;
+</span>32 <span style=''></span><span style='background: #AEF1AE'>              context.log.info(&quot;PlayerActor found Lobby&quot;)
+</span>33 <span style=''></span><span style='background: #AEF1AE'>              LobbyPlayerBehavior(username, lobbyManager, socket)
+</span>34 <span style=''></span><span style='background: #AEF1AE'>            case None =&gt; {
+</span>35 <span style=''></span><span style='background: #AEF1AE'>              </span><span style='background: #F0ADAD'>context.log.error(&quot;Lobby manager not found&quot;)</span><span style='background: #AEF1AE'>
+</span>36 <span style=''></span><span style='background: #AEF1AE'>              </span><span style='background: #F0ADAD'>Behaviors.same</span><span style='background: #AEF1AE'>
+</span>37 <span style=''></span><span style='background: #AEF1AE'>            }
+</span>38 <span style=''></span><span style='background: #AEF1AE'>          }
+</span>39 <span style=''></span><span style='background: #AEF1AE'>      }
+</span>40 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
+</span>41 <span style=''>
+</span>42 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          1561
+        </td>
+        <td>
+          741
+          -
+          779
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.player.PlayerActor.discoverLobbyManager
+        </td>
+        <td style="background: #AEF1AE">
+          PlayerActor.this.discoverLobbyManager(username, socket)
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          16
+        </td>
+        <td>
+          897
+          -
+          1586
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.actor.typed.scaladsl.Behaviors.setup
+        </td>
+        <td style="background: #AEF1AE">
+          akka.actor.typed.scaladsl.Behaviors.setup[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage](((context: akka.actor.typed.scaladsl.ActorContext[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]) =&gt; {
+  context.log.info(&quot;PlayerActor looking for Lobby&quot;);
+  typed.this.ActorRef.ActorRefOps[akka.actor.typed.receptionist.Receptionist.Command](context.system.receptionist).!(akka.actor.typed.receptionist.Receptionist.Find.apply[org.riskala.controller.actors.Messages.LobbyMessage](org.riskala.controller.actors.lobby.LobbyManager.lobbyServiceKey, context.messageAdapter[akka.actor.typed.receptionist.Receptionist.Listing](PlayerActor.this.AdaptedListing)((ClassTag.apply[akka.actor.typed.receptionist.Receptionist.Listing](classOf[akka.actor.typed.receptionist.Receptionist$$Listing]): scala.reflect.ClassTag[akka.actor.typed.receptionist.Receptionist.Listing]))));
+  akka.actor.typed.scaladsl.Behaviors.receiveMessage[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage](((x0$1: org.riskala.controller.actors.player.PlayerMessages.PlayerMessage) =&gt; x0$1 match {
+    case (listing: akka.actor.typed.receptionist.Receptionist.Listing)org.riskala.controller.actors.player.PlayerActor.AdaptedListing(org.riskala.controller.actors.lobby.LobbyManager.lobbyServiceKey.Listing.unapply(&lt;unapply-selector&gt;) &lt;unapply&gt; ((listings @ _))) =&gt; listings.headOption match {
+      case (value: akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.LobbyMessage])Some[akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.LobbyMessage]]((lobbyManager @ _)) =&gt; {
+        context.log.info(&quot;PlayerActor found Lobby&quot;);
+        LobbyPlayerBehavior.apply(username, lobbyManager, socket)
+      }
+      case scala.None =&gt; {
+        context.log.error(&quot;Lobby manager not found&quot;);
+        akka.actor.typed.scaladsl.Behaviors.same[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]
+      }
+    }
+  }))
+}))
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          738
+        </td>
+        <td>
+          933
+          -
+          982
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.slf4j.Logger.info
+        </td>
+        <td style="background: #AEF1AE">
+          context.log.info(&quot;PlayerActor looking for Lobby&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          846
+        </td>
+        <td>
+          1100
+          -
+          1114
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.controller.actors.player.PlayerActor.AdaptedListing
+        </td>
+        <td style="background: #AEF1AE">
+          PlayerActor.this.AdaptedListing
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          1760
+        </td>
+        <td>
+          1038
+          -
+          1053
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.controller.actors.lobby.LobbyManager.lobbyServiceKey
+        </td>
+        <td style="background: #AEF1AE">
+          org.riskala.controller.actors.lobby.LobbyManager.lobbyServiceKey
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          2100
+        </td>
+        <td>
+          990
+          -
+          1017
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          akka.actor.typed.ActorSystem.receptionist
+        </td>
+        <td style="background: #AEF1AE">
+          context.system.receptionist
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          96
+        </td>
+        <td>
+          1055
+          -
+          1115
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          akka.actor.typed.scaladsl.ActorContext.messageAdapter
+        </td>
+        <td style="background: #AEF1AE">
+          context.messageAdapter[akka.actor.typed.receptionist.Receptionist.Listing](PlayerActor.this.AdaptedListing)((ClassTag.apply[akka.actor.typed.receptionist.Receptionist.Listing](classOf[akka.actor.typed.receptionist.Receptionist$$Listing]): scala.reflect.ClassTag[akka.actor.typed.receptionist.Receptionist.Listing]))
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          1436
+        </td>
+        <td>
+          1020
+          -
+          1116
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.actor.typed.receptionist.Receptionist.Find.apply
+        </td>
+        <td style="background: #AEF1AE">
+          akka.actor.typed.receptionist.Receptionist.Find.apply[org.riskala.controller.actors.Messages.LobbyMessage](org.riskala.controller.actors.lobby.LobbyManager.lobbyServiceKey, context.messageAdapter[akka.actor.typed.receptionist.Receptionist.Listing](PlayerActor.this.AdaptedListing)((ClassTag.apply[akka.actor.typed.receptionist.Receptionist.Listing](classOf[akka.actor.typed.receptionist.Receptionist$$Listing]): scala.reflect.ClassTag[akka.actor.typed.receptionist.Receptionist.Listing])))
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          996
+        </td>
+        <td>
+          990
+          -
+          1116
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.actor.typed.ActorRef.ActorRefOps.!
+        </td>
+        <td style="background: #AEF1AE">
+          typed.this.ActorRef.ActorRefOps[akka.actor.typed.receptionist.Receptionist.Command](context.system.receptionist).!(akka.actor.typed.receptionist.Receptionist.Find.apply[org.riskala.controller.actors.Messages.LobbyMessage](org.riskala.controller.actors.lobby.LobbyManager.lobbyServiceKey, context.messageAdapter[akka.actor.typed.receptionist.Receptionist.Listing](PlayerActor.this.AdaptedListing)((ClassTag.apply[akka.actor.typed.receptionist.Receptionist.Listing](classOf[akka.actor.typed.receptionist.Receptionist$$Listing]): scala.reflect.ClassTag[akka.actor.typed.receptionist.Receptionist.Listing]))))
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          950
+        </td>
+        <td>
+          1126
+          -
+          1579
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.actor.typed.scaladsl.Behaviors.receiveMessage
+        </td>
+        <td style="background: #AEF1AE">
+          akka.actor.typed.scaladsl.Behaviors.receiveMessage[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage](((x0$1: org.riskala.controller.actors.player.PlayerMessages.PlayerMessage) =&gt; x0$1 match {
+  case (listing: akka.actor.typed.receptionist.Receptionist.Listing)org.riskala.controller.actors.player.PlayerActor.AdaptedListing(org.riskala.controller.actors.lobby.LobbyManager.lobbyServiceKey.Listing.unapply(&lt;unapply-selector&gt;) &lt;unapply&gt; ((listings @ _))) =&gt; listings.headOption match {
+    case (value: akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.LobbyMessage])Some[akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.LobbyMessage]]((lobbyManager @ _)) =&gt; {
+      context.log.info(&quot;PlayerActor found Lobby&quot;);
+      LobbyPlayerBehavior.apply(username, lobbyManager, socket)
+    }
+    case scala.None =&gt; {
+      context.log.error(&quot;Lobby manager not found&quot;);
+      akka.actor.typed.scaladsl.Behaviors.same[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]
+    }
+  }
+}))
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          276
+        </td>
+        <td>
+          1231
+          -
+          1250
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableLike.headOption
+        </td>
+        <td style="background: #AEF1AE">
+          listings.headOption
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          1568
+        </td>
+        <td>
+          1314
+          -
+          1357
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.slf4j.Logger.info
+        </td>
+        <td style="background: #AEF1AE">
+          context.log.info(&quot;PlayerActor found Lobby&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          700
+        </td>
+        <td>
+          1373
+          -
+          1424
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.player.LobbyPlayerBehavior.apply
+        </td>
+        <td style="background: #AEF1AE">
+          LobbyPlayerBehavior.apply(username, lobbyManager, socket)
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          2105
+        </td>
+        <td>
+          1468
+          -
+          1512
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.slf4j.Logger.error
+        </td>
+        <td style="background: #F0ADAD">
+          context.log.error(&quot;Lobby manager not found&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          1718
+        </td>
+        <td>
+          1528
+          -
+          1542
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          akka.actor.typed.scaladsl.Behaviors.same
+        </td>
+        <td style="background: #F0ADAD">
+          akka.actor.typed.scaladsl.Behaviors.same[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

@@ -1,0 +1,911 @@
+<html>
+      <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+      <title id="title">Scoverage Code Coverage</title>
+      <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+      <style>
+        .meter {
+        height: 14px;
+        position: relative;
+        background: #BB2020;
+}
+
+.meter span {
+	display: block;
+	height: 100%;
+	background-color: rgb(43,194,83);
+	background-image: -webkit-gradient(
+	  linear,
+	  left bottom,
+	  left top,
+	  color-stop(0, rgb(43,194,83)),
+	  color-stop(1, rgb(84,240,84))
+	 );
+	background-image: -webkit-linear-gradient(
+	  center bottom,
+	  rgb(43,194,83) 37%,
+	  rgb(84,240,84) 69%
+	 );
+	background-image: -moz-linear-gradient(
+	  center bottom,
+	  rgb(43,194,83) 37%,
+	  rgb(84,240,84) 69%
+	 );
+	background-image: -ms-linear-gradient(
+	  center bottom,
+	  rgb(43,194,83) 37%,
+	  rgb(84,240,84) 69%
+	 );
+	background-image: -o-linear-gradient(
+	  center bottom,
+	  rgb(43,194,83) 37%,
+	  rgb(84,240,84) 69%
+	 );
+	-webkit-box-shadow:
+	  inset 0 2px 9px  rgba(255,255,255,0.3),
+	  inset 0 -2px 6px rgba(0,0,0,0.4);
+	-moz-box-shadow:
+	  inset 0 2px 9px  rgba(255,255,255,0.3),
+	  inset 0 -2px 6px rgba(0,0,0,0.4);
+	position: relative;
+	overflow: hidden;
+}
+      </style>
+    </head><body style="font-family: monospace;">
+      <table class="tablesorter table table-striped" style="font-size:13px">
+      <thead>
+        <tr>
+          <th>
+            Class
+          </th>
+          <th>
+            Source file
+          </th>
+          <th>
+            Lines
+          </th>
+          <th>
+            Methods
+          </th>
+          <th>
+            Statements
+          </th>
+          <th>
+            Invoked
+          </th>
+          <th>
+            Coverage
+          </th>
+          <th>
+          </th>
+          <th>
+            Branches
+          </th>
+          <th>
+            Invoked
+          </th>
+          <th>
+            Coverage
+          </th>
+          <th>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+      <td>
+        <a href="src/main/scala/org/riskala/model/logic/Commands.scala.html">
+          Attack
+        </a>
+      </td>
+      <td>
+        Commands.scala
+      </td>
+      <td>
+        119
+      </td>
+      <td>
+        3
+      </td>
+      <td>
+        104
+      </td>
+      <td>
+        88
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 85%"></span>
+        </div>
+      </td>
+      <td>
+        84.62
+        %
+      </td>
+      <td>
+        16
+      </td>
+      <td>
+        14
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 88%"></span>
+        </div>
+      </td>
+      <td>
+        87.50
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="src/main/scala/org/riskala/model/logic/Events.scala.html">
+          Battle
+        </a>
+      </td>
+      <td>
+        Events.scala
+      </td>
+      <td>
+        54
+      </td>
+      <td>
+        1
+      </td>
+      <td>
+        34
+      </td>
+      <td>
+        34
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+      <td>
+        2
+      </td>
+      <td>
+        2
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="src/main/scala/org/riskala/model/logic/Events.scala.html">
+          BonusRedeemed
+        </a>
+      </td>
+      <td>
+        Events.scala
+      </td>
+      <td>
+        120
+      </td>
+      <td>
+        2
+      </td>
+      <td>
+        17
+      </td>
+      <td>
+        17
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="src/main/scala/org/riskala/model/logic/Events.scala.html">
+          CardDrawn
+        </a>
+      </td>
+      <td>
+        Events.scala
+      </td>
+      <td>
+        100
+      </td>
+      <td>
+        1
+      </td>
+      <td>
+        16
+      </td>
+      <td>
+        15
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 94%"></span>
+        </div>
+      </td>
+      <td>
+        93.75
+        %
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="src/main/scala/org/riskala/model/logic/Commands.scala.html">
+          Command
+        </a>
+      </td>
+      <td>
+        Commands.scala
+      </td>
+      <td>
+        231
+      </td>
+      <td>
+        1
+      </td>
+      <td>
+        8
+      </td>
+      <td>
+        8
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="src/main/scala/org/riskala/model/logic/Commands.scala.html">
+          Deploy
+        </a>
+      </td>
+      <td>
+        Commands.scala
+      </td>
+      <td>
+        175
+      </td>
+      <td>
+        2
+      </td>
+      <td>
+        42
+      </td>
+      <td>
+        34
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 81%"></span>
+        </div>
+      </td>
+      <td>
+        80.95
+        %
+      </td>
+      <td>
+        6
+      </td>
+      <td>
+        5
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 83%"></span>
+        </div>
+      </td>
+      <td>
+        83.33
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="src/main/scala/org/riskala/model/logic/Commands.scala.html">
+          EndTurn
+        </a>
+      </td>
+      <td>
+        Commands.scala
+      </td>
+      <td>
+        215
+      </td>
+      <td>
+        2
+      </td>
+      <td>
+        5
+      </td>
+      <td>
+        5
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="src/main/scala/org/riskala/model/logic/EventStore.scala.html">
+          EventStore
+        </a>
+      </td>
+      <td>
+        EventStore.scala
+      </td>
+      <td>
+        25
+      </td>
+      <td>
+        1
+      </td>
+      <td>
+        3
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 0%"></span>
+        </div>
+      </td>
+      <td>
+        0.00
+        %
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 0%"></span>
+        </div>
+      </td>
+      <td>
+        0.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="src/main/scala/org/riskala/model/logic/Events.scala.html">
+          GameEnded
+        </a>
+      </td>
+      <td>
+        Events.scala
+      </td>
+      <td>
+        148
+      </td>
+      <td>
+        1
+      </td>
+      <td>
+        11
+      </td>
+      <td>
+        11
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="src/main/scala/org/riskala/model/logic/GameSnapshot.scala.html">
+          GameSnapshot
+        </a>
+      </td>
+      <td>
+        GameSnapshot.scala
+      </td>
+      <td>
+        70
+      </td>
+      <td>
+        2
+      </td>
+      <td>
+        28
+      </td>
+      <td>
+        28
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="src/main/scala/org/riskala/model/logic/Commands.scala.html">
+          MoveTroops
+        </a>
+      </td>
+      <td>
+        Commands.scala
+      </td>
+      <td>
+        150
+      </td>
+      <td>
+        2
+      </td>
+      <td>
+        56
+      </td>
+      <td>
+        40
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 71%"></span>
+        </div>
+      </td>
+      <td>
+        71.43
+        %
+      </td>
+      <td>
+        8
+      </td>
+      <td>
+        6
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 75%"></span>
+        </div>
+      </td>
+      <td>
+        75.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="src/main/scala/org/riskala/model/logic/Projections.scala.html">
+          Projection
+        </a>
+      </td>
+      <td>
+        Projections.scala
+      </td>
+      <td>
+        22
+      </td>
+      <td>
+        1
+      </td>
+      <td>
+        2
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 0%"></span>
+        </div>
+      </td>
+      <td>
+        0.00
+        %
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 0%"></span>
+        </div>
+      </td>
+      <td>
+        0.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="src/main/scala/org/riskala/model/logic/Commands.scala.html">
+          RedeemBonus
+        </a>
+      </td>
+      <td>
+        Commands.scala
+      </td>
+      <td>
+        200
+      </td>
+      <td>
+        2
+      </td>
+      <td>
+        34
+      </td>
+      <td>
+        29
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 85%"></span>
+        </div>
+      </td>
+      <td>
+        85.29
+        %
+      </td>
+      <td>
+        6
+      </td>
+      <td>
+        5
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 83%"></span>
+        </div>
+      </td>
+      <td>
+        83.33
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="src/main/scala/org/riskala/model/logic/Commands.scala.html">
+          SelfCheckingCommand
+        </a>
+      </td>
+      <td>
+        Commands.scala
+      </td>
+      <td>
+        50
+      </td>
+      <td>
+        1
+      </td>
+      <td>
+        9
+      </td>
+      <td>
+        5
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 56%"></span>
+        </div>
+      </td>
+      <td>
+        55.56
+        %
+      </td>
+      <td>
+        2
+      </td>
+      <td>
+        1
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 50%"></span>
+        </div>
+      </td>
+      <td>
+        50.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="src/main/scala/org/riskala/model/logic/Projections.scala.html">
+          SnapshotGenerator
+        </a>
+      </td>
+      <td>
+        Projections.scala
+      </td>
+      <td>
+        29
+      </td>
+      <td>
+        1
+      </td>
+      <td>
+        1
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 0%"></span>
+        </div>
+      </td>
+      <td>
+        0.00
+        %
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 0%"></span>
+        </div>
+      </td>
+      <td>
+        0.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="src/main/scala/org/riskala/model/logic/Events.scala.html">
+          TroopsDeployed
+        </a>
+      </td>
+      <td>
+        Events.scala
+      </td>
+      <td>
+        85
+      </td>
+      <td>
+        1
+      </td>
+      <td>
+        13
+      </td>
+      <td>
+        13
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="src/main/scala/org/riskala/model/logic/Events.scala.html">
+          TroopsMoved
+        </a>
+      </td>
+      <td>
+        Events.scala
+      </td>
+      <td>
+        71
+      </td>
+      <td>
+        1
+      </td>
+      <td>
+        14
+      </td>
+      <td>
+        14
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+    </tr><tr>
+      <td>
+        <a href="src/main/scala/org/riskala/model/logic/Events.scala.html">
+          TurnEnded
+        </a>
+      </td>
+      <td>
+        Events.scala
+      </td>
+      <td>
+        136
+      </td>
+      <td>
+        1
+      </td>
+      <td>
+        17
+      </td>
+      <td>
+        17
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        0
+      </td>
+      <td>
+        <div class="meter">
+          <span style="width: 100%"></span>
+        </div>
+      </td>
+      <td>
+        100.00
+        %
+      </td>
+    </tr>
+      </tbody>
+    </table>
+    </body>
+    </html>

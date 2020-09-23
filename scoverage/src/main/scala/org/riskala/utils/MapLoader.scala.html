@@ -1,0 +1,236 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          src\main\scala\org\riskala\utils\MapLoader.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier, monospace;'>1 <span style=''>package org.riskala.utils
+</span>2 <span style=''>
+</span>3 <span style=''>import argonaut.Argonaut._
+</span>4 <span style=''>import org.riskala.model.map.MapGeography
+</span>5 <span style=''>import scala.io.Source
+</span>6 <span style=''>
+</span>7 <span style=''>object MapLoader {
+</span>8 <span style=''>
+</span>9 <span style=''>  /**
+</span>10 <span style=''>   * Loads a map given the name
+</span>11 <span style=''>   *
+</span>12 <span style=''>   * @param mapName Map name
+</span>13 <span style=''>   * @return Optional MapGeography
+</span>14 <span style=''>   */
+</span>15 <span style=''>  def loadMap(mapName: String) : Option[MapGeography] =  try{
+</span>16 <span style=''>      </span><span style='background: #AEF1AE'>val jsonMap = Source.fromResource(s&quot;scenarios/$mapName.rkl&quot;).mkString
+</span>17 <span style=''></span><span style='background: #AEF1AE'>      val deserializedMap: MapGeography = jsonMap.decodeOption[MapGeography].get
+</span>18 <span style=''></span><span style='background: #AEF1AE'>      Some(deserializedMap)</span><span style=''>
+</span>19 <span style=''>    } catch {
+</span>20 <span style=''>      case e: Exception =&gt; </span><span style='background: #AEF1AE'>None</span><span style=''>
+</span>21 <span style=''>    }
+</span>22 <span style=''>
+</span>23 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          77
+        </td>
+        <td>
+          336
+          -
+          516
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  val jsonMap: String = scala.io.Source.fromResource(scala.StringContext.apply(&quot;scenarios/&quot;, &quot;.rkl&quot;).s(mapName), scala.io.Source.fromResource$default$2)(io.this.Codec.fallbackSystemCodec).mkString;
+  val deserializedMap: org.riskala.model.map.MapGeography = argonaut.Argonaut.StringToParseWrap(jsonMap).decodeOption[org.riskala.model.map.MapGeography](map.this.MapGeography.MapGeographyCodecJson).get;
+  scala.Some.apply[org.riskala.model.map.MapGeography](deserializedMap)
+}
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          795
+        </td>
+        <td>
+          350
+          -
+          405
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.io.BufferedSource.mkString
+        </td>
+        <td style="background: #AEF1AE">
+          scala.io.Source.fromResource(scala.StringContext.apply(&quot;scenarios/&quot;, &quot;.rkl&quot;).s(mapName), scala.io.Source.fromResource$default$2)(io.this.Codec.fallbackSystemCodec).mkString
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          1547
+        </td>
+        <td>
+          357
+          -
+          357
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.io.Source.fromResource$default$2
+        </td>
+        <td style="background: #AEF1AE">
+          scala.io.Source.fromResource$default$2
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          219
+        </td>
+        <td>
+          370
+          -
+          395
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;scenarios/&quot;, &quot;.rkl&quot;).s(mapName)
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          2089
+        </td>
+        <td>
+          469
+          -
+          469
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.map.MapGeography.MapGeographyCodecJson
+        </td>
+        <td style="background: #AEF1AE">
+          map.this.MapGeography.MapGeographyCodecJson
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          1349
+        </td>
+        <td>
+          449
+          -
+          487
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Option.get
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.StringToParseWrap(jsonMap).decodeOption[org.riskala.model.map.MapGeography](map.this.MapGeography.MapGeographyCodecJson).get
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          949
+        </td>
+        <td>
+          495
+          -
+          516
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[org.riskala.model.map.MapGeography](deserializedMap)
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          1473
+        </td>
+        <td>
+          560
+          -
+          564
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

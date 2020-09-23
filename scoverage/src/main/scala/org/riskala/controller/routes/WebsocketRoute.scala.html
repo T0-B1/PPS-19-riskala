@@ -1,0 +1,1325 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          src\main\scala\org\riskala\controller\routes\WebsocketRoute.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier, monospace;'>1 <span style=''>package org.riskala.controller.routes
+</span>2 <span style=''>
+</span>3 <span style=''>import akka.actor.typed.ActorRef
+</span>4 <span style=''>import akka.actor.typed.receptionist.{Receptionist, ServiceKey}
+</span>5 <span style=''>import akka.http.scaladsl.model.StatusCodes
+</span>6 <span style=''>import akka.http.scaladsl.model.ws.Message
+</span>7 <span style=''>import akka.http.scaladsl.server.Directives._
+</span>8 <span style=''>import akka.http.scaladsl.server.Route
+</span>9 <span style=''>import akka.stream.scaladsl.{Flow, Sink, Source}
+</span>10 <span style=''>import akka.stream.typed.scaladsl.ActorSource
+</span>11 <span style=''>import akka.stream.{CompletionStrategy, OverflowStrategy}
+</span>12 <span style=''>import akka.{Done, NotUsed, actor}
+</span>13 <span style=''>import org.riskala.controller.actors.player.{PlayerActor, PlayerMessages}
+</span>14 <span style=''>import org.riskala.controller.actors.player.PlayerMessages.PlayerMessage
+</span>15 <span style=''>import org.riskala.controller.Server
+</span>16 <span style=''>import org.riskala.controller.auth.AuthManager
+</span>17 <span style=''>import org.riskala.utils.Utils
+</span>18 <span style=''>
+</span>19 <span style=''>import scala.concurrent.Future
+</span>20 <span style=''>
+</span>21 <span style=''>object WebsocketRoute {
+</span>22 <span style=''>
+</span>23 <span style=''>  import Server.system
+</span>24 <span style=''>
+</span>25 <span style=''>  val websocketRoute: Route =
+</span>26 <span style=''>    </span><span style='background: #AEF1AE'>(get &amp; path(&quot;websocket&quot;) &amp; parameter(&quot;token&quot;)) { token =&gt;
+</span>27 <span style=''></span><span style='background: #AEF1AE'>      if( (!AuthManager.checkToken(token)) || AuthManager.getUserName(token).isEmpty) complete(StatusCodes.Forbidden)
+</span>28 <span style=''></span><span style='background: #AEF1AE'>      else{
+</span>29 <span style=''></span><span style='background: #AEF1AE'>        val username = AuthManager.getUserName(token).get
+</span>30 <span style=''></span><span style='background: #AEF1AE'>        handleWebSocketMessages(createSocketFlow(username))
+</span>31 <span style=''></span><span style='background: #AEF1AE'>      }
+</span>32 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
+</span>33 <span style=''>
+</span>34 <span style=''>  private def createSocketFlow(username: String): Flow[Message, Message, NotUsed] = {
+</span>35 <span style=''>    val (wsActor, wsSource) = untypedActorSource().preMaterialize()
+</span>36 <span style=''>    val playerActorRef: ActorRef[PlayerMessage] = </span><span style='background: #AEF1AE'>spawnOrGetPlayer(username, wsActor)</span><span style=''>
+</span>37 <span style=''>    </span><span style='background: #AEF1AE'>Flow.fromSinkAndSource(sinkFromActor(playerActorRef), wsSource)</span><span style=''>
+</span>38 <span style=''>  }
+</span>39 <span style=''>
+</span>40 <span style=''>  /**
+</span>41 <span style=''>   * Retrieves the PlayerActor of a particular user and returns it.
+</span>42 <span style=''>   * If absent, a new one is generated and returned.
+</span>43 <span style=''>   *
+</span>44 <span style=''>   * @param username The username
+</span>45 <span style=''>   * @param newSocketActor The actor encapsulating the websocket
+</span>46 <span style=''>   * @return
+</span>47 <span style=''>   */
+</span>48 <span style=''>  private def spawnOrGetPlayer(username: String, newSocketActor: actor.ActorRef): ActorRef[PlayerMessage] = {
+</span>49 <span style=''>    </span><span style='background: #AEF1AE'>Utils.askReceptionistToFind[PlayerMessage](username).toSeq</span><span style=''> match {
+</span>50 <span style=''>      // No PlayerActor registered found
+</span>51 <span style=''>      case Seq() =&gt;
+</span>52 <span style=''>        val ref: ActorRef[PlayerMessage] = </span><span style='background: #AEF1AE'>system.systemActorOf(PlayerActor(username, newSocketActor), username)</span><span style=''>
+</span>53 <span style=''>        </span><span style='background: #AEF1AE'>system.receptionist ! Receptionist.Register(ServiceKey[PlayerMessage](username), ref)</span><span style=''>
+</span>54 <span style=''>        ref
+</span>55 <span style=''>
+</span>56 <span style=''>      // The first PlayerActor found
+</span>57 <span style=''>      case Seq(first, rest@_*) =&gt;
+</span>58 <span style=''>        </span><span style='background: #AEF1AE'>first ! PlayerMessages.RegisterSocket(newSocketActor)</span><span style=''>
+</span>59 <span style=''>        first
+</span>60 <span style=''>
+</span>61 <span style=''>    }
+</span>62 <span style=''>  }
+</span>63 <span style=''>
+</span>64 <span style=''>  private def typedActorSource(): Source[Message, ActorRef[Message]] = </span><span style='background: #F0ADAD'>ActorSource.actorRef[Message](completionMatcher = {
+</span>65 <span style=''></span><span style='background: #F0ADAD'>    case _ =&gt; CompletionStrategy.immediately
+</span>66 <span style=''></span><span style='background: #F0ADAD'>  }, PartialFunction.empty, bufferSize = 8, overflowStrategy = OverflowStrategy.dropHead)</span><span style=''>
+</span>67 <span style=''>
+</span>68 <span style=''>  private def untypedActorSource(): Source[Message, actor.ActorRef] =
+</span>69 <span style=''>    </span><span style='background: #AEF1AE'>Source.actorRef[Message](bufferSize = 8, overflowStrategy = OverflowStrategy.dropHead)</span><span style=''>
+</span>70 <span style=''>
+</span>71 <span style=''>  private def sinkFromActor(playerRef: ActorRef[PlayerMessage]): Sink[Message, Future[Done]] =
+</span>72 <span style=''>    </span><span style='background: #AEF1AE'>Sink.foreach(m =&gt; playerRef ! PlayerMessages.SocketMessage(m.asTextMessage.getStrictText))</span><span style=''>
+</span>73 <span style=''>
+</span>74 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          2075
+        </td>
+        <td>
+          910
+          -
+          910
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          akka.http.scaladsl.server.util.TupleOps.Join.join0P
+        </td>
+        <td style="background: #AEF1AE">
+          TupleOps.this.Join.join0P[Unit]
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          59
+        </td>
+        <td>
+          899
+          -
+          1224
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Function1.apply
+        </td>
+        <td style="background: #AEF1AE">
+          server.this.Directive.addDirectiveApply[(String,)](akka.http.scaladsl.server.Directives.get.&amp;(server.this.ConjunctionMagnet.fromDirective[Unit, Unit](akka.http.scaladsl.server.Directives.path[Unit](akka.http.scaladsl.server.Directives._segmentStringToPathMatcher(&quot;websocket&quot;)))(TupleOps.this.Join.join0P[Unit])).&amp;(server.this.ConjunctionMagnet.fromDirective[Unit, (String,)](akka.http.scaladsl.server.Directives.parameter(ParameterDirectives.this.ParamSpec.forString(&quot;token&quot;)(unmarshalling.this.Unmarshaller.identityUnmarshaller[String])))(TupleOps.this.Join.join0P[(String,)])))(util.this.ApplyConverter.hac1[String]).apply(((token: String) =&gt; if (org.riskala.controller.auth.AuthManager.checkToken(token).unary_!.||(org.riskala.controller.auth.AuthManager.getUserName(token).isEmpty))
+  akka.http.scaladsl.server.Directives.complete(marshalling.this.ToResponseMarshallable.apply[akka.http.scaladsl.model.StatusCodes.ClientError](akka.http.scaladsl.model.StatusCodes.Forbidden)(marshalling.this.Marshaller.fromStatusCode))
+else
+  {
+    val username: String = org.riskala.controller.auth.AuthManager.getUserName(token).get;
+    akka.http.scaladsl.server.Directives.handleWebSocketMessages(WebsocketRoute.this.createSocketFlow(username))
+  }))
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          920
+        </td>
+        <td>
+          936
+          -
+          943
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;token&quot;
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          46
+        </td>
+        <td>
+          936
+          -
+          936
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          akka.http.scaladsl.unmarshalling.Unmarshaller.identityUnmarshaller
+        </td>
+        <td style="background: #AEF1AE">
+          unmarshalling.this.Unmarshaller.identityUnmarshaller[String]
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          1601
+        </td>
+        <td>
+          911
+          -
+          922
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          akka.http.scaladsl.server.ImplicitPathMatcherConstruction._segmentStringToPathMatcher
+        </td>
+        <td style="background: #AEF1AE">
+          akka.http.scaladsl.server.Directives._segmentStringToPathMatcher(&quot;websocket&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          2059
+        </td>
+        <td>
+          924
+          -
+          924
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          akka.http.scaladsl.server.util.ApplyConverterInstances.hac1
+        </td>
+        <td style="background: #AEF1AE">
+          util.this.ApplyConverter.hac1[String]
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          1317
+        </td>
+        <td>
+          906
+          -
+          923
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          akka.http.scaladsl.server.ConjunctionMagnet.fromDirective
+        </td>
+        <td style="background: #AEF1AE">
+          server.this.ConjunctionMagnet.fromDirective[Unit, Unit](akka.http.scaladsl.server.Directives.path[Unit](akka.http.scaladsl.server.Directives._segmentStringToPathMatcher(&quot;websocket&quot;)))(TupleOps.this.Join.join0P[Unit])
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          1466
+        </td>
+        <td>
+          936
+          -
+          943
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          akka.http.scaladsl.server.directives.ParameterDirectives.ParamSpec.forString
+        </td>
+        <td style="background: #AEF1AE">
+          ParameterDirectives.this.ParamSpec.forString(&quot;token&quot;)(unmarshalling.this.Unmarshaller.identityUnmarshaller[String])
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          784
+        </td>
+        <td>
+          900
+          -
+          944
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.http.scaladsl.server.Directive.&amp;
+        </td>
+        <td style="background: #AEF1AE">
+          akka.http.scaladsl.server.Directives.get.&amp;(server.this.ConjunctionMagnet.fromDirective[Unit, Unit](akka.http.scaladsl.server.Directives.path[Unit](akka.http.scaladsl.server.Directives._segmentStringToPathMatcher(&quot;websocket&quot;)))(TupleOps.this.Join.join0P[Unit])).&amp;(server.this.ConjunctionMagnet.fromDirective[Unit, (String,)](akka.http.scaladsl.server.Directives.parameter(ParameterDirectives.this.ParamSpec.forString(&quot;token&quot;)(unmarshalling.this.Unmarshaller.identityUnmarshaller[String])))(TupleOps.this.Join.join0P[(String,)]))
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          1992
+        </td>
+        <td>
+          935
+          -
+          935
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          akka.http.scaladsl.server.util.TupleOps.Join.join0P
+        </td>
+        <td style="background: #AEF1AE">
+          TupleOps.this.Join.join0P[(String,)]
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          649
+        </td>
+        <td>
+          926
+          -
+          944
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.http.scaladsl.server.directives.ParameterDirectivesInstances.parameter
+        </td>
+        <td style="background: #AEF1AE">
+          akka.http.scaladsl.server.Directives.parameter(ParameterDirectives.this.ParamSpec.forString(&quot;token&quot;)(unmarshalling.this.Unmarshaller.identityUnmarshaller[String]))
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          1525
+        </td>
+        <td>
+          926
+          -
+          944
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          akka.http.scaladsl.server.ConjunctionMagnet.fromDirective
+        </td>
+        <td style="background: #AEF1AE">
+          server.this.ConjunctionMagnet.fromDirective[Unit, (String,)](akka.http.scaladsl.server.Directives.parameter(ParameterDirectives.this.ParamSpec.forString(&quot;token&quot;)(unmarshalling.this.Unmarshaller.identityUnmarshaller[String])))(TupleOps.this.Join.join0P[(String,)])
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          780
+        </td>
+        <td>
+          906
+          -
+          923
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.http.scaladsl.server.directives.PathDirectives.path
+        </td>
+        <td style="background: #AEF1AE">
+          akka.http.scaladsl.server.Directives.path[Unit](akka.http.scaladsl.server.Directives._segmentStringToPathMatcher(&quot;websocket&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          1997
+        </td>
+        <td>
+          1044
+          -
+          1075
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.http.scaladsl.server.directives.RouteDirectives.complete
+        </td>
+        <td style="background: #AEF1AE">
+          akka.http.scaladsl.server.Directives.complete(marshalling.this.ToResponseMarshallable.apply[akka.http.scaladsl.model.StatusCodes.ClientError](akka.http.scaladsl.model.StatusCodes.Forbidden)(marshalling.this.Marshaller.fromStatusCode))
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          1468
+        </td>
+        <td>
+          1065
+          -
+          1065
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          akka.http.scaladsl.marshalling.PredefinedToResponseMarshallers.fromStatusCode
+        </td>
+        <td style="background: #AEF1AE">
+          marshalling.this.Marshaller.fromStatusCode
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          585
+        </td>
+        <td>
+          1053
+          -
+          1074
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          akka.http.scaladsl.marshalling.ToResponseMarshallable.apply
+        </td>
+        <td style="background: #AEF1AE">
+          marshalling.this.ToResponseMarshallable.apply[akka.http.scaladsl.model.StatusCodes.ClientError](akka.http.scaladsl.model.StatusCodes.Forbidden)(marshalling.this.Marshaller.fromStatusCode)
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          1532
+        </td>
+        <td>
+          1044
+          -
+          1075
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          akka.http.scaladsl.server.directives.RouteDirectives.complete
+        </td>
+        <td style="background: #AEF1AE">
+          akka.http.scaladsl.server.Directives.complete(marshalling.this.ToResponseMarshallable.apply[akka.http.scaladsl.model.StatusCodes.ClientError](akka.http.scaladsl.model.StatusCodes.Forbidden)(marshalling.this.Marshaller.fromStatusCode))
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          880
+        </td>
+        <td>
+          968
+          -
+          1042
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.||
+        </td>
+        <td style="background: #AEF1AE">
+          org.riskala.controller.auth.AuthManager.checkToken(token).unary_!.||(org.riskala.controller.auth.AuthManager.getUserName(token).isEmpty)
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          1322
+        </td>
+        <td>
+          1004
+          -
+          1042
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Option.isEmpty
+        </td>
+        <td style="background: #AEF1AE">
+          org.riskala.controller.auth.AuthManager.getUserName(token).isEmpty
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          51
+        </td>
+        <td>
+          1053
+          -
+          1074
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          akka.http.scaladsl.model.StatusCodes.Forbidden
+        </td>
+        <td style="background: #AEF1AE">
+          akka.http.scaladsl.model.StatusCodes.Forbidden
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          833
+        </td>
+        <td>
+          1087
+          -
+          1217
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  val username: String = org.riskala.controller.auth.AuthManager.getUserName(token).get;
+  akka.http.scaladsl.server.Directives.handleWebSocketMessages(WebsocketRoute.this.createSocketFlow(username))
+}
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          751
+        </td>
+        <td>
+          1113
+          -
+          1147
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Option.get
+        </td>
+        <td style="background: #AEF1AE">
+          org.riskala.controller.auth.AuthManager.getUserName(token).get
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          1248
+        </td>
+        <td>
+          1157
+          -
+          1208
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.http.scaladsl.server.directives.WebSocketDirectives.handleWebSocketMessages
+        </td>
+        <td style="background: #AEF1AE">
+          akka.http.scaladsl.server.Directives.handleWebSocketMessages(WebsocketRoute.this.createSocketFlow(username))
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          2064
+        </td>
+        <td>
+          1181
+          -
+          1207
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.routes.WebsocketRoute.createSocketFlow
+        </td>
+        <td style="background: #AEF1AE">
+          WebsocketRoute.this.createSocketFlow(username)
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          1357
+        </td>
+        <td>
+          1324
+          -
+          1324
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Tuple2._1
+        </td>
+        <td style="background: #AEF1AE">
+          x$1._1
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          588
+        </td>
+        <td>
+          1333
+          -
+          1333
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Tuple2._2
+        </td>
+        <td style="background: #AEF1AE">
+          x$1._2
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          1911
+        </td>
+        <td>
+          1434
+          -
+          1469
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.routes.WebsocketRoute.spawnOrGetPlayer
+        </td>
+        <td style="background: #AEF1AE">
+          WebsocketRoute.this.spawnOrGetPlayer(username, wsActor)
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          755
+        </td>
+        <td>
+          1475
+          -
+          1538
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.stream.scaladsl.Flow.fromSinkAndSource
+        </td>
+        <td style="background: #AEF1AE">
+          akka.stream.scaladsl.Flow.fromSinkAndSource[akka.http.scaladsl.model.ws.Message, akka.http.scaladsl.model.ws.Message](WebsocketRoute.this.sinkFromActor(playerActorRef), wsSource)
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          1507
+        </td>
+        <td>
+          1498
+          -
+          1527
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.routes.WebsocketRoute.sinkFromActor
+        </td>
+        <td style="background: #AEF1AE">
+          WebsocketRoute.this.sinkFromActor(playerActorRef)
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          23
+        </td>
+        <td>
+          1920
+          -
+          1978
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SetLike.toSeq
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  &lt;artifact&gt; val x$1: String = username;
+  &lt;artifact&gt; val x$2: scala.reflect.ClassTag[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage] @scala.reflect.internal.annotations.uncheckedBounds = (ClassTag.apply[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage](classOf[org.riskala.controller.actors.player.PlayerMessages$$PlayerMessage]): scala.reflect.ClassTag[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]);
+  &lt;artifact&gt; val x$3: akka.actor.typed.ActorSystem[org.riskala.controller.actors.Messages.LobbyMessage] @scala.reflect.internal.annotations.uncheckedBounds = org.riskala.controller.Server.system;
+  &lt;artifact&gt; val x$4: akka.util.Timeout = org.riskala.utils.Utils.askReceptionistToFind$default$4[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage](x$1);
+  org.riskala.utils.Utils.askReceptionistToFind[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage](x$1)(x$2, x$3, x$4)
+}.toSeq
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          2027
+        </td>
+        <td>
+          1962
+          -
+          1962
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.controller.Server.system
+        </td>
+        <td style="background: #AEF1AE">
+          org.riskala.controller.Server.system
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          1250
+        </td>
+        <td>
+          1962
+          -
+          1962
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.utils.Utils.askReceptionistToFind$default$4
+        </td>
+        <td style="background: #AEF1AE">
+          org.riskala.utils.Utils.askReceptionistToFind$default$4[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage](x$1)
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          544
+        </td>
+        <td>
+          1920
+          -
+          1972
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          org.riskala.utils.Utils.askReceptionistToFind
+        </td>
+        <td style="background: #AEF1AE">
+          org.riskala.utils.Utils.askReceptionistToFind[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage](x$1)(x$2, x$3, x$4)
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          1360
+        </td>
+        <td>
+          2115
+          -
+          2152
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.player.PlayerActor.apply
+        </td>
+        <td style="background: #AEF1AE">
+          org.riskala.controller.actors.player.PlayerActor.apply(username, newSocketActor)
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          551
+        </td>
+        <td>
+          2101
+          -
+          2101
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          akka.actor.typed.ActorSystem.systemActorOf$default$3
+        </td>
+        <td style="background: #AEF1AE">
+          org.riskala.controller.Server.system.systemActorOf$default$3[Nothing]
+        </td>
+      </tr><tr>
+        <td>
+          52
+        </td>
+        <td>
+          1989
+        </td>
+        <td>
+          2094
+          -
+          2163
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.actor.typed.ActorSystem.systemActorOf
+        </td>
+        <td style="background: #AEF1AE">
+          org.riskala.controller.Server.system.systemActorOf[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage](org.riskala.controller.actors.player.PlayerActor.apply(username, newSocketActor), username, org.riskala.controller.Server.system.systemActorOf$default$3[Nothing])
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          2030
+        </td>
+        <td>
+          2195
+          -
+          2258
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.actor.typed.receptionist.Receptionist.Register.apply
+        </td>
+        <td style="background: #AEF1AE">
+          akka.actor.typed.receptionist.Receptionist.Register.apply[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage](akka.actor.typed.receptionist.ServiceKey.apply[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage](username)((ClassTag.apply[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage](classOf[org.riskala.controller.actors.player.PlayerMessages$$PlayerMessage]): scala.reflect.ClassTag[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage])), ref)
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          1228
+        </td>
+        <td>
+          2173
+          -
+          2258
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.actor.typed.ActorRef.ActorRefOps.!
+        </td>
+        <td style="background: #AEF1AE">
+          typed.this.ActorRef.ActorRefOps[akka.actor.typed.receptionist.Receptionist.Command](org.riskala.controller.Server.system.receptionist).!(akka.actor.typed.receptionist.Receptionist.Register.apply[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage](akka.actor.typed.receptionist.ServiceKey.apply[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage](username)((ClassTag.apply[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage](classOf[org.riskala.controller.actors.player.PlayerMessages$$PlayerMessage]): scala.reflect.ClassTag[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage])), ref))
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          716
+        </td>
+        <td>
+          2217
+          -
+          2252
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          akka.actor.typed.receptionist.ServiceKey.apply
+        </td>
+        <td style="background: #AEF1AE">
+          akka.actor.typed.receptionist.ServiceKey.apply[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage](username)((ClassTag.apply[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage](classOf[org.riskala.controller.actors.player.PlayerMessages$$PlayerMessage]): scala.reflect.ClassTag[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]))
+        </td>
+      </tr><tr>
+        <td>
+          53
+        </td>
+        <td>
+          1604
+        </td>
+        <td>
+          2173
+          -
+          2192
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          akka.actor.typed.ActorSystem.receptionist
+        </td>
+        <td style="background: #AEF1AE">
+          org.riskala.controller.Server.system.receptionist
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          522
+        </td>
+        <td>
+          2364
+          -
+          2409
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.player.PlayerMessages.RegisterSocket.apply
+        </td>
+        <td style="background: #AEF1AE">
+          org.riskala.controller.actors.player.PlayerMessages.RegisterSocket.apply(newSocketActor)
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          126
+        </td>
+        <td>
+          2356
+          -
+          2409
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.actor.typed.ActorRef.ActorRefOps.!
+        </td>
+        <td style="background: #AEF1AE">
+          typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage](first).!(org.riskala.controller.actors.player.PlayerMessages.RegisterSocket.apply(newSocketActor))
+        </td>
+      </tr><tr>
+        <td>
+          64
+        </td>
+        <td>
+          1288
+        </td>
+        <td>
+          2513
+          -
+          2701
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.stream.typed.scaladsl.ActorSource.actorRef
+        </td>
+        <td style="background: #F0ADAD">
+          akka.stream.typed.scaladsl.ActorSource.actorRef[akka.http.scaladsl.model.ws.Message](({
+  @SerialVersionUID(value = 0) final &lt;synthetic&gt; class $anonfun extends scala.runtime.AbstractPartialFunction[akka.http.scaladsl.model.ws.Message,Unit] with Serializable {
+    def &lt;init&gt;(): &lt;$anon: akka.http.scaladsl.model.ws.Message =&gt; Unit&gt; = {
+      $anonfun.super.&lt;init&gt;();
+      ()
+    };
+    final override def applyOrElse[A1 &lt;: akka.http.scaladsl.model.ws.Message, B1 &gt;: Unit](x1: A1, default: A1 =&gt; B1): B1 = ((x1.asInstanceOf[akka.http.scaladsl.model.ws.Message]: akka.http.scaladsl.model.ws.Message): akka.http.scaladsl.model.ws.Message @unchecked) match {
+      case _ =&gt; {
+        akka.stream.CompletionStrategy.immediately;
+        ()
+      }
+      case (defaultCase$ @ _) =&gt; default.apply(x1)
+    };
+    final def isDefinedAt(x1: akka.http.scaladsl.model.ws.Message): Boolean = ((x1.asInstanceOf[akka.http.scaladsl.model.ws.Message]: akka.http.scaladsl.model.ws.Message): akka.http.scaladsl.model.ws.Message @unchecked) match {
+      case _ =&gt; true
+      case (defaultCase$ @ _) =&gt; false
+    }
+  };
+  new $anonfun()
+}: PartialFunction[akka.http.scaladsl.model.ws.Message,Unit]), scala.PartialFunction.empty[Any, Nothing], 8, akka.stream.OverflowStrategy.dropHead)
+        </td>
+      </tr><tr>
+        <td>
+          64
+        </td>
+        <td>
+          1996
+        </td>
+        <td>
+          2563
+          -
+          2563
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.routes.WebsocketRoute.$anonfun.&lt;init&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          new $anonfun()
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          558
+        </td>
+        <td>
+          2599
+          -
+          2599
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          65
+        </td>
+        <td>
+          1478
+        </td>
+        <td>
+          2580
+          -
+          2610
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          akka.stream.CompletionStrategy.immediately
+        </td>
+        <td style="background: #F0ADAD">
+          akka.stream.CompletionStrategy.immediately
+        </td>
+      </tr><tr>
+        <td>
+          66
+        </td>
+        <td>
+          1207
+        </td>
+        <td>
+          2617
+          -
+          2638
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.PartialFunction.empty
+        </td>
+        <td style="background: #F0ADAD">
+          scala.PartialFunction.empty[Any, Nothing]
+        </td>
+      </tr><tr>
+        <td>
+          66
+        </td>
+        <td>
+          745
+        </td>
+        <td>
+          2653
+          -
+          2654
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          8
+        </td>
+      </tr><tr>
+        <td>
+          66
+        </td>
+        <td>
+          2135
+        </td>
+        <td>
+          2675
+          -
+          2700
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          akka.stream.OverflowStrategy.dropHead
+        </td>
+        <td style="background: #F0ADAD">
+          akka.stream.OverflowStrategy.dropHead
+        </td>
+      </tr><tr>
+        <td>
+          69
+        </td>
+        <td>
+          1442
+        </td>
+        <td>
+          2780
+          -
+          2866
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.stream.scaladsl.Source.actorRef
+        </td>
+        <td style="background: #AEF1AE">
+          akka.stream.scaladsl.Source.actorRef[akka.http.scaladsl.model.ws.Message](8, akka.stream.OverflowStrategy.dropHead)
+        </td>
+      </tr><tr>
+        <td>
+          69
+        </td>
+        <td>
+          99
+        </td>
+        <td>
+          2840
+          -
+          2865
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          akka.stream.OverflowStrategy.dropHead
+        </td>
+        <td style="background: #AEF1AE">
+          akka.stream.OverflowStrategy.dropHead
+        </td>
+      </tr><tr>
+        <td>
+          69
+        </td>
+        <td>
+          526
+        </td>
+        <td>
+          2818
+          -
+          2819
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          8
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          1957
+        </td>
+        <td>
+          3000
+          -
+          3059
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.player.PlayerMessages.SocketMessage.apply
+        </td>
+        <td style="background: #AEF1AE">
+          org.riskala.controller.actors.player.PlayerMessages.SocketMessage.apply(m.asTextMessage.getStrictText)
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          704
+        </td>
+        <td>
+          2970
+          -
+          3060
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.stream.scaladsl.Sink.foreach
+        </td>
+        <td style="background: #AEF1AE">
+          akka.stream.scaladsl.Sink.foreach[akka.http.scaladsl.model.ws.Message](((m: akka.http.scaladsl.model.ws.Message) =&gt; typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage](playerRef).!(org.riskala.controller.actors.player.PlayerMessages.SocketMessage.apply(m.asTextMessage.getStrictText))))
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          565
+        </td>
+        <td>
+          3029
+          -
+          3058
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          akka.http.javadsl.model.ws.TextMessage.getStrictText
+        </td>
+        <td style="background: #AEF1AE">
+          m.asTextMessage.getStrictText
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          1211
+        </td>
+        <td>
+          2988
+          -
+          3059
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.actor.typed.ActorRef.ActorRefOps.!
+        </td>
+        <td style="background: #AEF1AE">
+          typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage](playerRef).!(org.riskala.controller.actors.player.PlayerMessages.SocketMessage.apply(m.asTextMessage.getStrictText))
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

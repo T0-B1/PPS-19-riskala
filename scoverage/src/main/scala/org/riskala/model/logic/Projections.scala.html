@@ -1,0 +1,134 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          src\main\scala\org\riskala\model\logic\Projections.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier, monospace;'>1 <span style=''>package org.riskala.model.logic
+</span>2 <span style=''>
+</span>3 <span style=''>/**
+</span>4 <span style=''> * An operation over a set of event for producing a state
+</span>5 <span style=''> *
+</span>6 <span style=''> * @tparam State Type of state to produce
+</span>7 <span style=''> * @tparam Event Type of events to evaluate
+</span>8 <span style=''> */
+</span>9 <span style=''>trait Projection[State, Event] {
+</span>10 <span style=''>
+</span>11 <span style=''>  /**
+</span>12 <span style=''>   * The update function
+</span>13 <span style=''>   *
+</span>14 <span style=''>   * @return A new state after the application of a single event
+</span>15 <span style=''>   */
+</span>16 <span style=''>  def update: (State, Event) =&gt; State
+</span>17 <span style=''>
+</span>18 <span style=''>  /**
+</span>19 <span style=''>   * Returns a new state which is a fold over all the events given an initial state
+</span>20 <span style=''>   * @return The new state, result of all the events
+</span>21 <span style=''>   */
+</span>22 <span style=''>  def project: (State, Seq[Event]) =&gt; State = (state, events) =&gt; </span><span style='background: #F0ADAD'>events.foldLeft(state)(update)</span><span style=''>
+</span>23 <span style=''>}
+</span>24 <span style=''>
+</span>25 <span style=''>/**
+</span>26 <span style=''> * A projection that generates a snapshot of the current state of the whole game
+</span>27 <span style=''> */
+</span>28 <span style=''>case class SnapshotGenerator() extends Projection[GameSnapshot, Event]{
+</span>29 <span style=''>  override def update: (GameSnapshot, Event) =&gt; GameSnapshot = (game, event) =&gt; </span><span style='background: #F0ADAD'>event.happen(game)</span><span style=''>
+</span>30 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          185
+        </td>
+        <td>
+          626
+          -
+          632
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.logic.Projection.update
+        </td>
+        <td style="background: #F0ADAD">
+          Projection.this.update
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          1541
+        </td>
+        <td>
+          603
+          -
+          633
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.foldLeft
+        </td>
+        <td style="background: #F0ADAD">
+          events.foldLeft[State](state)(Projection.this.update)
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          1157
+        </td>
+        <td>
+          885
+          -
+          903
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.logic.Event.happen
+        </td>
+        <td style="background: #F0ADAD">
+          event.happen(game)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

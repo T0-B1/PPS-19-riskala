@@ -1,0 +1,361 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          src\main\scala\org\riskala\utils\Parser.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier, monospace;'>1 <span style=''>package org.riskala.utils
+</span>2 <span style=''>
+</span>3 <span style=''>import argonaut.Argonaut._
+</span>4 <span style=''>import argonaut.{DecodeJson, EncodeJson}
+</span>5 <span style=''>import org.riskala.client.messages.WrappedMessage
+</span>6 <span style=''>
+</span>7 <span style=''>/**
+</span>8 <span style=''> * #scala.js
+</span>9 <span style=''> */
+</span>10 <span style=''>object Parser {
+</span>11 <span style=''>
+</span>12 <span style=''>  case class TypedMessage(classType: Class[_], payload: String)
+</span>13 <span style=''>
+</span>14 <span style=''>  /**
+</span>15 <span style=''>   * Method that generates a JSON-format string from an object
+</span>16 <span style=''>   * @param className Name of the class encoded
+</span>17 <span style=''>   * @param payload The object which will be encoded
+</span>18 <span style=''>   * @param encoder The object that converts payload to JSON
+</span>19 <span style=''>   * */
+</span>20 <span style=''>  def wrap[T](className: String, payload: T, encoder: EncodeJson[T]): String = {
+</span>21 <span style=''>    </span><span style='background: #AEF1AE'>WrappedMessage(className,payload.asJson(encoder).pretty(spaces2)).asJson.pretty(spaces2)</span><span style=''>
+</span>22 <span style=''>  }
+</span>23 <span style=''>
+</span>24 <span style=''>  /**
+</span>25 <span style=''>   * Method used to retrieve a typed message from a JSON-format string
+</span>26 <span style=''>   * */
+</span>27 <span style=''>  def unwrap(message: String): TypedMessage = {
+</span>28 <span style=''>    val WrappedMessage(classType,payload) = retrieveWrapped(message).get
+</span>29 <span style=''>    </span><span style='background: #F0ADAD'>TypedMessage(Class.forName(classType), payload)</span><span style=''>
+</span>30 <span style=''>  }
+</span>31 <span style=''>
+</span>32 <span style=''>  /**
+</span>33 <span style=''>   * Method used to retrieve a wrapped message from a JSON-format string
+</span>34 <span style=''>   * */
+</span>35 <span style=''>  def retrieveWrapped(wrappedJson: String): Option[WrappedMessage] = {
+</span>36 <span style=''>    </span><span style='background: #AEF1AE'>wrappedJson.decodeOption[WrappedMessage]</span><span style=''>
+</span>37 <span style=''>  }
+</span>38 <span style=''>
+</span>39 <span style=''>  /**
+</span>40 <span style=''>   * Method used to retrieve an object from a JSON-format string
+</span>41 <span style=''>   * @param payload The JSON-format string of an object
+</span>42 <span style=''>   * @param decoder The object used to decode the payload
+</span>43 <span style=''>   * */
+</span>44 <span style=''>  def retrieveMessage[T](payload: String, decoder: DecodeJson[T]): Option[T] = {
+</span>45 <span style=''>    </span><span style='background: #AEF1AE'>payload.decodeOption[T](decoder)</span><span style=''>
+</span>46 <span style=''>  }
+</span>47 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          2021
+        </td>
+        <td>
+          618
+          -
+          657
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          argonaut.Json.pretty
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.ToJsonIdentity[T](payload).asJson(encoder).pretty(argonaut.Argonaut.spaces2)
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          2092
+        </td>
+        <td>
+          673
+          -
+          680
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.PrettyParamss.spaces2
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.spaces2
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          773
+        </td>
+        <td>
+          659
+          -
+          659
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.messages.WrappedMessage.WrappedCodecJson
+        </td>
+        <td style="background: #AEF1AE">
+          messages.this.WrappedMessage.WrappedCodecJson
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          1260
+        </td>
+        <td>
+          593
+          -
+          681
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          argonaut.Json.pretty
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.ToJsonIdentity[org.riskala.client.messages.WrappedMessage](org.riskala.client.messages.WrappedMessage.apply(className, argonaut.Argonaut.ToJsonIdentity[T](payload).asJson(encoder).pretty(argonaut.Argonaut.spaces2))).asJson(messages.this.WrappedMessage.WrappedCodecJson).pretty(argonaut.Argonaut.spaces2)
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          604
+        </td>
+        <td>
+          649
+          -
+          656
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.PrettyParamss.spaces2
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.spaces2
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          1552
+        </td>
+        <td>
+          593
+          -
+          658
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.messages.WrappedMessage.apply
+        </td>
+        <td style="background: #AEF1AE">
+          org.riskala.client.messages.WrappedMessage.apply(className, argonaut.Argonaut.ToJsonIdentity[T](payload).asJson(encoder).pretty(argonaut.Argonaut.spaces2))
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          82
+        </td>
+        <td>
+          860
+          -
+          860
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Tuple2._2
+        </td>
+        <td style="background: #F0ADAD">
+          x$1._2
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          841
+        </td>
+        <td>
+          850
+          -
+          850
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Tuple2._1
+        </td>
+        <td style="background: #F0ADAD">
+          x$1._1
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          606
+        </td>
+        <td>
+          905
+          -
+          952
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.utils.Parser.TypedMessage.apply
+        </td>
+        <td style="background: #F0ADAD">
+          Parser.this.TypedMessage.apply(java.lang.Class.forName(classType), payload)
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          1461
+        </td>
+        <td>
+          918
+          -
+          942
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Class.forName
+        </td>
+        <td style="background: #F0ADAD">
+          java.lang.Class.forName(classType)
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          1519
+        </td>
+        <td>
+          1127
+          -
+          1167
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          argonaut.ParseWrap.decodeOption
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.StringToParseWrap(wrappedJson).decodeOption[org.riskala.client.messages.WrappedMessage](messages.this.WrappedMessage.WrappedCodecJson)
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          1937
+        </td>
+        <td>
+          1151
+          -
+          1151
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.messages.WrappedMessage.WrappedCodecJson
+        </td>
+        <td style="background: #AEF1AE">
+          messages.this.WrappedMessage.WrappedCodecJson
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          779
+        </td>
+        <td>
+          1460
+          -
+          1492
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          argonaut.ParseWrap.decodeOption
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.StringToParseWrap(payload).decodeOption[T](decoder)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

@@ -1,0 +1,768 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          src\main\scala\org\riskala\utils\Utils.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier, monospace;'>1 <span style=''>package org.riskala.utils
+</span>2 <span style=''>
+</span>3 <span style=''>import java.io.FileNotFoundException
+</span>4 <span style=''>import java.util.Properties
+</span>5 <span style=''>import akka.actor.typed.{ActorRef, ActorSystem}
+</span>6 <span style=''>import akka.actor.typed.receptionist.{Receptionist, ServiceKey}
+</span>7 <span style=''>import akka.actor.typed.scaladsl.AskPattern._
+</span>8 <span style=''>import akka.util.Timeout
+</span>9 <span style=''>import scala.concurrent.{Await, ExecutionContextExecutor, Future}
+</span>10 <span style=''>import scala.reflect.ClassTag
+</span>11 <span style=''>import scala.concurrent.duration._
+</span>12 <span style=''>import scala.io.Source
+</span>13 <span style=''>import com.mashape.unirest.http.Unirest
+</span>14 <span style=''>import org.riskala.controller.auth.AuthManager
+</span>15 <span style=''>
+</span>16 <span style=''>object Utils{
+</span>17 <span style=''>
+</span>18 <span style=''>  val PROPS_PATH = </span><span style='background: #AEF1AE'>&quot;/config.properties&quot;</span><span style=''>
+</span>19 <span style=''>
+</span>20 <span style=''>  /**
+</span>21 <span style=''>   * Loads properties from resouce file
+</span>22 <span style=''>   *
+</span>23 <span style=''>   * @return A Properties object
+</span>24 <span style=''>   */
+</span>25 <span style=''>  def loadPropertiesFromResources(): Properties = {
+</span>26 <span style=''>    val properties: Properties = </span><span style='background: #AEF1AE'>new Properties()</span><span style=''>
+</span>27 <span style=''>    val url = </span><span style='background: #AEF1AE'>getClass.getResource(PROPS_PATH)</span><span style=''>
+</span>28 <span style=''>    if (</span><span style='background: #AEF1AE'>url != null</span><span style=''>)
+</span>29 <span style=''>      </span><span style='background: #AEF1AE'>properties.load(Source.fromURL(url).bufferedReader())</span><span style=''>
+</span>30 <span style=''>    else
+</span>31 <span style=''>      </span><span style='background: #F0ADAD'>throw new FileNotFoundException(s&quot;Properties file at path $PROPS_PATH cannot be loaded&quot;)</span><span style=''>
+</span>32 <span style=''>    properties
+</span>33 <span style=''>  }
+</span>34 <span style=''>
+</span>35 <span style=''>  /**
+</span>36 <span style=''>   * Asks the akka system receptionist to find an actor
+</span>37 <span style=''>   *
+</span>38 <span style=''>   * @param key ServiceKey of the actor
+</span>39 <span style=''>   * @param system Akka actor system
+</span>40 <span style=''>   * @param timeout Timeout of the request
+</span>41 <span style=''>   * @tparam T Type of the ActorRef
+</span>42 <span style=''>   * @return An optional ActorRef
+</span>43 <span style=''>   */
+</span>44 <span style=''>  def askReceptionistToFind[T:ClassTag](key: String)(implicit system: ActorSystem[Nothing], timeout: Timeout = 3.seconds) : Set[ActorRef[T]] = {
+</span>45 <span style=''>    implicit val executionContext: ExecutionContextExecutor = </span><span style='background: #AEF1AE'>system.executionContext</span><span style=''>
+</span>46 <span style=''>    val serviceKey: ServiceKey[T] = </span><span style='background: #AEF1AE'>ServiceKey[T](key)</span><span style=''>
+</span>47 <span style=''>    val receptionist: ActorRef[Receptionist.Command] = </span><span style='background: #AEF1AE'>system.receptionist</span><span style=''>
+</span>48 <span style=''>    val response: Future[Receptionist.Listing] =
+</span>49 <span style=''>      </span><span style='background: #AEF1AE'>receptionist ? (replyTo =&gt; Receptionist.find(serviceKey, replyTo))</span><span style=''>
+</span>50 <span style=''>    </span><span style='background: #AEF1AE'>Await.result(response, 3.seconds).serviceInstances(serviceKey)</span><span style=''>
+</span>51 <span style=''>  }
+</span>52 <span style=''>
+</span>53 <span style=''>  /**
+</span>54 <span style=''>   * Retrieves a random element from a set
+</span>55 <span style=''>   *
+</span>56 <span style=''>   * @param s A set
+</span>57 <span style=''>   * @tparam T Type of elements in the set
+</span>58 <span style=''>   * @return A random element
+</span>59 <span style=''>   */
+</span>60 <span style=''>  def randomSetElement[T](s: Set[T]): T = {
+</span>61 <span style=''>    val n = </span><span style='background: #AEF1AE'>util.Random.nextInt(s.size)</span><span style=''>
+</span>62 <span style=''>    </span><span style='background: #AEF1AE'>s.iterator.drop(n).next</span><span style=''>
+</span>63 <span style=''>  }
+</span>64 <span style=''>
+</span>65 <span style=''>  /**
+</span>66 <span style=''>   * Sends an email to a user
+</span>67 <span style=''>   *
+</span>68 <span style=''>   * @param userName The username
+</span>69 <span style=''>   * @param gameName The game to which the notification refers
+</span>70 <span style=''>   */
+</span>71 <span style=''>  def sendUserTurnNotification(userName: String, gameName: String): Unit = {
+</span>72 <span style=''>    val email = </span><span style='background: #F0ADAD'>AuthManager.getUserMail(userName)</span><span style=''>
+</span>73 <span style=''>    if(</span><span style='background: #F0ADAD'>email.isDefined</span><span style=''>) </span><span style='background: #F0ADAD'>{
+</span>74 <span style=''></span><span style='background: #F0ADAD'>      val props = loadPropertiesFromResources()
+</span>75 <span style=''></span><span style='background: #F0ADAD'>      val domain = props.get(&quot;mailgunDomain&quot;).toString
+</span>76 <span style=''></span><span style='background: #F0ADAD'>      val apiKey = props.get(&quot;mailgunKey&quot;).toString
+</span>77 <span style=''></span><span style='background: #F0ADAD'>      Unirest.post(&quot;https://api.mailgun.net/v3/&quot; + domain + &quot;/messages&quot;)
+</span>78 <span style=''></span><span style='background: #F0ADAD'>        .basicAuth(&quot;api&quot;, apiKey)
+</span>79 <span style=''></span><span style='background: #F0ADAD'>        .queryString(&quot;from&quot;, &quot;Riskala Bot &lt;mailgun@sandbox7d5c8d16a2274c5ab7e6825f4e7c7733.mailgun.org&gt;&quot;)
+</span>80 <span style=''></span><span style='background: #F0ADAD'>        .queryString(&quot;to&quot;, email.get)
+</span>81 <span style=''></span><span style='background: #F0ADAD'>        .queryString(&quot;subject&quot;, &quot;It's your turn!&quot;)
+</span>82 <span style=''></span><span style='background: #F0ADAD'>        .queryString(&quot;text&quot;, s&quot;Hey $userName!\nIt's your turn to play, $gameName awaits you.&quot;)
+</span>83 <span style=''></span><span style='background: #F0ADAD'>        .asJson()
+</span>84 <span style=''></span><span style='background: #F0ADAD'>    }</span><span style=''>
+</span>85 <span style=''>  }
+</span>86 <span style=''>
+</span>87 <span style=''>}
+</span>88 <span style=''>
+</span>89 <span style=''>
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          2055
+        </td>
+        <td>
+          568
+          -
+          588
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;/config.properties&quot;
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          1261
+        </td>
+        <td>
+          773
+          -
+          789
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.Properties.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new java.util.Properties()
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          43
+        </td>
+        <td>
+          805
+          -
+          837
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Class.getResource
+        </td>
+        <td style="background: #AEF1AE">
+          Utils.this.getClass().getResource(Utils.this.PROPS_PATH)
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          942
+        </td>
+        <td>
+          826
+          -
+          836
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.utils.Utils.PROPS_PATH
+        </td>
+        <td style="background: #AEF1AE">
+          Utils.this.PROPS_PATH
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          1385
+        </td>
+        <td>
+          847
+          -
+          858
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.!=
+        </td>
+        <td style="background: #AEF1AE">
+          url.!=(null)
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          609
+        </td>
+        <td>
+          883
+          -
+          919
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.io.BufferedSource.bufferedReader
+        </td>
+        <td style="background: #AEF1AE">
+          scala.io.Source.fromURL(url)(io.this.Codec.fallbackSystemCodec).bufferedReader()
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          1622
+        </td>
+        <td>
+          867
+          -
+          920
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          java.util.Properties.load
+        </td>
+        <td style="background: #AEF1AE">
+          properties.load(scala.io.Source.fromURL(url)(io.this.Codec.fallbackSystemCodec).bufferedReader())
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          2016
+        </td>
+        <td>
+          867
+          -
+          920
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.util.Properties.load
+        </td>
+        <td style="background: #AEF1AE">
+          properties.load(scala.io.Source.fromURL(url)(io.this.Codec.fallbackSystemCodec).bufferedReader())
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          2058
+        </td>
+        <td>
+          938
+          -
+          1026
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new java.io.FileNotFoundException(scala.StringContext.apply(&quot;Properties file at path &quot;, &quot; cannot be loaded&quot;).s(Utils.this.PROPS_PATH))
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          739
+        </td>
+        <td>
+          938
+          -
+          1026
+        </td>
+        <td>
+          Throw
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          throw new java.io.FileNotFoundException(scala.StringContext.apply(&quot;Properties file at path &quot;, &quot; cannot be loaded&quot;).s(Utils.this.PROPS_PATH))
+        </td>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          1263
+        </td>
+        <td>
+          1531
+          -
+          1554
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          akka.actor.typed.ActorSystem.executionContext
+        </td>
+        <td style="background: #AEF1AE">
+          system.executionContext
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          539
+        </td>
+        <td>
+          1592
+          -
+          1610
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          akka.actor.typed.receptionist.ServiceKey.apply
+        </td>
+        <td style="background: #AEF1AE">
+          akka.actor.typed.receptionist.ServiceKey.apply[T](key)(evidence$1)
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          136
+        </td>
+        <td>
+          1667
+          -
+          1686
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          akka.actor.typed.ActorSystem.receptionist
+        </td>
+        <td style="background: #AEF1AE">
+          system.receptionist
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          2019
+        </td>
+        <td>
+          1744
+          -
+          1810
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          akka.actor.typed.scaladsl.AskPattern.Askable.?
+        </td>
+        <td style="background: #AEF1AE">
+          akka.actor.typed.scaladsl.AskPattern.Askable[akka.actor.typed.receptionist.Receptionist.Command](receptionist).?[akka.actor.typed.receptionist.Receptionist.Listing](((replyTo: akka.actor.typed.ActorRef[akka.actor.typed.receptionist.Receptionist.Listing]) =&gt; akka.actor.typed.receptionist.Receptionist.find[T](serviceKey, replyTo)))(timeout, akka.actor.typed.scaladsl.AskPattern.schedulerFromActorSystem(system))
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          1489
+        </td>
+        <td>
+          1771
+          -
+          1809
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.actor.typed.receptionist.Receptionist.find
+        </td>
+        <td style="background: #AEF1AE">
+          akka.actor.typed.receptionist.Receptionist.find[T](serviceKey, replyTo)
+        </td>
+      </tr><tr>
+        <td>
+          49
+        </td>
+        <td>
+          583
+        </td>
+        <td>
+          1757
+          -
+          1757
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          akka.actor.typed.scaladsl.AskPattern.schedulerFromActorSystem
+        </td>
+        <td style="background: #AEF1AE">
+          akka.actor.typed.scaladsl.AskPattern.schedulerFromActorSystem(system)
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          1591
+        </td>
+        <td>
+          1816
+          -
+          1878
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.actor.typed.receptionist.Receptionist.Listing.serviceInstances
+        </td>
+        <td style="background: #AEF1AE">
+          scala.concurrent.Await.result[akka.actor.typed.receptionist.Receptionist.Listing](response, scala.concurrent.duration.`package`.DurationInt(3).seconds).serviceInstances[T](serviceKey)
+        </td>
+      </tr><tr>
+        <td>
+          61
+        </td>
+        <td>
+          771
+        </td>
+        <td>
+          2124
+          -
+          2130
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.size
+        </td>
+        <td style="background: #AEF1AE">
+          s.size
+        </td>
+      </tr><tr>
+        <td>
+          61
+        </td>
+        <td>
+          2062
+        </td>
+        <td>
+          2104
+          -
+          2131
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.Random.nextInt
+        </td>
+        <td style="background: #AEF1AE">
+          scala.util.Random.nextInt(s.size)
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          1311
+        </td>
+        <td>
+          2137
+          -
+          2160
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.Iterator.next
+        </td>
+        <td style="background: #AEF1AE">
+          s.iterator.drop(n).next()
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          541
+        </td>
+        <td>
+          2413
+          -
+          2446
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.auth.AuthManager.getUserMail
+        </td>
+        <td style="background: #F0ADAD">
+          org.riskala.controller.auth.AuthManager.getUserMail(userName)
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          1315
+        </td>
+        <td>
+          2452
+          -
+          2452
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          118
+        </td>
+        <td>
+          2455
+          -
+          2470
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Option.isDefined
+        </td>
+        <td style="background: #F0ADAD">
+          email.isDefined
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          2118
+        </td>
+        <td>
+          2472
+          -
+          3060
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          {
+  val props: java.util.Properties = Utils.this.loadPropertiesFromResources();
+  val domain: String = props.get(&quot;mailgunDomain&quot;).toString();
+  val apiKey: String = props.get(&quot;mailgunKey&quot;).toString();
+  {
+    com.mashape.unirest.http.Unirest.post(&quot;https://api.mailgun.net/v3/&quot;.+(domain).+(&quot;/messages&quot;)).basicAuth(&quot;api&quot;, apiKey).queryString(&quot;from&quot;, &quot;Riskala Bot &lt;mailgun@sandbox7d5c8d16a2274c5ab7e6825f4e7c7733.mailgun.org&gt;&quot;).queryString(&quot;to&quot;, email.get).queryString(&quot;subject&quot;, &quot;It\'s your turn!&quot;).queryString(&quot;text&quot;, scala.StringContext.apply(&quot;Hey &quot;, &quot;!\\nIt\'s your turn to play, &quot;, &quot; awaits you.&quot;).s(userName, gameName)).asJson();
+    ()
+  }
+}
+        </td>
+      </tr><tr>
+        <td>
+          73
+        </td>
+        <td>
+          518
+        </td>
+        <td>
+          2452
+          -
+          2452
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          1460
+        </td>
+        <td>
+          2493
+          -
+          2522
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.utils.Utils.loadPropertiesFromResources
+        </td>
+        <td style="background: #F0ADAD">
+          Utils.this.loadPropertiesFromResources()
+        </td>
+      </tr><tr>
+        <td>
+          75
+        </td>
+        <td>
+          587
+        </td>
+        <td>
+          2543
+          -
+          2578
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.toString
+        </td>
+        <td style="background: #F0ADAD">
+          props.get(&quot;mailgunDomain&quot;).toString()
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          1987
+        </td>
+        <td>
+          2599
+          -
+          2631
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.toString
+        </td>
+        <td style="background: #F0ADAD">
+          props.get(&quot;mailgunKey&quot;).toString()
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          777
+        </td>
+        <td>
+          3051
+          -
+          3051
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          1221
+        </td>
+        <td>
+          2639
+          -
+          3053
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.mashape.unirest.request.BaseRequest.asJson
+        </td>
+        <td style="background: #F0ADAD">
+          com.mashape.unirest.http.Unirest.post(&quot;https://api.mailgun.net/v3/&quot;.+(domain).+(&quot;/messages&quot;)).basicAuth(&quot;api&quot;, apiKey).queryString(&quot;from&quot;, &quot;Riskala Bot &lt;mailgun@sandbox7d5c8d16a2274c5ab7e6825f4e7c7733.mailgun.org&gt;&quot;).queryString(&quot;to&quot;, email.get).queryString(&quot;subject&quot;, &quot;It\'s your turn!&quot;).queryString(&quot;text&quot;, scala.StringContext.apply(&quot;Hey &quot;, &quot;!\\nIt\'s your turn to play, &quot;, &quot; awaits you.&quot;).s(userName, gameName)).asJson()
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

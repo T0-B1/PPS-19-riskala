@@ -1,0 +1,132 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          src\main\scala\org\riskala\model\logic\EventStore.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier, monospace;'>1 <span style=''>package org.riskala.model.logic
+</span>2 <span style=''>
+</span>3 <span style=''>import org.riskala.model.logic.EventStore.Behavior
+</span>4 <span style=''>
+</span>5 <span style=''>object EventStore {
+</span>6 <span style=''>  type Behavior[E] = Seq[E]
+</span>7 <span style=''>}
+</span>8 <span style=''>
+</span>9 <span style=''>/**
+</span>10 <span style=''> * An event store.
+</span>11 <span style=''> * Events can only be added to the store, following a behavior
+</span>12 <span style=''> *
+</span>13 <span style=''> * @param events The content of the store
+</span>14 <span style=''> * @tparam E The type of events in the store
+</span>15 <span style=''> */
+</span>16 <span style=''>case class EventStore[E](events: Seq[E] = Seq.empty) {
+</span>17 <span style=''>
+</span>18 <span style=''>  /**
+</span>19 <span style=''>   * A set of actions are performed and appended to the store
+</span>20 <span style=''>   *
+</span>21 <span style=''>   * @param behavior The actions to perform
+</span>22 <span style=''>   * @return The new event store
+</span>23 <span style=''>   */
+</span>24 <span style=''>  def perform(behavior: Behavior[E]) : EventStore[E] = {
+</span>25 <span style=''>    </span><span style='background: #F0ADAD'>EventStore(events ++ behavior)</span><span style=''>
+</span>26 <span style=''>  }
+</span>27 <span style=''>
+</span>28 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          1203
+        </td>
+        <td>
+          613
+          -
+          643
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.logic.EventStore.apply
+        </td>
+        <td style="background: #F0ADAD">
+          EventStore.apply[E](EventStore.this.events.++[E, Seq[E]](behavior)(collection.this.Seq.canBuildFrom[E]))
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          1912
+        </td>
+        <td>
+          624
+          -
+          642
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.++
+        </td>
+        <td style="background: #F0ADAD">
+          EventStore.this.events.++[E, Seq[E]](behavior)(collection.this.Seq.canBuildFrom[E])
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          548
+        </td>
+        <td>
+          631
+          -
+          631
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #F0ADAD">
+          collection.this.Seq.canBuildFrom[E]
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

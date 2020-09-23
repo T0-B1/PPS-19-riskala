@@ -1,0 +1,4641 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          src\main\scala\org\riskala\client\game\ClientGame.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier, monospace;'>1 <span style=''>package org.riskala.client.game
+</span>2 <span style=''>
+</span>3 <span style=''>import argonaut.Argonaut.{ToJsonIdentity, nospace}
+</span>4 <span style=''>import org.riskala.model.Cards._
+</span>5 <span style=''>import org.riskala.model.Cards
+</span>6 <span style=''>import org.riskala.model.map.{MapGeography, PlayerState}
+</span>7 <span style=''>import org.riskala.utils.Parser
+</span>8 <span style=''>import org.riskala.client.messages.FromClientMessages.{ActionAttackMessage, ActionDeployMessage, ActionMoveMessage, RedeemBonusMessage}
+</span>9 <span style=''>import org.riskala.client.messages.ToClientMessages.{ErrorMessage, GameEnd, GameFullInfo, GameUpdate}
+</span>10 <span style=''>import org.riskala.client.messages.WrappedMessage
+</span>11 <span style=''>
+</span>12 <span style=''>import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
+</span>13 <span style=''>
+</span>14 <span style=''>/**
+</span>15 <span style=''> * #scala.js
+</span>16 <span style=''> */
+</span>17 <span style=''>@JSExportTopLevel(&quot;ClientGame&quot;)
+</span>18 <span style=''>object ClientGame {
+</span>19 <span style=''>
+</span>20 <span style=''>  private var map: MapGeography = _
+</span>21 <span style=''>  private var playerStates: Set[PlayerState] = _
+</span>22 <span style=''>  private var myTroopsToDeploy: Int = </span><span style='background: #F0ADAD'>0</span><span style=''>
+</span>23 <span style=''>  private var myActualPlayer: String = </span><span style='background: #F0ADAD'>&quot;&quot;</span><span style=''>
+</span>24 <span style=''>  private var myIsDeployOnly: Boolean = </span><span style='background: #F0ADAD'>true</span><span style=''>
+</span>25 <span style=''>
+</span>26 <span style=''>  /**
+</span>27 <span style=''>   * Method that gives a wrapped message in JSON-format string
+</span>28 <span style=''>   * */
+</span>29 <span style=''>  @JSExport
+</span>30 <span style=''>  def getEmptyMsgWrapped(typeMessage: String): String =  {
+</span>31 <span style=''>    </span><span style='background: #F0ADAD'>WrappedMessage(typeMessage, &quot;&quot;).asJson.pretty(nospace)</span><span style=''>
+</span>32 <span style=''>  }
+</span>33 <span style=''>
+</span>34 <span style=''>  /**
+</span>35 <span style=''>   * Method that gives a wrapped action message in JSON-format string
+</span>36 <span style=''>   * @param actionType Attack or Move or Deploy
+</span>37 <span style=''>   * @param from The state of departure
+</span>38 <span style=''>   * @param to The arrival state
+</span>39 <span style=''>   * @param troops The number of troops used for this action
+</span>40 <span style=''>   * */
+</span>41 <span style=''>  @JSExport
+</span>42 <span style=''>  def getActionMsgWrapped(actionType: String, from: String, to: String, troops: Int): String =  {
+</span>43 <span style=''>    val (msg,action) = actionType match {
+</span>44 <span style=''>      case &quot;Attack&quot; =&gt; (&quot;ActionAttackMessage&quot;, ActionAttackMessage(from, to, troops).asJson.pretty(nospace))
+</span>45 <span style=''>      case &quot;Move&quot; =&gt; (&quot;ActionMoveMessage&quot;, ActionMoveMessage(from, to, troops).asJson.pretty(nospace))
+</span>46 <span style=''>      case &quot;Deploy&quot; =&gt; (&quot;ActionDeployMessage&quot;, ActionDeployMessage(from, to, troops).asJson.pretty(nospace))
+</span>47 <span style=''>    }
+</span>48 <span style=''>    </span><span style='background: #F0ADAD'>WrappedMessage(msg, action).asJson.pretty(nospace)</span><span style=''>
+</span>49 <span style=''>  }
+</span>50 <span style=''>
+</span>51 <span style=''>  /**
+</span>52 <span style=''>   * Method that gives a wrapped redeemBonus message in JSON-format string
+</span>53 <span style=''>   * */
+</span>54 <span style=''>  @JSExport
+</span>55 <span style=''>  def getRedeemBonusMsgWrapped(cardType: String): String =  {
+</span>56 <span style=''>    val card = </span><span style='background: #F0ADAD'>Cards.withName(cardType)</span><span style=''>
+</span>57 <span style=''>    </span><span style='background: #F0ADAD'>WrappedMessage(&quot;RedeemBonusMessage&quot;, RedeemBonusMessage(card).asJson.pretty(nospace)).asJson.pretty(nospace)</span><span style=''>
+</span>58 <span style=''>  }
+</span>59 <span style=''>
+</span>60 <span style=''>  /**
+</span>61 <span style=''>   * Method that gives information about the clicked neighbor
+</span>62 <span style=''>   * @param clickedState The name of the clicked state into the neighbor list
+</span>63 <span style=''>   * @param namePlayer The player who requires the information
+</span>64 <span style=''>   * @param mapSelectedState The name of the clicked state into the map
+</span>65 <span style=''>   * @param gameFacade The instance of javascript facade on which call method
+</span>66 <span style=''>   * */
+</span>67 <span style=''>  @JSExport
+</span>68 <span style=''>  def neighborClick(clickedState: String, namePlayer: String,
+</span>69 <span style=''>                    mapSelectedState: String, gameFacade: GameFacade): Unit = {
+</span>70 <span style=''>    if(</span><span style='background: #F0ADAD'>clickedState equals mapSelectedState</span><span style=''>) </span><span style='background: #F0ADAD'>{
+</span>71 <span style=''></span><span style='background: #F0ADAD'>      gameFacade.nameActionBtn = &quot;Deploy&quot;
+</span>72 <span style=''></span><span style='background: #F0ADAD'>      gameFacade.maxAvailableTroops = myTroopsToDeploy
+</span>73 <span style=''></span><span style='background: #F0ADAD'>    }</span><span style=''> else{
+</span>74 <span style=''>      </span><span style='background: #F0ADAD'>playerStates.find(_.state == clickedState)
+</span>75 <span style=''></span><span style='background: #F0ADAD'>        .foreach(ps =&gt; {
+</span>76 <span style=''></span><span style='background: #F0ADAD'>          gameFacade.nameActionBtn = if (ps.owner.nickname == namePlayer) &quot;Move&quot; else &quot;Attack&quot;
+</span>77 <span style=''></span><span style='background: #F0ADAD'>          gameFacade.maxAvailableTroops = playerStates.find(_.state == mapSelectedState).get.troops - 1
+</span>78 <span style=''></span><span style='background: #F0ADAD'>        }
+</span>79 <span style=''></span><span style='background: #F0ADAD'>      )</span><span style=''>
+</span>80 <span style=''>    }
+</span>81 <span style=''>  }
+</span>82 <span style=''>
+</span>83 <span style=''>  private def myStateInfo(playerState:PlayerState, gameFacade: GameFacade, myState: Boolean, myTurn: Boolean): Unit = {
+</span>84 <span style=''>    </span><span style='background: #F0ADAD'>gameFacade.setStateInfo(playerState.state,
+</span>85 <span style=''></span><span style='background: #F0ADAD'>      playerState.owner.nickname,
+</span>86 <span style=''></span><span style='background: #F0ADAD'>      playerState.troops,
+</span>87 <span style=''></span><span style='background: #F0ADAD'>      map.regions.find(_.states.contains(playerState.state)).map(_.name).getOrElse(&quot;&quot;))</span><span style=''>
+</span>88 <span style=''>    val neighbors =  </span><span style='background: #F0ADAD'>map.getNeighbors(playerState.state)</span><span style=''>
+</span>89 <span style=''>    if(</span><span style='background: #F0ADAD'>myState &amp;&amp; myTurn</span><span style=''>)</span><span style='background: #F0ADAD'>{
+</span>90 <span style=''></span><span style='background: #F0ADAD'>      gameFacade.visible = true
+</span>91 <span style=''></span><span style='background: #F0ADAD'>      if(myIsDeployOnly) {
+</span>92 <span style=''></span><span style='background: #F0ADAD'>        if(myTroopsToDeploy &gt; 0) {
+</span>93 <span style=''></span><span style='background: #F0ADAD'>          gameFacade.addNeighbor(playerState.state, true)
+</span>94 <span style=''></span><span style='background: #F0ADAD'>          gameFacade.maxAvailableTroops = myTroopsToDeploy
+</span>95 <span style=''></span><span style='background: #F0ADAD'>          gameFacade.selectedNeighbor = playerState.state
+</span>96 <span style=''></span><span style='background: #F0ADAD'>          neighborClick(playerState.state,gameFacade.myName,playerState.state,gameFacade)
+</span>97 <span style=''></span><span style='background: #F0ADAD'>        } else {
+</span>98 <span style=''></span><span style='background: #F0ADAD'>          gameFacade.visible = false
+</span>99 <span style=''></span><span style='background: #F0ADAD'>        }
+</span>100 <span style=''></span><span style='background: #F0ADAD'>      } else {
+</span>101 <span style=''></span><span style='background: #F0ADAD'>        if(myTroopsToDeploy &gt; 0){
+</span>102 <span style=''></span><span style='background: #F0ADAD'>          gameFacade.addNeighbor(playerState.state, true)
+</span>103 <span style=''></span><span style='background: #F0ADAD'>          neighbors.foreach(gameFacade.addNeighbor(_, false))
+</span>104 <span style=''></span><span style='background: #F0ADAD'>          gameFacade.maxAvailableTroops = myTroopsToDeploy
+</span>105 <span style=''></span><span style='background: #F0ADAD'>          gameFacade.selectedNeighbor = playerState.state
+</span>106 <span style=''></span><span style='background: #F0ADAD'>          neighborClick(playerState.state,gameFacade.myName,playerState.state,gameFacade)
+</span>107 <span style=''></span><span style='background: #F0ADAD'>        } else {
+</span>108 <span style=''></span><span style='background: #F0ADAD'>          val mySelection = neighbors.collectFirst({case s =&gt; s}).get
+</span>109 <span style=''></span><span style='background: #F0ADAD'>          val remainingNeighbors = neighbors.filterNot(_ == mySelection)
+</span>110 <span style=''></span><span style='background: #F0ADAD'>          gameFacade.addNeighbor(mySelection, true)
+</span>111 <span style=''></span><span style='background: #F0ADAD'>          remainingNeighbors.foreach(gameFacade.addNeighbor(_, false))
+</span>112 <span style=''></span><span style='background: #F0ADAD'>          gameFacade.maxAvailableTroops = playerState.troops - 1
+</span>113 <span style=''></span><span style='background: #F0ADAD'>          gameFacade.selectedNeighbor = mySelection
+</span>114 <span style=''></span><span style='background: #F0ADAD'>          neighborClick(mySelection,gameFacade.myName,playerState.state,gameFacade)
+</span>115 <span style=''></span><span style='background: #F0ADAD'>        }
+</span>116 <span style=''></span><span style='background: #F0ADAD'>      }
+</span>117 <span style=''></span><span style='background: #F0ADAD'>    }</span><span style=''> else {
+</span>118 <span style=''>      </span><span style='background: #F0ADAD'>gameFacade.visible = false</span><span style=''>
+</span>119 <span style=''>    }
+</span>120 <span style=''>  }
+</span>121 <span style=''>
+</span>122 <span style=''>  /**
+</span>123 <span style=''>   * Method that gives information about the clicked state into the map
+</span>124 <span style=''>   * @param nameState The name of the clicked state
+</span>125 <span style=''>   * @param namePlayer The name of the player
+</span>126 <span style=''>   * @param gameFacade The instance of javascript facade on which call method
+</span>127 <span style=''>   * */
+</span>128 <span style=''>  @JSExport
+</span>129 <span style=''>  def clickedState(nameState: String, namePlayer: String, gameFacade: GameFacade): Unit = {
+</span>130 <span style=''>    </span><span style='background: #F0ADAD'>playerStates.find(_.state == nameState)
+</span>131 <span style=''></span><span style='background: #F0ADAD'>      .foreach(ps =&gt; myStateInfo(ps, gameFacade, ps.owner.nickname == namePlayer, myActualPlayer == namePlayer))</span><span style=''>
+</span>132 <span style=''>  }
+</span>133 <span style=''>
+</span>134 <span style=''>  /**
+</span>135 <span style=''>   * Initial game setup with its information
+</span>136 <span style=''>   * */
+</span>137 <span style=''>  @JSExport
+</span>138 <span style=''>  def setupGame(gameInfo: String, gameFacade: GameFacade): Unit = {
+</span>139 <span style=''>    val game = </span><span style='background: #F0ADAD'>Parser.retrieveMessage(gameInfo, GameFullInfo.GameFullInfoCodecJson.Decoder).get</span><span style=''>
+</span>140 <span style=''>    </span><span style='background: #F0ADAD'>map = game.map</span><span style=''>
+</span>141 <span style=''>    </span><span style='background: #F0ADAD'>playerStates = game.playerStates</span><span style=''>
+</span>142 <span style=''>    </span><span style='background: #F0ADAD'>myTroopsToDeploy = game.troopsToDeploy</span><span style=''>
+</span>143 <span style=''>    </span><span style='background: #F0ADAD'>myActualPlayer = game.actualPlayer</span><span style=''>
+</span>144 <span style=''>    </span><span style='background: #F0ADAD'>myIsDeployOnly = game.isDeployOnly</span><span style=''>
+</span>145 <span style=''>    </span><span style='background: #F0ADAD'>game.players.foreach(pl =&gt; gameFacade.addPlayer(pl, game.actualPlayer == pl))</span><span style=''>
+</span>146 <span style=''>    </span><span style='background: #F0ADAD'>playerStates.foreach(ps =&gt; gameFacade.setPlayerState(ps.state, ps.owner.nickname, ps.troops))</span><span style=''>
+</span>147 <span style=''>    </span><span style='background: #F0ADAD'>map.regions.foreach(r =&gt; r.states.foreach(s =&gt; gameFacade.setStateRegion(s,r.name)))</span><span style=''>
+</span>148 <span style=''>    </span><span style='background: #F0ADAD'>gameFacade.setObjective(game.personalInfo.objective.info)</span><span style=''>
+</span>149 <span style=''>    val cardOccurrence = </span><span style='background: #F0ADAD'>game.personalInfo.cards.groupBy(identity).mapValues(_.size)</span><span style=''>
+</span>150 <span style=''>    </span><span style='background: #F0ADAD'>gameFacade.setCardInfo(cardOccurrence.getOrElse(Infantry, 0),
+</span>151 <span style=''></span><span style='background: #F0ADAD'>      cardOccurrence.getOrElse(Cavalry, 0),
+</span>152 <span style=''></span><span style='background: #F0ADAD'>      cardOccurrence.getOrElse(Artillery, 0))</span><span style=''>
+</span>153 <span style=''>    </span><span style='background: #F0ADAD'>game.winner.foreach(winner =&gt; gameFacade.setWinner(winner.nickname))</span><span style=''>
+</span>154 <span style=''>  }
+</span>155 <span style=''>
+</span>156 <span style=''>  /**
+</span>157 <span style=''>   * Method used to menage messages that are sent to game page
+</span>158 <span style=''>   * */
+</span>159 <span style=''>  @JSExport
+</span>160 <span style=''>  def handleGameMessage(message: String, gameFacade: GameFacade): Unit = {
+</span>161 <span style=''>    val wrappedMsg = </span><span style='background: #F0ADAD'>Parser.retrieveWrapped(message).get</span><span style=''>
+</span>162 <span style=''>    </span><span style='background: #F0ADAD'>wrappedMsg.classType</span><span style=''> match {
+</span>163 <span style=''>      case &quot;ErrorMessage&quot; =&gt; {
+</span>164 <span style=''>        </span><span style='background: #F0ADAD'>println(&quot;received error message&quot;)</span><span style=''>
+</span>165 <span style=''>        val errorMsg =
+</span>166 <span style=''>          </span><span style='background: #F0ADAD'>Parser.retrieveMessage(wrappedMsg.payload, ErrorMessage.ErrorCodecJson.Decoder).get</span><span style=''>
+</span>167 <span style=''>        </span><span style='background: #F0ADAD'>gameFacade.notifyGameError(errorMsg.error)</span><span style=''>
+</span>168 <span style=''>      }
+</span>169 <span style=''>      case &quot;GameUpdate&quot; =&gt;
+</span>170 <span style=''>        </span><span style='background: #F0ADAD'>println(&quot;received GameUpdate &quot;)</span><span style=''>
+</span>171 <span style=''>        val gameUpdate =
+</span>172 <span style=''>          </span><span style='background: #F0ADAD'>Parser.retrieveMessage(wrappedMsg.payload, GameUpdate.GameUpdateCodecJson.Decoder).get</span><span style=''>
+</span>173 <span style=''>        </span><span style='background: #F0ADAD'>println(&quot;Ended parser retrieve message&quot;)</span><span style=''>
+</span>174 <span style=''>        </span><span style='background: #F0ADAD'>playerStates = gameUpdate.playerStates</span><span style=''>
+</span>175 <span style=''>        </span><span style='background: #F0ADAD'>playerStates.foreach(ps =&gt; gameFacade.setPlayerState(ps.state, ps.owner.nickname, ps.troops))</span><span style=''>
+</span>176 <span style=''>        </span><span style='background: #F0ADAD'>myTroopsToDeploy = gameUpdate.troopsToDeploy</span><span style=''>
+</span>177 <span style=''>        </span><span style='background: #F0ADAD'>myActualPlayer = gameUpdate.actualPlayer</span><span style=''>
+</span>178 <span style=''>        </span><span style='background: #F0ADAD'>myIsDeployOnly = gameUpdate.isDeployOnly</span><span style=''>
+</span>179 <span style=''>        </span><span style='background: #F0ADAD'>gameFacade.maxAvailableTroops = gameUpdate.troopsToDeploy</span><span style=''>
+</span>180 <span style=''>        </span><span style='background: #F0ADAD'>gameFacade.setCurrentPlayer(gameUpdate.actualPlayer)</span><span style=''>
+</span>181 <span style=''>        val cardOccurrence = </span><span style='background: #F0ADAD'>gameUpdate.personalInfo.cards.groupBy(identity).mapValues(_.size)</span><span style=''>
+</span>182 <span style=''>        </span><span style='background: #F0ADAD'>gameFacade.setCardInfo(cardOccurrence.getOrElse(Infantry, 0),
+</span>183 <span style=''></span><span style='background: #F0ADAD'>          cardOccurrence.getOrElse(Cavalry, 0),
+</span>184 <span style=''></span><span style='background: #F0ADAD'>          cardOccurrence.getOrElse(Artillery, 0))</span><span style=''>
+</span>185 <span style=''>        if(</span><span style='background: #F0ADAD'>gameFacade.state!=&quot;Select a state&quot;</span><span style=''>)
+</span>186 <span style=''>          </span><span style='background: #F0ADAD'>clickedState(gameFacade.state,gameFacade.myName,gameFacade)</span><span style=''>
+</span>187 <span style=''>
+</span>188 <span style=''>      case &quot;GameEnd&quot; =&gt;
+</span>189 <span style=''>        val winner =
+</span>190 <span style=''>          </span><span style='background: #F0ADAD'>Parser.retrieveMessage(wrappedMsg.payload, GameEnd.GameEndCodecJson.Decoder).get.winner</span><span style=''>
+</span>191 <span style=''>        </span><span style='background: #F0ADAD'>gameFacade.setWinner(winner.nickname)</span><span style=''>
+</span>192 <span style=''>
+</span>193 <span style=''>      case &quot;LobbyInfo&quot; =&gt;
+</span>194 <span style=''>        </span><span style='background: #F0ADAD'>gameFacade.goToLobby(wrappedMsg.payload)</span><span style=''>
+</span>195 <span style=''>    }
+</span>196 <span style=''>  }
+</span>197 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          1060
+        </td>
+        <td>
+          809
+          -
+          810
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          0
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          235
+        </td>
+        <td>
+          851
+          -
+          853
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          1926
+        </td>
+        <td>
+          895
+          -
+          899
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          true
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          1178
+        </td>
+        <td>
+          1060
+          -
+          1091
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.messages.WrappedMessage.apply
+        </td>
+        <td style="background: #F0ADAD">
+          org.riskala.client.messages.WrappedMessage.apply(typeMessage, &quot;&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          307
+        </td>
+        <td>
+          1092
+          -
+          1092
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.messages.WrappedMessage.WrappedCodecJson
+        </td>
+        <td style="background: #F0ADAD">
+          messages.this.WrappedMessage.WrappedCodecJson
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          1257
+        </td>
+        <td>
+          1060
+          -
+          1114
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          argonaut.Json.pretty
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.ToJsonIdentity[org.riskala.client.messages.WrappedMessage](org.riskala.client.messages.WrappedMessage.apply(typeMessage, &quot;&quot;)).asJson(messages.this.WrappedMessage.WrappedCodecJson).pretty(argonaut.Argonaut.nospace)
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          1729
+        </td>
+        <td>
+          1106
+          -
+          1113
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.PrettyParamss.nospace
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.nospace
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          447
+        </td>
+        <td>
+          1517
+          -
+          1517
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Tuple2._1
+        </td>
+        <td style="background: #F0ADAD">
+          x$1._1
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          1864
+        </td>
+        <td>
+          1521
+          -
+          1521
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Tuple2._2
+        </td>
+        <td style="background: #F0ADAD">
+          x$1._2
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          1915
+        </td>
+        <td>
+          1928
+          -
+          1935
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.PrettyParamss.nospace
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.nospace
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          991
+        </td>
+        <td>
+          1886
+          -
+          1913
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.messages.WrappedMessage.apply
+        </td>
+        <td style="background: #F0ADAD">
+          org.riskala.client.messages.WrappedMessage.apply(msg, action)
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          1137
+        </td>
+        <td>
+          1886
+          -
+          1936
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          argonaut.Json.pretty
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.ToJsonIdentity[org.riskala.client.messages.WrappedMessage](org.riskala.client.messages.WrappedMessage.apply(msg, action)).asJson(messages.this.WrappedMessage.WrappedCodecJson).pretty(argonaut.Argonaut.nospace)
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          242
+        </td>
+        <td>
+          1914
+          -
+          1914
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.messages.WrappedMessage.WrappedCodecJson
+        </td>
+        <td style="background: #F0ADAD">
+          messages.this.WrappedMessage.WrappedCodecJson
+        </td>
+      </tr><tr>
+        <td>
+          56
+        </td>
+        <td>
+          315
+        </td>
+        <td>
+          2128
+          -
+          2152
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Enumeration.withName
+        </td>
+        <td style="background: #F0ADAD">
+          org.riskala.model.Cards.withName(cardType)
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          451
+        </td>
+        <td>
+          2220
+          -
+          2220
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.messages.FromClientMessages.RedeemBonusMessage.RedeemBonusCodecJson
+        </td>
+        <td style="background: #F0ADAD">
+          FromClientMessages.this.RedeemBonusMessage.RedeemBonusCodecJson
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          1665
+        </td>
+        <td>
+          2173
+          -
+          2193
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;RedeemBonusMessage&quot;
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          1916
+        </td>
+        <td>
+          2244
+          -
+          2244
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.messages.WrappedMessage.WrappedCodecJson
+        </td>
+        <td style="background: #F0ADAD">
+          messages.this.WrappedMessage.WrappedCodecJson
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          283
+        </td>
+        <td>
+          2158
+          -
+          2266
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          argonaut.Json.pretty
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.ToJsonIdentity[org.riskala.client.messages.WrappedMessage](org.riskala.client.messages.WrappedMessage.apply(&quot;RedeemBonusMessage&quot;, argonaut.Argonaut.ToJsonIdentity[org.riskala.client.messages.FromClientMessages.RedeemBonusMessage](org.riskala.client.messages.FromClientMessages.RedeemBonusMessage.apply(card)).asJson(FromClientMessages.this.RedeemBonusMessage.RedeemBonusCodecJson).pretty(argonaut.Argonaut.nospace))).asJson(messages.this.WrappedMessage.WrappedCodecJson).pretty(argonaut.Argonaut.nospace)
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          997
+        </td>
+        <td>
+          2195
+          -
+          2242
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          argonaut.Json.pretty
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.ToJsonIdentity[org.riskala.client.messages.FromClientMessages.RedeemBonusMessage](org.riskala.client.messages.FromClientMessages.RedeemBonusMessage.apply(card)).asJson(FromClientMessages.this.RedeemBonusMessage.RedeemBonusCodecJson).pretty(argonaut.Argonaut.nospace)
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          847
+        </td>
+        <td>
+          2195
+          -
+          2219
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.messages.FromClientMessages.RedeemBonusMessage.apply
+        </td>
+        <td style="background: #F0ADAD">
+          org.riskala.client.messages.FromClientMessages.RedeemBonusMessage.apply(card)
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          1768
+        </td>
+        <td>
+          2234
+          -
+          2241
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.PrettyParamss.nospace
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.nospace
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          1139
+        </td>
+        <td>
+          2258
+          -
+          2265
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.PrettyParamss.nospace
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.nospace
+        </td>
+      </tr><tr>
+        <td>
+          57
+        </td>
+        <td>
+          224
+        </td>
+        <td>
+          2158
+          -
+          2243
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.messages.WrappedMessage.apply
+        </td>
+        <td style="background: #F0ADAD">
+          org.riskala.client.messages.WrappedMessage.apply(&quot;RedeemBonusMessage&quot;, argonaut.Argonaut.ToJsonIdentity[org.riskala.client.messages.FromClientMessages.RedeemBonusMessage](org.riskala.client.messages.FromClientMessages.RedeemBonusMessage.apply(card)).asJson(FromClientMessages.this.RedeemBonusMessage.RedeemBonusCodecJson).pretty(argonaut.Argonaut.nospace))
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          1667
+        </td>
+        <td>
+          2813
+          -
+          2849
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.equals
+        </td>
+        <td style="background: #F0ADAD">
+          clickedState.equals(mapSelectedState)
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          958
+        </td>
+        <td>
+          2851
+          -
+          2958
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          {
+  gameFacade.nameActionBtn_=(&quot;Deploy&quot;);
+  gameFacade.maxAvailableTroops_=(ClientGame.this.myTroopsToDeploy)
+}
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          909
+        </td>
+        <td>
+          2860
+          -
+          2895
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.game.GameFacade.nameActionBtn_=
+        </td>
+        <td style="background: #F0ADAD">
+          gameFacade.nameActionBtn_=(&quot;Deploy&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          429
+        </td>
+        <td>
+          2935
+          -
+          2951
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.game.ClientGame.myTroopsToDeploy
+        </td>
+        <td style="background: #F0ADAD">
+          ClientGame.this.myTroopsToDeploy
+        </td>
+      </tr><tr>
+        <td>
+          72
+        </td>
+        <td>
+          1771
+        </td>
+        <td>
+          2903
+          -
+          2951
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.game.GameFacade.maxAvailableTroops_=
+        </td>
+        <td style="background: #F0ADAD">
+          gameFacade.maxAvailableTroops_=(ClientGame.this.myTroopsToDeploy)
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          231
+        </td>
+        <td>
+          2990
+          -
+          3013
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #F0ADAD">
+          x$2.state.==(clickedState)
+        </td>
+      </tr><tr>
+        <td>
+          75
+        </td>
+        <td>
+          240
+        </td>
+        <td>
+          2972
+          -
+          3261
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.foreach
+        </td>
+        <td style="background: #F0ADAD">
+          ClientGame.this.playerStates.find(((x$2: org.riskala.model.map.PlayerState) =&gt; x$2.state.==(clickedState))).foreach[Unit](((ps: org.riskala.model.map.PlayerState) =&gt; {
+  gameFacade.nameActionBtn_=(if (ps.owner.nickname.==(namePlayer))
+    &quot;Move&quot;
+  else
+    &quot;Attack&quot;);
+  gameFacade.maxAvailableTroops_=(ClientGame.this.playerStates.find(((x$3: org.riskala.model.map.PlayerState) =&gt; x$3.state.==(mapSelectedState))).get.troops.-(1))
+}))
+        </td>
+      </tr><tr>
+        <td>
+          75
+        </td>
+        <td>
+          1603
+        </td>
+        <td>
+          2972
+          -
+          3261
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.Option.foreach
+        </td>
+        <td style="background: #F0ADAD">
+          ClientGame.this.playerStates.find(((x$2: org.riskala.model.map.PlayerState) =&gt; x$2.state.==(clickedState))).foreach[Unit](((ps: org.riskala.model.map.PlayerState) =&gt; {
+  gameFacade.nameActionBtn_=(if (ps.owner.nickname.==(namePlayer))
+    &quot;Move&quot;
+  else
+    &quot;Attack&quot;);
+  gameFacade.maxAvailableTroops_=(ClientGame.this.playerStates.find(((x$3: org.riskala.model.map.PlayerState) =&gt; x$3.state.==(mapSelectedState))).get.troops.-(1))
+}))
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          1638
+        </td>
+        <td>
+          3128
+          -
+          3136
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;Attack&quot;
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          286
+        </td>
+        <td>
+          3116
+          -
+          3122
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;Move&quot;
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          528
+        </td>
+        <td>
+          3052
+          -
+          3136
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.game.GameFacade.nameActionBtn_=
+        </td>
+        <td style="background: #F0ADAD">
+          gameFacade.nameActionBtn_=(if (ps.owner.nickname.==(namePlayer))
+  &quot;Move&quot;
+else
+  &quot;Attack&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          1490
+        </td>
+        <td>
+          3083
+          -
+          3114
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #F0ADAD">
+          ps.owner.nickname.==(namePlayer)
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          916
+        </td>
+        <td>
+          3128
+          -
+          3136
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;Attack&quot;
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          1215
+        </td>
+        <td>
+          3116
+          -
+          3122
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;Move&quot;
+        </td>
+      </tr><tr>
+        <td>
+          77
+        </td>
+        <td>
+          961
+        </td>
+        <td>
+          3148
+          -
+          3241
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.game.GameFacade.maxAvailableTroops_=
+        </td>
+        <td style="background: #F0ADAD">
+          gameFacade.maxAvailableTroops_=(ClientGame.this.playerStates.find(((x$3: org.riskala.model.map.PlayerState) =&gt; x$3.state.==(mapSelectedState))).get.troops.-(1))
+        </td>
+      </tr><tr>
+        <td>
+          77
+        </td>
+        <td>
+          1888
+        </td>
+        <td>
+          3180
+          -
+          3241
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.-
+        </td>
+        <td style="background: #F0ADAD">
+          ClientGame.this.playerStates.find(((x$3: org.riskala.model.map.PlayerState) =&gt; x$3.state.==(mapSelectedState))).get.troops.-(1)
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          427
+        </td>
+        <td>
+          3402
+          -
+          3595
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.game.GameFacade.setStateInfo
+        </td>
+        <td style="background: #F0ADAD">
+          gameFacade.setStateInfo(playerState.state, playerState.owner.nickname, playerState.troops, ClientGame.this.map.regions.find(((x$4: org.riskala.model.map.Region) =&gt; x$4.states.contains(playerState.state))).map[String](((x$5: org.riskala.model.map.Region) =&gt; x$5.name)).getOrElse[String](&quot;&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          1135
+        </td>
+        <td>
+          3426
+          -
+          3443
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.map.PlayerState.state
+        </td>
+        <td style="background: #F0ADAD">
+          playerState.state
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          399
+        </td>
+        <td>
+          3452
+          -
+          3478
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.Player.nickname
+        </td>
+        <td style="background: #F0ADAD">
+          playerState.owner.nickname
+        </td>
+      </tr><tr>
+        <td>
+          86
+        </td>
+        <td>
+          1698
+        </td>
+        <td>
+          3487
+          -
+          3505
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.map.PlayerState.troops
+        </td>
+        <td style="background: #F0ADAD">
+          playerState.troops
+        </td>
+      </tr><tr>
+        <td>
+          87
+        </td>
+        <td>
+          923
+        </td>
+        <td>
+          3514
+          -
+          3594
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.getOrElse
+        </td>
+        <td style="background: #F0ADAD">
+          ClientGame.this.map.regions.find(((x$4: org.riskala.model.map.Region) =&gt; x$4.states.contains(playerState.state))).map[String](((x$5: org.riskala.model.map.Region) =&gt; x$5.name)).getOrElse[String](&quot;&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          1067
+        </td>
+        <td>
+          3618
+          -
+          3653
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.map.MapGeography.getNeighbors
+        </td>
+        <td style="background: #F0ADAD">
+          ClientGame.this.map.getNeighbors(playerState.state)
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          1831
+        </td>
+        <td>
+          3635
+          -
+          3652
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.map.PlayerState.state
+        </td>
+        <td style="background: #F0ADAD">
+          playerState.state
+        </td>
+      </tr><tr>
+        <td>
+          89
+        </td>
+        <td>
+          1706
+        </td>
+        <td>
+          3680
+          -
+          5016
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          {
+  gameFacade.visible_=(true);
+  if (ClientGame.this.myIsDeployOnly)
+    if (ClientGame.this.myTroopsToDeploy.&gt;(0))
+      {
+        gameFacade.addNeighbor(playerState.state, true);
+        gameFacade.maxAvailableTroops_=(ClientGame.this.myTroopsToDeploy);
+        gameFacade.selectedNeighbor_=(playerState.state);
+        ClientGame.this.neighborClick(playerState.state, gameFacade.myName, playerState.state, gameFacade)
+      }
+    else
+      gameFacade.visible_=(false)
+  else
+    if (ClientGame.this.myTroopsToDeploy.&gt;(0))
+      {
+        gameFacade.addNeighbor(playerState.state, true);
+        neighbors.foreach[Unit](((x$6: org.riskala.model.map.State.State) =&gt; gameFacade.addNeighbor(x$6, false)));
+        gameFacade.maxAvailableTroops_=(ClientGame.this.myTroopsToDeploy);
+        gameFacade.selectedNeighbor_=(playerState.state);
+        ClientGame.this.neighborClick(playerState.state, gameFacade.myName, playerState.state, gameFacade)
+      }
+    else
+      {
+        val mySelection: org.riskala.model.map.State.State = neighbors.collectFirst[org.riskala.model.map.State.State](({
+  @SerialVersionUID(value = 0) final &lt;synthetic&gt; class $anonfun extends scala.runtime.AbstractPartialFunction[org.riskala.model.map.State.State,org.riskala.model.map.State.State] with Serializable {
+    def &lt;init&gt;(): &lt;$anon: org.riskala.model.map.State.State =&gt; org.riskala.model.map.State.State&gt; = {
+      $anonfun.super.&lt;init&gt;();
+      ()
+    };
+    final override def applyOrElse[A1 &lt;: org.riskala.model.map.State.State, B1 &gt;: org.riskala.model.map.State.State](x1: A1, default: A1 =&gt; B1): B1 = ((x1.asInstanceOf[String]: org.riskala.model.map.State.State): org.riskala.model.map.State.State @unchecked) match {
+      case (s @ _) =&gt; s
+      case (defaultCase$ @ _) =&gt; default.apply(x1)
+    };
+    final def isDefinedAt(x1: org.riskala.model.map.State.State): Boolean = ((x1.asInstanceOf[String]: org.riskala.model.map.State.State): org.riskala.model.map.State.State @unchecked) match {
+      case (s @ _) =&gt; true
+      case (defaultCase$ @ _) =&gt; false
+    }
+  };
+  new $anonfun()
+}: PartialFunction[org.riskala.model.map.State.State,org.riskala.model.map.State.State])).get;
+        val remainingNeighbors: scala.collection.immutable.Set[org.riskala.model.map.State.State] = neighbors.filterNot(((x$7: org.riskala.model.map.State.State) =&gt; x$7.==(mySelection)));
+        gameFacade.addNeighbor(mySelection, true);
+        remainingNeighbors.foreach[Unit](((x$8: org.riskala.model.map.State.State) =&gt; gameFacade.addNeighbor(x$8, false)));
+        gameFacade.maxAvailableTroops_=(playerState.troops.-(1));
+        gameFacade.selectedNeighbor_=(mySelection);
+        ClientGame.this.neighborClick(mySelection, gameFacade.myName, playerState.state, gameFacade)
+      }
+}
+        </td>
+      </tr><tr>
+        <td>
+          89
+        </td>
+        <td>
+          201
+        </td>
+        <td>
+          3662
+          -
+          3679
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.&amp;&amp;
+        </td>
+        <td style="background: #F0ADAD">
+          myState.&amp;&amp;(myTurn)
+        </td>
+      </tr><tr>
+        <td>
+          90
+        </td>
+        <td>
+          1607
+        </td>
+        <td>
+          3689
+          -
+          3714
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.game.GameFacade.visible_=
+        </td>
+        <td style="background: #F0ADAD">
+          gameFacade.visible_=(true)
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          1107
+        </td>
+        <td>
+          3725
+          -
+          3739
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.game.ClientGame.myIsDeployOnly
+        </td>
+        <td style="background: #F0ADAD">
+          ClientGame.this.myIsDeployOnly
+        </td>
+      </tr><tr>
+        <td>
+          92
+        </td>
+        <td>
+          145
+        </td>
+        <td>
+          3752
+          -
+          4114
+        </td>
+        <td>
+          If
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          if (ClientGame.this.myTroopsToDeploy.&gt;(0))
+  {
+    gameFacade.addNeighbor(playerState.state, true);
+    gameFacade.maxAvailableTroops_=(ClientGame.this.myTroopsToDeploy);
+    gameFacade.selectedNeighbor_=(playerState.state);
+    ClientGame.this.neighborClick(playerState.state, gameFacade.myName, playerState.state, gameFacade)
+  }
+else
+  gameFacade.visible_=(false)
+        </td>
+      </tr><tr>
+        <td>
+          92
+        </td>
+        <td>
+          354
+        </td>
+        <td>
+          3755
+          -
+          3775
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          ClientGame.this.myTroopsToDeploy.&gt;(0)
+        </td>
+      </tr><tr>
+        <td>
+          92
+        </td>
+        <td>
+          19
+        </td>
+        <td>
+          3777
+          -
+          4058
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          {
+  gameFacade.addNeighbor(playerState.state, true);
+  gameFacade.maxAvailableTroops_=(ClientGame.this.myTroopsToDeploy);
+  gameFacade.selectedNeighbor_=(playerState.state);
+  ClientGame.this.neighborClick(playerState.state, gameFacade.myName, playerState.state, gameFacade)
+}
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          882
+        </td>
+        <td>
+          3832
+          -
+          3836
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          true
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          56
+        </td>
+        <td>
+          3790
+          -
+          3837
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.game.GameFacade.addNeighbor
+        </td>
+        <td style="background: #F0ADAD">
+          gameFacade.addNeighbor(playerState.state, true)
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          1702
+        </td>
+        <td>
+          3813
+          -
+          3830
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.map.PlayerState.state
+        </td>
+        <td style="background: #F0ADAD">
+          playerState.state
+        </td>
+      </tr><tr>
+        <td>
+          94
+        </td>
+        <td>
+          956
+        </td>
+        <td>
+          3849
+          -
+          3897
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.game.GameFacade.maxAvailableTroops_=
+        </td>
+        <td style="background: #F0ADAD">
+          gameFacade.maxAvailableTroops_=(ClientGame.this.myTroopsToDeploy)
+        </td>
+      </tr><tr>
+        <td>
+          94
+        </td>
+        <td>
+          1798
+        </td>
+        <td>
+          3881
+          -
+          3897
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.game.ClientGame.myTroopsToDeploy
+        </td>
+        <td style="background: #F0ADAD">
+          ClientGame.this.myTroopsToDeploy
+        </td>
+      </tr><tr>
+        <td>
+          95
+        </td>
+        <td>
+          1503
+        </td>
+        <td>
+          3909
+          -
+          3956
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.game.GameFacade.selectedNeighbor_=
+        </td>
+        <td style="background: #F0ADAD">
+          gameFacade.selectedNeighbor_=(playerState.state)
+        </td>
+      </tr><tr>
+        <td>
+          95
+        </td>
+        <td>
+          206
+        </td>
+        <td>
+          3939
+          -
+          3956
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.map.PlayerState.state
+        </td>
+        <td style="background: #F0ADAD">
+          playerState.state
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          1111
+        </td>
+        <td>
+          3982
+          -
+          3999
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.map.PlayerState.state
+        </td>
+        <td style="background: #F0ADAD">
+          playerState.state
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          357
+        </td>
+        <td>
+          4000
+          -
+          4017
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.game.GameFacade.myName
+        </td>
+        <td style="background: #F0ADAD">
+          gameFacade.myName
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          886
+        </td>
+        <td>
+          3968
+          -
+          4047
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.game.ClientGame.neighborClick
+        </td>
+        <td style="background: #F0ADAD">
+          ClientGame.this.neighborClick(playerState.state, gameFacade.myName, playerState.state, gameFacade)
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          1636
+        </td>
+        <td>
+          4018
+          -
+          4035
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.map.PlayerState.state
+        </td>
+        <td style="background: #F0ADAD">
+          playerState.state
+        </td>
+      </tr><tr>
+        <td>
+          98
+        </td>
+        <td>
+          959
+        </td>
+        <td>
+          4077
+          -
+          4103
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          org.riskala.client.game.GameFacade.visible_=
+        </td>
+        <td style="background: #F0ADAD">
+          gameFacade.visible_=(false)
+        </td>
+      </tr><tr>
+        <td>
+          98
+        </td>
+        <td>
+          1800
+        </td>
+        <td>
+          4077
+          -
+          4103
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.game.GameFacade.visible_=
+        </td>
+        <td style="background: #F0ADAD">
+          gameFacade.visible_=(false)
+        </td>
+      </tr><tr>
+        <td>
+          101
+        </td>
+        <td>
+          97
+        </td>
+        <td>
+          4164
+          -
+          4508
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          {
+  gameFacade.addNeighbor(playerState.state, true);
+  neighbors.foreach[Unit](((x$6: org.riskala.model.map.State.State) =&gt; gameFacade.addNeighbor(x$6, false)));
+  gameFacade.maxAvailableTroops_=(ClientGame.this.myTroopsToDeploy);
+  gameFacade.selectedNeighbor_=(playerState.state);
+  ClientGame.this.neighborClick(playerState.state, gameFacade.myName, playerState.state, gameFacade)
+}
+        </td>
+      </tr><tr>
+        <td>
+          101
+        </td>
+        <td>
+          1508
+        </td>
+        <td>
+          4143
+          -
+          4163
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          ClientGame.this.myTroopsToDeploy.&gt;(0)
+        </td>
+      </tr><tr>
+        <td>
+          101
+        </td>
+        <td>
+          326
+        </td>
+        <td>
+          4140
+          -
+          5000
+        </td>
+        <td>
+          If
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          if (ClientGame.this.myTroopsToDeploy.&gt;(0))
+  {
+    gameFacade.addNeighbor(playerState.state, true);
+    neighbors.foreach[Unit](((x$6: org.riskala.model.map.State.State) =&gt; gameFacade.addNeighbor(x$6, false)));
+    gameFacade.maxAvailableTroops_=(ClientGame.this.myTroopsToDeploy);
+    gameFacade.selectedNeighbor_=(playerState.state);
+    ClientGame.this.neighborClick(playerState.state, gameFacade.myName, playerState.state, gameFacade)
+  }
+else
+  {
+    val mySelection: org.riskala.model.map.State.State = neighbors.collectFirst[org.riskala.model.map.State.State](({
+  @SerialVersionUID(value = 0) final &lt;synthetic&gt; class $anonfun extends scala.runtime.AbstractPartialFunction[org.riskala.model.map.State.State,org.riskala.model.map.State.State] with Serializable {
+    def &lt;init&gt;(): &lt;$anon: org.riskala.model.map.State.State =&gt; org.riskala.model.map.State.State&gt; = {
+      $anonfun.super.&lt;init&gt;();
+      ()
+    };
+    final override def applyOrElse[A1 &lt;: org.riskala.model.map.State.State, B1 &gt;: org.riskala.model.map.State.State](x1: A1, default: A1 =&gt; B1): B1 = ((x1.asInstanceOf[String]: org.riskala.model.map.State.State): org.riskala.model.map.State.State @unchecked) match {
+      case (s @ _) =&gt; s
+      case (defaultCase$ @ _) =&gt; default.apply(x1)
+    };
+    final def isDefinedAt(x1: org.riskala.model.map.State.State): Boolean = ((x1.asInstanceOf[String]: org.riskala.model.map.State.State): org.riskala.model.map.State.State @unchecked) match {
+      case (s @ _) =&gt; true
+      case (defaultCase$ @ _) =&gt; false
+    }
+  };
+  new $anonfun()
+}: PartialFunction[org.riskala.model.map.State.State,org.riskala.model.map.State.State])).get;
+    val remainingNeighbors: scala.collection.immutable.Set[org.riskala.model.map.State.State] = neighbors.filterNot(((x$7: org.riskala.model.map.State.State) =&gt; x$7.==(mySelection)));
+    gameFacade.addNeighbor(mySelection, true);
+    remainingNeighbors.foreach[Unit](((x$8: org.riskala.model.map.State.State) =&gt; gameFacade.addNeighbor(x$8, false)));
+    gameFacade.maxAvailableTroops_=(playerState.troops.-(1));
+    gameFacade.selectedNeighbor_=(mySelection);
+    ClientGame.this.neighborClick(mySelection, gameFacade.myName, playerState.state, gameFacade)
+  }
+        </td>
+      </tr><tr>
+        <td>
+          102
+        </td>
+        <td>
+          1095
+        </td>
+        <td>
+          4200
+          -
+          4217
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.map.PlayerState.state
+        </td>
+        <td style="background: #F0ADAD">
+          playerState.state
+        </td>
+      </tr><tr>
+        <td>
+          102
+        </td>
+        <td>
+          398
+        </td>
+        <td>
+          4219
+          -
+          4223
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          true
+        </td>
+      </tr><tr>
+        <td>
+          102
+        </td>
+        <td>
+          1639
+        </td>
+        <td>
+          4177
+          -
+          4224
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.game.GameFacade.addNeighbor
+        </td>
+        <td style="background: #F0ADAD">
+          gameFacade.addNeighbor(playerState.state, true)
+        </td>
+      </tr><tr>
+        <td>
+          103
+        </td>
+        <td>
+          26
+        </td>
+        <td>
+          4236
+          -
+          4287
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.foreach
+        </td>
+        <td style="background: #F0ADAD">
+          neighbors.foreach[Unit](((x$6: org.riskala.model.map.State.State) =&gt; gameFacade.addNeighbor(x$6, false)))
+        </td>
+      </tr><tr>
+        <td>
+          103
+        </td>
+        <td>
+          874
+        </td>
+        <td>
+          4254
+          -
+          4286
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.game.GameFacade.addNeighbor
+        </td>
+        <td style="background: #F0ADAD">
+          gameFacade.addNeighbor(x$6, false)
+        </td>
+      </tr><tr>
+        <td>
+          104
+        </td>
+        <td>
+          1064
+        </td>
+        <td>
+          4299
+          -
+          4347
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.game.GameFacade.maxAvailableTroops_=
+        </td>
+        <td style="background: #F0ADAD">
+          gameFacade.maxAvailableTroops_=(ClientGame.this.myTroopsToDeploy)
+        </td>
+      </tr><tr>
+        <td>
+          104
+        </td>
+        <td>
+          1805
+        </td>
+        <td>
+          4331
+          -
+          4347
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.game.ClientGame.myTroopsToDeploy
+        </td>
+        <td style="background: #F0ADAD">
+          ClientGame.this.myTroopsToDeploy
+        </td>
+      </tr><tr>
+        <td>
+          105
+        </td>
+        <td>
+          148
+        </td>
+        <td>
+          4389
+          -
+          4406
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.map.PlayerState.state
+        </td>
+        <td style="background: #F0ADAD">
+          playerState.state
+        </td>
+      </tr><tr>
+        <td>
+          105
+        </td>
+        <td>
+          1565
+        </td>
+        <td>
+          4359
+          -
+          4406
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.game.GameFacade.selectedNeighbor_=
+        </td>
+        <td style="background: #F0ADAD">
+          gameFacade.selectedNeighbor_=(playerState.state)
+        </td>
+      </tr><tr>
+        <td>
+          106
+        </td>
+        <td>
+          1734
+        </td>
+        <td>
+          4468
+          -
+          4485
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.map.PlayerState.state
+        </td>
+        <td style="background: #F0ADAD">
+          playerState.state
+        </td>
+      </tr><tr>
+        <td>
+          106
+        </td>
+        <td>
+          400
+        </td>
+        <td>
+          4450
+          -
+          4467
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.game.GameFacade.myName
+        </td>
+        <td style="background: #F0ADAD">
+          gameFacade.myName
+        </td>
+      </tr><tr>
+        <td>
+          106
+        </td>
+        <td>
+          718
+        </td>
+        <td>
+          4432
+          -
+          4449
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.map.PlayerState.state
+        </td>
+        <td style="background: #F0ADAD">
+          playerState.state
+        </td>
+      </tr><tr>
+        <td>
+          106
+        </td>
+        <td>
+          879
+        </td>
+        <td>
+          4418
+          -
+          4497
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.game.ClientGame.neighborClick
+        </td>
+        <td style="background: #F0ADAD">
+          ClientGame.this.neighborClick(playerState.state, gameFacade.myName, playerState.state, gameFacade)
+        </td>
+      </tr><tr>
+        <td>
+          107
+        </td>
+        <td>
+          708
+        </td>
+        <td>
+          4514
+          -
+          5000
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          {
+  val mySelection: org.riskala.model.map.State.State = neighbors.collectFirst[org.riskala.model.map.State.State](({
+  @SerialVersionUID(value = 0) final &lt;synthetic&gt; class $anonfun extends scala.runtime.AbstractPartialFunction[org.riskala.model.map.State.State,org.riskala.model.map.State.State] with Serializable {
+    def &lt;init&gt;(): &lt;$anon: org.riskala.model.map.State.State =&gt; org.riskala.model.map.State.State&gt; = {
+      $anonfun.super.&lt;init&gt;();
+      ()
+    };
+    final override def applyOrElse[A1 &lt;: org.riskala.model.map.State.State, B1 &gt;: org.riskala.model.map.State.State](x1: A1, default: A1 =&gt; B1): B1 = ((x1.asInstanceOf[String]: org.riskala.model.map.State.State): org.riskala.model.map.State.State @unchecked) match {
+      case (s @ _) =&gt; s
+      case (defaultCase$ @ _) =&gt; default.apply(x1)
+    };
+    final def isDefinedAt(x1: org.riskala.model.map.State.State): Boolean = ((x1.asInstanceOf[String]: org.riskala.model.map.State.State): org.riskala.model.map.State.State @unchecked) match {
+      case (s @ _) =&gt; true
+      case (defaultCase$ @ _) =&gt; false
+    }
+  };
+  new $anonfun()
+}: PartialFunction[org.riskala.model.map.State.State,org.riskala.model.map.State.State])).get;
+  val remainingNeighbors: scala.collection.immutable.Set[org.riskala.model.map.State.State] = neighbors.filterNot(((x$7: org.riskala.model.map.State.State) =&gt; x$7.==(mySelection)));
+  gameFacade.addNeighbor(mySelection, true);
+  remainingNeighbors.foreach[Unit](((x$8: org.riskala.model.map.State.State) =&gt; gameFacade.addNeighbor(x$8, false)));
+  gameFacade.maxAvailableTroops_=(playerState.troops.-(1));
+  gameFacade.selectedNeighbor_=(mySelection);
+  ClientGame.this.neighborClick(mySelection, gameFacade.myName, playerState.state, gameFacade)
+}
+        </td>
+      </tr><tr>
+        <td>
+          108
+        </td>
+        <td>
+          1877
+        </td>
+        <td>
+          4568
+          -
+          4568
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.game.ClientGame.$anonfun.&lt;init&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          new $anonfun()
+        </td>
+      </tr><tr>
+        <td>
+          108
+        </td>
+        <td>
+          1068
+        </td>
+        <td>
+          4545
+          -
+          4586
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Option.get
+        </td>
+        <td style="background: #F0ADAD">
+          neighbors.collectFirst[org.riskala.model.map.State.State](({
+  @SerialVersionUID(value = 0) final &lt;synthetic&gt; class $anonfun extends scala.runtime.AbstractPartialFunction[org.riskala.model.map.State.State,org.riskala.model.map.State.State] with Serializable {
+    def &lt;init&gt;(): &lt;$anon: org.riskala.model.map.State.State =&gt; org.riskala.model.map.State.State&gt; = {
+      $anonfun.super.&lt;init&gt;();
+      ()
+    };
+    final override def applyOrElse[A1 &lt;: org.riskala.model.map.State.State, B1 &gt;: org.riskala.model.map.State.State](x1: A1, default: A1 =&gt; B1): B1 = ((x1.asInstanceOf[String]: org.riskala.model.map.State.State): org.riskala.model.map.State.State @unchecked) match {
+      case (s @ _) =&gt; s
+      case (defaultCase$ @ _) =&gt; default.apply(x1)
+    };
+    final def isDefinedAt(x1: org.riskala.model.map.State.State): Boolean = ((x1.asInstanceOf[String]: org.riskala.model.map.State.State): org.riskala.model.map.State.State @unchecked) match {
+      case (s @ _) =&gt; true
+      case (defaultCase$ @ _) =&gt; false
+    }
+  };
+  new $anonfun()
+}: PartialFunction[org.riskala.model.map.State.State,org.riskala.model.map.State.State])).get
+        </td>
+      </tr><tr>
+        <td>
+          109
+        </td>
+        <td>
+          1572
+        </td>
+        <td>
+          4623
+          -
+          4660
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableLike.filterNot
+        </td>
+        <td style="background: #F0ADAD">
+          neighbors.filterNot(((x$7: org.riskala.model.map.State.State) =&gt; x$7.==(mySelection)))
+        </td>
+      </tr><tr>
+        <td>
+          109
+        </td>
+        <td>
+          251
+        </td>
+        <td>
+          4643
+          -
+          4659
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #F0ADAD">
+          x$7.==(mySelection)
+        </td>
+      </tr><tr>
+        <td>
+          110
+        </td>
+        <td>
+          804
+        </td>
+        <td>
+          4672
+          -
+          4713
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.game.GameFacade.addNeighbor
+        </td>
+        <td style="background: #F0ADAD">
+          gameFacade.addNeighbor(mySelection, true)
+        </td>
+      </tr><tr>
+        <td>
+          111
+        </td>
+        <td>
+          1737
+        </td>
+        <td>
+          4725
+          -
+          4785
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.foreach
+        </td>
+        <td style="background: #F0ADAD">
+          remainingNeighbors.foreach[Unit](((x$8: org.riskala.model.map.State.State) =&gt; gameFacade.addNeighbor(x$8, false)))
+        </td>
+      </tr><tr>
+        <td>
+          111
+        </td>
+        <td>
+          387
+        </td>
+        <td>
+          4752
+          -
+          4784
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.game.GameFacade.addNeighbor
+        </td>
+        <td style="background: #F0ADAD">
+          gameFacade.addNeighbor(x$8, false)
+        </td>
+      </tr><tr>
+        <td>
+          112
+        </td>
+        <td>
+          101
+        </td>
+        <td>
+          4797
+          -
+          4851
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.game.GameFacade.maxAvailableTroops_=
+        </td>
+        <td style="background: #F0ADAD">
+          gameFacade.maxAvailableTroops_=(playerState.troops.-(1))
+        </td>
+      </tr><tr>
+        <td>
+          112
+        </td>
+        <td>
+          851
+        </td>
+        <td>
+          4829
+          -
+          4851
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.-
+        </td>
+        <td style="background: #F0ADAD">
+          playerState.troops.-(1)
+        </td>
+      </tr><tr>
+        <td>
+          113
+        </td>
+        <td>
+          1443
+        </td>
+        <td>
+          4863
+          -
+          4904
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.game.GameFacade.selectedNeighbor_=
+        </td>
+        <td style="background: #F0ADAD">
+          gameFacade.selectedNeighbor_=(mySelection)
+        </td>
+      </tr><tr>
+        <td>
+          114
+        </td>
+        <td>
+          1046
+        </td>
+        <td>
+          4942
+          -
+          4959
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.game.GameFacade.myName
+        </td>
+        <td style="background: #F0ADAD">
+          gameFacade.myName
+        </td>
+      </tr><tr>
+        <td>
+          114
+        </td>
+        <td>
+          187
+        </td>
+        <td>
+          4960
+          -
+          4977
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.map.PlayerState.state
+        </td>
+        <td style="background: #F0ADAD">
+          playerState.state
+        </td>
+      </tr><tr>
+        <td>
+          114
+        </td>
+        <td>
+          1577
+        </td>
+        <td>
+          4916
+          -
+          4989
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.game.ClientGame.neighborClick
+        </td>
+        <td style="background: #F0ADAD">
+          ClientGame.this.neighborClick(mySelection, gameFacade.myName, playerState.state, gameFacade)
+        </td>
+      </tr><tr>
+        <td>
+          118
+        </td>
+        <td>
+          854
+        </td>
+        <td>
+          5031
+          -
+          5057
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.game.GameFacade.visible_=
+        </td>
+        <td style="background: #F0ADAD">
+          gameFacade.visible_=(false)
+        </td>
+      </tr><tr>
+        <td>
+          118
+        </td>
+        <td>
+          105
+        </td>
+        <td>
+          5031
+          -
+          5057
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          org.riskala.client.game.GameFacade.visible_=
+        </td>
+        <td style="background: #F0ADAD">
+          gameFacade.visible_=(false)
+        </td>
+      </tr><tr>
+        <td>
+          130
+        </td>
+        <td>
+          1402
+        </td>
+        <td>
+          5469
+          -
+          5489
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #F0ADAD">
+          x$9.state.==(nameState)
+        </td>
+      </tr><tr>
+        <td>
+          131
+        </td>
+        <td>
+          176
+        </td>
+        <td>
+          5574
+          -
+          5602
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #F0ADAD">
+          ClientGame.this.myActualPlayer.==(namePlayer)
+        </td>
+      </tr><tr>
+        <td>
+          131
+        </td>
+        <td>
+          714
+        </td>
+        <td>
+          5451
+          -
+          5604
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.foreach
+        </td>
+        <td style="background: #F0ADAD">
+          ClientGame.this.playerStates.find(((x$9: org.riskala.model.map.PlayerState) =&gt; x$9.state.==(nameState))).foreach[Unit](((ps: org.riskala.model.map.PlayerState) =&gt; ClientGame.this.myStateInfo(ps, gameFacade, ps.owner.nickname.==(namePlayer), ClientGame.this.myActualPlayer.==(namePlayer))))
+        </td>
+      </tr><tr>
+        <td>
+          131
+        </td>
+        <td>
+          1003
+        </td>
+        <td>
+          5541
+          -
+          5572
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #F0ADAD">
+          ps.owner.nickname.==(namePlayer)
+        </td>
+      </tr><tr>
+        <td>
+          131
+        </td>
+        <td>
+          1540
+        </td>
+        <td>
+          5513
+          -
+          5603
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.game.ClientGame.myStateInfo
+        </td>
+        <td style="background: #F0ADAD">
+          ClientGame.this.myStateInfo(ps, gameFacade, ps.owner.nickname.==(namePlayer), ClientGame.this.myActualPlayer.==(namePlayer))
+        </td>
+      </tr><tr>
+        <td>
+          139
+        </td>
+        <td>
+          289
+        </td>
+        <td>
+          5805
+          -
+          5847
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.CodecJson.Decoder
+        </td>
+        <td style="background: #F0ADAD">
+          org.riskala.client.messages.ToClientMessages.GameFullInfo.GameFullInfoCodecJson.Decoder
+        </td>
+      </tr><tr>
+        <td>
+          139
+        </td>
+        <td>
+          1732
+        </td>
+        <td>
+          5772
+          -
+          5852
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Option.get
+        </td>
+        <td style="background: #F0ADAD">
+          org.riskala.utils.Parser.retrieveMessage[org.riskala.client.messages.ToClientMessages.GameFullInfo](gameInfo, org.riskala.client.messages.ToClientMessages.GameFullInfo.GameFullInfoCodecJson.Decoder).get
+        </td>
+      </tr><tr>
+        <td>
+          140
+        </td>
+        <td>
+          2
+        </td>
+        <td>
+          5858
+          -
+          5872
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.game.ClientGame.map_=
+        </td>
+        <td style="background: #F0ADAD">
+          ClientGame.this.map_=(game.map)
+        </td>
+      </tr><tr>
+        <td>
+          140
+        </td>
+        <td>
+          857
+        </td>
+        <td>
+          5864
+          -
+          5872
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.messages.ToClientMessages.GameFullInfo.map
+        </td>
+        <td style="background: #F0ADAD">
+          game.map
+        </td>
+      </tr><tr>
+        <td>
+          141
+        </td>
+        <td>
+          1414
+        </td>
+        <td>
+          5893
+          -
+          5910
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.messages.ToClientMessages.GameFullInfo.playerStates
+        </td>
+        <td style="background: #F0ADAD">
+          game.playerStates
+        </td>
+      </tr><tr>
+        <td>
+          141
+        </td>
+        <td>
+          965
+        </td>
+        <td>
+          5878
+          -
+          5910
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.game.ClientGame.playerStates_=
+        </td>
+        <td style="background: #F0ADAD">
+          ClientGame.this.playerStates_=(game.playerStates)
+        </td>
+      </tr><tr>
+        <td>
+          142
+        </td>
+        <td>
+          247
+        </td>
+        <td>
+          5935
+          -
+          5954
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.messages.ToClientMessages.GameFullInfo.troopsToDeploy
+        </td>
+        <td style="background: #F0ADAD">
+          game.troopsToDeploy
+        </td>
+      </tr><tr>
+        <td>
+          142
+        </td>
+        <td>
+          1543
+        </td>
+        <td>
+          5916
+          -
+          5954
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.game.ClientGame.myTroopsToDeploy_=
+        </td>
+        <td style="background: #F0ADAD">
+          ClientGame.this.myTroopsToDeploy_=(game.troopsToDeploy)
+        </td>
+      </tr><tr>
+        <td>
+          143
+        </td>
+        <td>
+          2085
+        </td>
+        <td>
+          5960
+          -
+          5994
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.game.ClientGame.myActualPlayer_=
+        </td>
+        <td style="background: #F0ADAD">
+          ClientGame.this.myActualPlayer_=(game.actualPlayer)
+        </td>
+      </tr><tr>
+        <td>
+          143
+        </td>
+        <td>
+          685
+        </td>
+        <td>
+          5977
+          -
+          5994
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.messages.ToClientMessages.GameFullInfo.actualPlayer
+        </td>
+        <td style="background: #F0ADAD">
+          game.actualPlayer
+        </td>
+      </tr><tr>
+        <td>
+          144
+        </td>
+        <td>
+          1701
+        </td>
+        <td>
+          6017
+          -
+          6034
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.messages.ToClientMessages.GameFullInfo.isDeployOnly
+        </td>
+        <td style="background: #F0ADAD">
+          game.isDeployOnly
+        </td>
+      </tr><tr>
+        <td>
+          144
+        </td>
+        <td>
+          926
+        </td>
+        <td>
+          6000
+          -
+          6034
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.game.ClientGame.myIsDeployOnly_=
+        </td>
+        <td style="background: #F0ADAD">
+          ClientGame.this.myIsDeployOnly_=(game.isDeployOnly)
+        </td>
+      </tr><tr>
+        <td>
+          145
+        </td>
+        <td>
+          1368
+        </td>
+        <td>
+          6067
+          -
+          6116
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.game.GameFacade.addPlayer
+        </td>
+        <td style="background: #F0ADAD">
+          gameFacade.addPlayer(pl, game.actualPlayer.==(pl))
+        </td>
+      </tr><tr>
+        <td>
+          145
+        </td>
+        <td>
+          7
+        </td>
+        <td>
+          6092
+          -
+          6115
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #F0ADAD">
+          game.actualPlayer.==(pl)
+        </td>
+      </tr><tr>
+        <td>
+          145
+        </td>
+        <td>
+          1044
+        </td>
+        <td>
+          6040
+          -
+          6117
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.foreach
+        </td>
+        <td style="background: #F0ADAD">
+          game.players.foreach[Unit](((pl: String) =&gt; gameFacade.addPlayer(pl, game.actualPlayer.==(pl))))
+        </td>
+      </tr><tr>
+        <td>
+          146
+        </td>
+        <td>
+          1704
+        </td>
+        <td>
+          6123
+          -
+          6216
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.foreach
+        </td>
+        <td style="background: #F0ADAD">
+          ClientGame.this.playerStates.foreach[Unit](((ps: org.riskala.model.map.PlayerState) =&gt; gameFacade.setPlayerState(ps.state, ps.owner.nickname, ps.troops)))
+        </td>
+      </tr><tr>
+        <td>
+          146
+        </td>
+        <td>
+          1533
+        </td>
+        <td>
+          6186
+          -
+          6203
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.Player.nickname
+        </td>
+        <td style="background: #F0ADAD">
+          ps.owner.nickname
+        </td>
+      </tr><tr>
+        <td>
+          146
+        </td>
+        <td>
+          2041
+        </td>
+        <td>
+          6150
+          -
+          6215
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.game.GameFacade.setPlayerState
+        </td>
+        <td style="background: #F0ADAD">
+          gameFacade.setPlayerState(ps.state, ps.owner.nickname, ps.troops)
+        </td>
+      </tr><tr>
+        <td>
+          146
+        </td>
+        <td>
+          252
+        </td>
+        <td>
+          6176
+          -
+          6184
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.map.PlayerState.state
+        </td>
+        <td style="background: #F0ADAD">
+          ps.state
+        </td>
+      </tr><tr>
+        <td>
+          146
+        </td>
+        <td>
+          688
+        </td>
+        <td>
+          6205
+          -
+          6214
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.map.PlayerState.troops
+        </td>
+        <td style="background: #F0ADAD">
+          ps.troops
+        </td>
+      </tr><tr>
+        <td>
+          147
+        </td>
+        <td>
+          1375
+        </td>
+        <td>
+          6247
+          -
+          6305
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.foreach
+        </td>
+        <td style="background: #F0ADAD">
+          r.states.foreach[Unit](((s: org.riskala.model.map.State.State) =&gt; gameFacade.setStateRegion(s, r.name)))
+        </td>
+      </tr><tr>
+        <td>
+          147
+        </td>
+        <td>
+          62
+        </td>
+        <td>
+          6269
+          -
+          6304
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.game.GameFacade.setStateRegion
+        </td>
+        <td style="background: #F0ADAD">
+          gameFacade.setStateRegion(s, r.name)
+        </td>
+      </tr><tr>
+        <td>
+          147
+        </td>
+        <td>
+          928
+        </td>
+        <td>
+          6297
+          -
+          6303
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.map.Region.name
+        </td>
+        <td style="background: #F0ADAD">
+          r.name
+        </td>
+      </tr><tr>
+        <td>
+          147
+        </td>
+        <td>
+          1047
+        </td>
+        <td>
+          6222
+          -
+          6306
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.foreach
+        </td>
+        <td style="background: #F0ADAD">
+          ClientGame.this.map.regions.foreach[Unit](((r: org.riskala.model.map.Region) =&gt; r.states.foreach[Unit](((s: org.riskala.model.map.State.State) =&gt; gameFacade.setStateRegion(s, r.name)))))
+        </td>
+      </tr><tr>
+        <td>
+          148
+        </td>
+        <td>
+          1538
+        </td>
+        <td>
+          6312
+          -
+          6369
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.game.GameFacade.setObjective
+        </td>
+        <td style="background: #F0ADAD">
+          gameFacade.setObjective(game.personalInfo.objective.info)
+        </td>
+      </tr><tr>
+        <td>
+          148
+        </td>
+        <td>
+          210
+        </td>
+        <td>
+          6336
+          -
+          6368
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.Objectives.Objective.info
+        </td>
+        <td style="background: #F0ADAD">
+          game.personalInfo.objective.info
+        </td>
+      </tr><tr>
+        <td>
+          149
+        </td>
+        <td>
+          2125
+        </td>
+        <td>
+          6448
+          -
+          6454
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.size
+        </td>
+        <td style="background: #F0ADAD">
+          x$10.size
+        </td>
+      </tr><tr>
+        <td>
+          149
+        </td>
+        <td>
+          758
+        </td>
+        <td>
+          6428
+          -
+          6436
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.identity
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Predef.identity[org.riskala.model.Cards.Cards](x)
+        </td>
+      </tr><tr>
+        <td>
+          149
+        </td>
+        <td>
+          1708
+        </td>
+        <td>
+          6396
+          -
+          6455
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.immutable.MapLike.mapValues
+        </td>
+        <td style="background: #F0ADAD">
+          game.personalInfo.cards.groupBy[org.riskala.model.Cards.Cards]({
+  ((x: org.riskala.model.Cards.Cards) =&gt; scala.Predef.identity[org.riskala.model.Cards.Cards](x))
+}).mapValues[Int](((x$10: List[org.riskala.model.Cards.Cards]) =&gt; x$10.size))
+        </td>
+      </tr><tr>
+        <td>
+          150
+        </td>
+        <td>
+          1449
+        </td>
+        <td>
+          6484
+          -
+          6521
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.MapLike.getOrElse
+        </td>
+        <td style="background: #F0ADAD">
+          cardOccurrence.getOrElse[Int](org.riskala.model.Cards.Infantry, 0)
+        </td>
+      </tr><tr>
+        <td>
+          150
+        </td>
+        <td>
+          836
+        </td>
+        <td>
+          6509
+          -
+          6517
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.Cards.Infantry
+        </td>
+        <td style="background: #F0ADAD">
+          org.riskala.model.Cards.Infantry
+        </td>
+      </tr><tr>
+        <td>
+          150
+        </td>
+        <td>
+          66
+        </td>
+        <td>
+          6519
+          -
+          6520
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          0
+        </td>
+      </tr><tr>
+        <td>
+          150
+        </td>
+        <td>
+          840
+        </td>
+        <td>
+          6461
+          -
+          6614
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.game.GameFacade.setCardInfo
+        </td>
+        <td style="background: #F0ADAD">
+          gameFacade.setCardInfo(cardOccurrence.getOrElse[Int](org.riskala.model.Cards.Infantry, 0), cardOccurrence.getOrElse[Int](org.riskala.model.Cards.Cavalry, 0), cardOccurrence.getOrElse[Int](org.riskala.model.Cards.Artillery, 0))
+        </td>
+      </tr><tr>
+        <td>
+          151
+        </td>
+        <td>
+          634
+        </td>
+        <td>
+          6555
+          -
+          6562
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.Cards.Cavalry
+        </td>
+        <td style="background: #F0ADAD">
+          org.riskala.model.Cards.Cavalry
+        </td>
+      </tr><tr>
+        <td>
+          151
+        </td>
+        <td>
+          212
+        </td>
+        <td>
+          6564
+          -
+          6565
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          0
+        </td>
+      </tr><tr>
+        <td>
+          151
+        </td>
+        <td>
+          1513
+        </td>
+        <td>
+          6530
+          -
+          6566
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.MapLike.getOrElse
+        </td>
+        <td style="background: #F0ADAD">
+          cardOccurrence.getOrElse[Int](org.riskala.model.Cards.Cavalry, 0)
+        </td>
+      </tr><tr>
+        <td>
+          152
+        </td>
+        <td>
+          760
+        </td>
+        <td>
+          6600
+          -
+          6609
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.Cards.Artillery
+        </td>
+        <td style="background: #F0ADAD">
+          org.riskala.model.Cards.Artillery
+        </td>
+      </tr><tr>
+        <td>
+          152
+        </td>
+        <td>
+          2082
+        </td>
+        <td>
+          6611
+          -
+          6612
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          0
+        </td>
+      </tr><tr>
+        <td>
+          152
+        </td>
+        <td>
+          1690
+        </td>
+        <td>
+          6575
+          -
+          6613
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.MapLike.getOrElse
+        </td>
+        <td style="background: #F0ADAD">
+          cardOccurrence.getOrElse[Int](org.riskala.model.Cards.Artillery, 0)
+        </td>
+      </tr><tr>
+        <td>
+          153
+        </td>
+        <td>
+          1365
+        </td>
+        <td>
+          6650
+          -
+          6687
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.game.GameFacade.setWinner
+        </td>
+        <td style="background: #F0ADAD">
+          gameFacade.setWinner(winner.nickname)
+        </td>
+      </tr><tr>
+        <td>
+          153
+        </td>
+        <td>
+          31
+        </td>
+        <td>
+          6671
+          -
+          6686
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.Player.nickname
+        </td>
+        <td style="background: #F0ADAD">
+          winner.nickname
+        </td>
+      </tr><tr>
+        <td>
+          153
+        </td>
+        <td>
+          601
+        </td>
+        <td>
+          6620
+          -
+          6688
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.foreach
+        </td>
+        <td style="background: #F0ADAD">
+          game.winner.foreach[Unit](((winner: org.riskala.model.Player) =&gt; gameFacade.setWinner(winner.nickname)))
+        </td>
+      </tr><tr>
+        <td>
+          161
+        </td>
+        <td>
+          191
+        </td>
+        <td>
+          6887
+          -
+          6922
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Option.get
+        </td>
+        <td style="background: #F0ADAD">
+          org.riskala.utils.Parser.retrieveWrapped(message).get
+        </td>
+      </tr><tr>
+        <td>
+          162
+        </td>
+        <td>
+          1515
+        </td>
+        <td>
+          6928
+          -
+          6948
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.messages.WrappedMessage.classType
+        </td>
+        <td style="background: #F0ADAD">
+          wrappedMsg.classType
+        </td>
+      </tr><tr>
+        <td>
+          164
+        </td>
+        <td>
+          765
+        </td>
+        <td>
+          6998
+          -
+          7031
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.println
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Predef.println(&quot;received error message&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          166
+        </td>
+        <td>
+          2038
+        </td>
+        <td>
+          7090
+          -
+          7108
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.messages.WrappedMessage.payload
+        </td>
+        <td style="background: #F0ADAD">
+          wrappedMsg.payload
+        </td>
+      </tr><tr>
+        <td>
+          166
+        </td>
+        <td>
+          827
+        </td>
+        <td>
+          7067
+          -
+          7150
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Option.get
+        </td>
+        <td style="background: #F0ADAD">
+          org.riskala.utils.Parser.retrieveMessage[org.riskala.client.messages.ToClientMessages.ErrorMessage](wrappedMsg.payload, org.riskala.client.messages.ToClientMessages.ErrorMessage.ErrorCodecJson.Decoder).get
+        </td>
+      </tr><tr>
+        <td>
+          166
+        </td>
+        <td>
+          1259
+        </td>
+        <td>
+          7110
+          -
+          7145
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.CodecJson.Decoder
+        </td>
+        <td style="background: #F0ADAD">
+          org.riskala.client.messages.ToClientMessages.ErrorMessage.ErrorCodecJson.Decoder
+        </td>
+      </tr><tr>
+        <td>
+          167
+        </td>
+        <td>
+          34
+        </td>
+        <td>
+          7187
+          -
+          7201
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.messages.ToClientMessages.ErrorMessage.error
+        </td>
+        <td style="background: #F0ADAD">
+          errorMsg.error
+        </td>
+      </tr><tr>
+        <td>
+          167
+        </td>
+        <td>
+          1373
+        </td>
+        <td>
+          7160
+          -
+          7202
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.game.GameFacade.notifyGameError
+        </td>
+        <td style="background: #F0ADAD">
+          gameFacade.notifyGameError(errorMsg.error)
+        </td>
+      </tr><tr>
+        <td>
+          170
+        </td>
+        <td>
+          568
+        </td>
+        <td>
+          7249
+          -
+          7280
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.println
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Predef.println(&quot;received GameUpdate &quot;)
+        </td>
+      </tr><tr>
+        <td>
+          172
+        </td>
+        <td>
+          208
+        </td>
+        <td>
+          7341
+          -
+          7359
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.messages.WrappedMessage.payload
+        </td>
+        <td style="background: #F0ADAD">
+          wrappedMsg.payload
+        </td>
+      </tr><tr>
+        <td>
+          172
+        </td>
+        <td>
+          1499
+        </td>
+        <td>
+          7361
+          -
+          7399
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.CodecJson.Decoder
+        </td>
+        <td style="background: #F0ADAD">
+          org.riskala.client.messages.ToClientMessages.GameUpdate.GameUpdateCodecJson.Decoder
+        </td>
+      </tr><tr>
+        <td>
+          172
+        </td>
+        <td>
+          808
+        </td>
+        <td>
+          7318
+          -
+          7404
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Option.get
+        </td>
+        <td style="background: #F0ADAD">
+          org.riskala.utils.Parser.retrieveMessage[org.riskala.client.messages.ToClientMessages.GameUpdate](wrappedMsg.payload, org.riskala.client.messages.ToClientMessages.GameUpdate.GameUpdateCodecJson.Decoder).get
+        </td>
+      </tr><tr>
+        <td>
+          173
+        </td>
+        <td>
+          2046
+        </td>
+        <td>
+          7414
+          -
+          7454
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.println
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Predef.println(&quot;Ended parser retrieve message&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          174
+        </td>
+        <td>
+          889
+        </td>
+        <td>
+          7464
+          -
+          7502
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.game.ClientGame.playerStates_=
+        </td>
+        <td style="background: #F0ADAD">
+          ClientGame.this.playerStates_=(gameUpdate.playerStates)
+        </td>
+      </tr><tr>
+        <td>
+          174
+        </td>
+        <td>
+          1239
+        </td>
+        <td>
+          7479
+          -
+          7502
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.messages.ToClientMessages.GameUpdate.playerStates
+        </td>
+        <td style="background: #F0ADAD">
+          gameUpdate.playerStates
+        </td>
+      </tr><tr>
+        <td>
+          175
+        </td>
+        <td>
+          1483
+        </td>
+        <td>
+          7575
+          -
+          7592
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.Player.nickname
+        </td>
+        <td style="background: #F0ADAD">
+          ps.owner.nickname
+        </td>
+      </tr><tr>
+        <td>
+          175
+        </td>
+        <td>
+          1581
+        </td>
+        <td>
+          7512
+          -
+          7605
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.foreach
+        </td>
+        <td style="background: #F0ADAD">
+          ClientGame.this.playerStates.foreach[Unit](((ps: org.riskala.model.map.PlayerState) =&gt; gameFacade.setPlayerState(ps.state, ps.owner.nickname, ps.troops)))
+        </td>
+      </tr><tr>
+        <td>
+          175
+        </td>
+        <td>
+          573
+        </td>
+        <td>
+          7594
+          -
+          7603
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.map.PlayerState.troops
+        </td>
+        <td style="background: #F0ADAD">
+          ps.troops
+        </td>
+      </tr><tr>
+        <td>
+          175
+        </td>
+        <td>
+          37
+        </td>
+        <td>
+          7565
+          -
+          7573
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.map.PlayerState.state
+        </td>
+        <td style="background: #F0ADAD">
+          ps.state
+        </td>
+      </tr><tr>
+        <td>
+          175
+        </td>
+        <td>
+          188
+        </td>
+        <td>
+          7539
+          -
+          7604
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.game.GameFacade.setPlayerState
+        </td>
+        <td style="background: #F0ADAD">
+          gameFacade.setPlayerState(ps.state, ps.owner.nickname, ps.troops)
+        </td>
+      </tr><tr>
+        <td>
+          176
+        </td>
+        <td>
+          809
+        </td>
+        <td>
+          7634
+          -
+          7659
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.messages.ToClientMessages.GameUpdate.troopsToDeploy
+        </td>
+        <td style="background: #F0ADAD">
+          gameUpdate.troopsToDeploy
+        </td>
+      </tr><tr>
+        <td>
+          176
+        </td>
+        <td>
+          2144
+        </td>
+        <td>
+          7615
+          -
+          7659
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.game.ClientGame.myTroopsToDeploy_=
+        </td>
+        <td style="background: #F0ADAD">
+          ClientGame.this.myTroopsToDeploy_=(gameUpdate.troopsToDeploy)
+        </td>
+      </tr><tr>
+        <td>
+          177
+        </td>
+        <td>
+          1299
+        </td>
+        <td>
+          7686
+          -
+          7709
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.messages.ToClientMessages.GameUpdate.actualPlayer
+        </td>
+        <td style="background: #F0ADAD">
+          gameUpdate.actualPlayer
+        </td>
+      </tr><tr>
+        <td>
+          177
+        </td>
+        <td>
+          858
+        </td>
+        <td>
+          7669
+          -
+          7709
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.game.ClientGame.myActualPlayer_=
+        </td>
+        <td style="background: #F0ADAD">
+          ClientGame.this.myActualPlayer_=(gameUpdate.actualPlayer)
+        </td>
+      </tr><tr>
+        <td>
+          178
+        </td>
+        <td>
+          1485
+        </td>
+        <td>
+          7719
+          -
+          7759
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.game.ClientGame.myIsDeployOnly_=
+        </td>
+        <td style="background: #F0ADAD">
+          ClientGame.this.myIsDeployOnly_=(gameUpdate.isDeployOnly)
+        </td>
+      </tr><tr>
+        <td>
+          178
+        </td>
+        <td>
+          28
+        </td>
+        <td>
+          7736
+          -
+          7759
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.messages.ToClientMessages.GameUpdate.isDeployOnly
+        </td>
+        <td style="background: #F0ADAD">
+          gameUpdate.isDeployOnly
+        </td>
+      </tr><tr>
+        <td>
+          179
+        </td>
+        <td>
+          1973
+        </td>
+        <td>
+          7769
+          -
+          7826
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.game.GameFacade.maxAvailableTroops_=
+        </td>
+        <td style="background: #F0ADAD">
+          gameFacade.maxAvailableTroops_=(gameUpdate.troopsToDeploy)
+        </td>
+      </tr><tr>
+        <td>
+          179
+        </td>
+        <td>
+          668
+        </td>
+        <td>
+          7801
+          -
+          7826
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.messages.ToClientMessages.GameUpdate.troopsToDeploy
+        </td>
+        <td style="background: #F0ADAD">
+          gameUpdate.troopsToDeploy
+        </td>
+      </tr><tr>
+        <td>
+          180
+        </td>
+        <td>
+          1584
+        </td>
+        <td>
+          7864
+          -
+          7887
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.messages.ToClientMessages.GameUpdate.actualPlayer
+        </td>
+        <td style="background: #F0ADAD">
+          gameUpdate.actualPlayer
+        </td>
+      </tr><tr>
+        <td>
+          180
+        </td>
+        <td>
+          725
+        </td>
+        <td>
+          7836
+          -
+          7888
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.game.GameFacade.setCurrentPlayer
+        </td>
+        <td style="background: #F0ADAD">
+          gameFacade.setCurrentPlayer(gameUpdate.actualPlayer)
+        </td>
+      </tr><tr>
+        <td>
+          181
+        </td>
+        <td>
+          2149
+        </td>
+        <td>
+          7957
+          -
+          7965
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.identity
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Predef.identity[org.riskala.model.Cards.Cards](x)
+        </td>
+      </tr><tr>
+        <td>
+          181
+        </td>
+        <td>
+          860
+        </td>
+        <td>
+          7919
+          -
+          7984
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.immutable.MapLike.mapValues
+        </td>
+        <td style="background: #F0ADAD">
+          gameUpdate.personalInfo.cards.groupBy[org.riskala.model.Cards.Cards]({
+  ((x: org.riskala.model.Cards.Cards) =&gt; scala.Predef.identity[org.riskala.model.Cards.Cards](x))
+}).mapValues[Int](((x$11: List[org.riskala.model.Cards.Cards]) =&gt; x$11.size))
+        </td>
+      </tr><tr>
+        <td>
+          181
+        </td>
+        <td>
+          1275
+        </td>
+        <td>
+          7977
+          -
+          7983
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SeqLike.size
+        </td>
+        <td style="background: #F0ADAD">
+          x$11.size
+        </td>
+      </tr><tr>
+        <td>
+          182
+        </td>
+        <td>
+          1420
+        </td>
+        <td>
+          8052
+          -
+          8053
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          0
+        </td>
+      </tr><tr>
+        <td>
+          182
+        </td>
+        <td>
+          32
+        </td>
+        <td>
+          8042
+          -
+          8050
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.Cards.Infantry
+        </td>
+        <td style="background: #F0ADAD">
+          org.riskala.model.Cards.Infantry
+        </td>
+      </tr><tr>
+        <td>
+          182
+        </td>
+        <td>
+          623
+        </td>
+        <td>
+          8017
+          -
+          8054
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.MapLike.getOrElse
+        </td>
+        <td style="background: #F0ADAD">
+          cardOccurrence.getOrElse[Int](org.riskala.model.Cards.Infantry, 0)
+        </td>
+      </tr><tr>
+        <td>
+          182
+        </td>
+        <td>
+          10
+        </td>
+        <td>
+          7994
+          -
+          8155
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.game.GameFacade.setCardInfo
+        </td>
+        <td style="background: #F0ADAD">
+          gameFacade.setCardInfo(cardOccurrence.getOrElse[Int](org.riskala.model.Cards.Infantry, 0), cardOccurrence.getOrElse[Int](org.riskala.model.Cards.Cavalry, 0), cardOccurrence.getOrElse[Int](org.riskala.model.Cards.Artillery, 0))
+        </td>
+      </tr><tr>
+        <td>
+          183
+        </td>
+        <td>
+          1979
+        </td>
+        <td>
+          8092
+          -
+          8099
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.Cards.Cavalry
+        </td>
+        <td style="background: #F0ADAD">
+          org.riskala.model.Cards.Cavalry
+        </td>
+      </tr><tr>
+        <td>
+          183
+        </td>
+        <td>
+          727
+        </td>
+        <td>
+          8067
+          -
+          8103
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.MapLike.getOrElse
+        </td>
+        <td style="background: #F0ADAD">
+          cardOccurrence.getOrElse[Int](org.riskala.model.Cards.Cavalry, 0)
+        </td>
+      </tr><tr>
+        <td>
+          183
+        </td>
+        <td>
+          1498
+        </td>
+        <td>
+          8101
+          -
+          8102
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          0
+        </td>
+      </tr><tr>
+        <td>
+          184
+        </td>
+        <td>
+          863
+        </td>
+        <td>
+          8116
+          -
+          8154
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.MapLike.getOrElse
+        </td>
+        <td style="background: #F0ADAD">
+          cardOccurrence.getOrElse[Int](org.riskala.model.Cards.Artillery, 0)
+        </td>
+      </tr><tr>
+        <td>
+          184
+        </td>
+        <td>
+          1279
+        </td>
+        <td>
+          8152
+          -
+          8153
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          0
+        </td>
+      </tr><tr>
+        <td>
+          184
+        </td>
+        <td>
+          2090
+        </td>
+        <td>
+          8141
+          -
+          8150
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.Cards.Artillery
+        </td>
+        <td style="background: #F0ADAD">
+          org.riskala.model.Cards.Artillery
+        </td>
+      </tr><tr>
+        <td>
+          185
+        </td>
+        <td>
+          1422
+        </td>
+        <td>
+          8168
+          -
+          8202
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.!=
+        </td>
+        <td style="background: #F0ADAD">
+          gameFacade.state.!=(&quot;Select a state&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          185
+        </td>
+        <td>
+          1242
+        </td>
+        <td>
+          8165
+          -
+          8165
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          185
+        </td>
+        <td>
+          2141
+        </td>
+        <td>
+          8165
+          -
+          8165
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          186
+        </td>
+        <td>
+          1501
+        </td>
+        <td>
+          8215
+          -
+          8274
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.game.ClientGame.clickedState
+        </td>
+        <td style="background: #F0ADAD">
+          ClientGame.this.clickedState(gameFacade.state, gameFacade.myName, gameFacade)
+        </td>
+      </tr><tr>
+        <td>
+          186
+        </td>
+        <td>
+          1943
+        </td>
+        <td>
+          8245
+          -
+          8262
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.game.GameFacade.myName
+        </td>
+        <td style="background: #F0ADAD">
+          gameFacade.myName
+        </td>
+      </tr><tr>
+        <td>
+          186
+        </td>
+        <td>
+          693
+        </td>
+        <td>
+          8215
+          -
+          8274
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          org.riskala.client.game.ClientGame.clickedState
+        </td>
+        <td style="background: #F0ADAD">
+          ClientGame.this.clickedState(gameFacade.state, gameFacade.myName, gameFacade)
+        </td>
+      </tr><tr>
+        <td>
+          186
+        </td>
+        <td>
+          659
+        </td>
+        <td>
+          8228
+          -
+          8244
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.game.GameFacade.state
+        </td>
+        <td style="background: #F0ADAD">
+          gameFacade.state
+        </td>
+      </tr><tr>
+        <td>
+          190
+        </td>
+        <td>
+          1381
+        </td>
+        <td>
+          8335
+          -
+          8422
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.messages.ToClientMessages.GameEnd.winner
+        </td>
+        <td style="background: #F0ADAD">
+          org.riskala.utils.Parser.retrieveMessage[org.riskala.client.messages.ToClientMessages.GameEnd](wrappedMsg.payload, org.riskala.client.messages.ToClientMessages.GameEnd.GameEndCodecJson.Decoder).get.winner
+        </td>
+      </tr><tr>
+        <td>
+          190
+        </td>
+        <td>
+          471
+        </td>
+        <td>
+          8358
+          -
+          8376
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.messages.WrappedMessage.payload
+        </td>
+        <td style="background: #F0ADAD">
+          wrappedMsg.payload
+        </td>
+      </tr><tr>
+        <td>
+          190
+        </td>
+        <td>
+          12
+        </td>
+        <td>
+          8378
+          -
+          8410
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.CodecJson.Decoder
+        </td>
+        <td style="background: #F0ADAD">
+          org.riskala.client.messages.ToClientMessages.GameEnd.GameEndCodecJson.Decoder
+        </td>
+      </tr><tr>
+        <td>
+          191
+        </td>
+        <td>
+          666
+        </td>
+        <td>
+          8453
+          -
+          8468
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.Player.nickname
+        </td>
+        <td style="background: #F0ADAD">
+          winner.nickname
+        </td>
+      </tr><tr>
+        <td>
+          191
+        </td>
+        <td>
+          1909
+        </td>
+        <td>
+          8432
+          -
+          8469
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.game.GameFacade.setWinner
+        </td>
+        <td style="background: #F0ADAD">
+          gameFacade.setWinner(winner.nickname)
+        </td>
+      </tr><tr>
+        <td>
+          194
+        </td>
+        <td>
+          696
+        </td>
+        <td>
+          8508
+          -
+          8548
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.game.GameFacade.goToLobby
+        </td>
+        <td style="background: #F0ADAD">
+          gameFacade.goToLobby(wrappedMsg.payload)
+        </td>
+      </tr><tr>
+        <td>
+          194
+        </td>
+        <td>
+          1626
+        </td>
+        <td>
+          8529
+          -
+          8547
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.messages.WrappedMessage.payload
+        </td>
+        <td style="background: #F0ADAD">
+          wrappedMsg.payload
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

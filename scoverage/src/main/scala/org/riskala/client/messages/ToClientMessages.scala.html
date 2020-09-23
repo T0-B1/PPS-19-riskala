@@ -1,0 +1,2908 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          src\main\scala\org\riskala\client\messages\ToClientMessages.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier, monospace;'>1 <span style=''>package org.riskala.client.messages
+</span>2 <span style=''>
+</span>3 <span style=''>import argonaut.Argonaut._
+</span>4 <span style=''>import argonaut.CodecJson
+</span>5 <span style=''>import org.riskala.model.Cards.Cards
+</span>6 <span style=''>import org.riskala.model.Objectives.Objective
+</span>7 <span style=''>import org.riskala.model.Player
+</span>8 <span style=''>import org.riskala.model.map.{MapGeography, PlayerState}
+</span>9 <span style=''>
+</span>10 <span style=''>import scala.scalajs.js.annotation.JSExportAll
+</span>11 <span style=''>
+</span>12 <span style=''>/**
+</span>13 <span style=''> * Structure of messages that are sent to client #scala.js
+</span>14 <span style=''> * */
+</span>15 <span style=''>@JSExportAll
+</span>16 <span style=''>object ToClientMessages {
+</span>17 <span style=''>
+</span>18 <span style=''>  /**
+</span>19 <span style=''>   * @param name                    Room name
+</span>20 <span style=''>   * @param actualNumberOfPlayer    Number of players in a room
+</span>21 <span style=''>   * @param maxNumberOfPlayer       Maximum number of players in a room
+</span>22 <span style=''>   * */
+</span>23 <span style=''>  case class RoomBasicInfo(name: String,
+</span>24 <span style=''>                           actualNumberOfPlayer: Int,
+</span>25 <span style=''>                           maxNumberOfPlayer: Int)
+</span>26 <span style=''>  object RoomBasicInfo {
+</span>27 <span style=''>    implicit def RoomBasicInfoCodecJson: CodecJson[RoomBasicInfo] =
+</span>28 <span style=''>      </span><span style='background: #F0ADAD'>casecodec3(RoomBasicInfo.apply,RoomBasicInfo.unapply)(&quot;name&quot;,&quot;actualNumberOfPlayer&quot;, &quot;maxNumberOfPlayer&quot;)</span><span style=''>
+</span>29 <span style=''>  }
+</span>30 <span style=''>
+</span>31 <span style=''>  /**
+</span>32 <span style=''>   * @param basicInfo               Object containing basic information of a room
+</span>33 <span style=''>   * @param scenario                Name of the game map
+</span>34 <span style=''>   * */
+</span>35 <span style=''>  case class RoomInfo(basicInfo: RoomBasicInfo, players: Set[Player], scenario: String)
+</span>36 <span style=''>  object RoomInfo {
+</span>37 <span style=''>    implicit def RoomInfoCodecJson: CodecJson[RoomInfo] =
+</span>38 <span style=''>      </span><span style='background: #F0ADAD'>casecodec3(RoomInfo.apply,RoomInfo.unapply)(&quot;basicInfo&quot;,&quot;players&quot;,&quot;scenario&quot;)</span><span style=''>
+</span>39 <span style=''>  }
+</span>40 <span style=''>
+</span>41 <span style=''>  /**
+</span>42 <span style=''>   *@param name The name of the room
+</span>43 <span style=''>   *@param players The name of the player
+</span>44 <span style=''>   * */
+</span>45 <span style=''>  case class RoomNameInfo(name: String, players: String)
+</span>46 <span style=''>  object RoomNameInfo {
+</span>47 <span style=''>    implicit def RoomNameInfoCodecJson: CodecJson[RoomNameInfo] =
+</span>48 <span style=''>      </span><span style='background: #AEF1AE'>casecodec2(</span><span style='background: #F0ADAD'>RoomNameInfo.apply</span><span style='background: #AEF1AE'>,</span><span style='background: #F0ADAD'>RoomNameInfo.unapply</span><span style='background: #AEF1AE'>)(&quot;name&quot;,&quot;players&quot;)</span><span style=''>
+</span>49 <span style=''>  }
+</span>50 <span style=''>
+</span>51 <span style=''>  /**
+</span>52 <span style=''>   * @param rooms              The list of name of the rooms
+</span>53 <span style=''>   * @param games              The list of name of the games
+</span>54 <span style=''>   * @param terminatedGames    The list of name of the terminated games
+</span>55 <span style=''>   * */
+</span>56 <span style=''>  case class LobbyInfo(rooms: Set[RoomNameInfo], games: Set[String], terminatedGames: Set[String])
+</span>57 <span style=''>  object LobbyInfo {
+</span>58 <span style=''>    implicit def LobbyInfoCodecJson: CodecJson[LobbyInfo] =
+</span>59 <span style=''>      </span><span style='background: #AEF1AE'>casecodec3(</span><span style='background: #F0ADAD'>LobbyInfo.apply</span><span style='background: #AEF1AE'>,LobbyInfo.unapply)(&quot;rooms&quot;,&quot;games&quot;,&quot;terminatedGames&quot;)</span><span style=''>
+</span>60 <span style=''>  }
+</span>61 <span style=''>
+</span>62 <span style=''>  /**
+</span>63 <span style=''>   * Information strictly related to a specific player
+</span>64 <span style=''>   * @param objective Personal goal of the player during a game
+</span>65 <span style=''>   * @param cards The list of cards that the player has
+</span>66 <span style=''>   * */
+</span>67 <span style=''>  case class GamePersonalInfo(objective: Objective = Objective(), cards: List[Cards] = List.empty[Cards])
+</span>68 <span style=''>  object GamePersonalInfo {
+</span>69 <span style=''>    implicit def GamePersonalInfoCodecJson: CodecJson[GamePersonalInfo] =
+</span>70 <span style=''>      </span><span style='background: #F0ADAD'>casecodec2(GamePersonalInfo.apply, GamePersonalInfo.unapply)(&quot;objective&quot;, &quot;cards&quot;)</span><span style=''>
+</span>71 <span style=''>  }
+</span>72 <span style=''>
+</span>73 <span style=''>  /**
+</span>74 <span style=''>   * @param players List of players into the game
+</span>75 <span style=''>   * @param actualPlayer The player who is playing
+</span>76 <span style=''>   * @param troopsToDeploy The number of troops that the player can deploy
+</span>77 <span style=''>   * @param map The map on which players will play
+</span>78 <span style=''>   * @param playerStates The states that the player owns
+</span>79 <span style=''>   * @param personalInfo Personal info about objective and cards
+</span>80 <span style=''>   * */
+</span>81 <span style=''>  case class GameFullInfo(players:Set[String],
+</span>82 <span style=''>                          actualPlayer:String,
+</span>83 <span style=''>                          troopsToDeploy:Int,
+</span>84 <span style=''>                          isDeployOnly: Boolean,
+</span>85 <span style=''>                          map:MapGeography,
+</span>86 <span style=''>                          playerStates: Set[PlayerState],
+</span>87 <span style=''>                          personalInfo:GamePersonalInfo,
+</span>88 <span style=''>                          winner: Option[Player])
+</span>89 <span style=''>  object GameFullInfo {
+</span>90 <span style=''>    implicit def GameFullInfoCodecJson: CodecJson[GameFullInfo] =
+</span>91 <span style=''>      </span><span style='background: #F0ADAD'>casecodec8(GameFullInfo.apply,GameFullInfo.unapply)(&quot;players&quot;,&quot;actualPlayer&quot;,&quot;troopsToDeploy&quot;,&quot;isDeployOnly&quot;,&quot;map&quot;,&quot;playerStates&quot;,&quot;personalInfo&quot;,&quot;winner&quot;)</span><span style=''>
+</span>92 <span style=''>  }
+</span>93 <span style=''>
+</span>94 <span style=''>  /**
+</span>95 <span style=''>   * @param actualPlayer The new player who is playing
+</span>96 <span style=''>   * @param troopsToDeploy The number of troops that the player can deploy
+</span>97 <span style=''>   * @param personalInfo Personal info about objective and cards
+</span>98 <span style=''>   * */
+</span>99 <span style=''>  case class GameUpdate(actualPlayer:String, troopsToDeploy:Int, isDeployOnly: Boolean, playerStates: Set[PlayerState],personalInfo:GamePersonalInfo)
+</span>100 <span style=''>  object GameUpdate {
+</span>101 <span style=''>    implicit def GameUpdateCodecJson: CodecJson[GameUpdate] =
+</span>102 <span style=''>      </span><span style='background: #F0ADAD'>casecodec5(GameUpdate.apply,GameUpdate.unapply)(&quot;actualPlayer&quot;,&quot;troopsToDeploy&quot;,&quot;isDeployOnly&quot;,&quot;playerState&quot;,&quot;personalInfo&quot;)</span><span style=''>
+</span>103 <span style=''>  }
+</span>104 <span style=''>
+</span>105 <span style=''>  /**
+</span>106 <span style=''>   * @param winner The player who won the game
+</span>107 <span style=''>   * */
+</span>108 <span style=''>  case class GameEnd(winner: Player)
+</span>109 <span style=''>  object GameEnd {
+</span>110 <span style=''>    implicit def GameEndCodecJson: CodecJson[GameEnd] =
+</span>111 <span style=''>      </span><span style='background: #F0ADAD'>casecodec1(GameEnd.apply,GameEnd.unapply)(&quot;winner&quot;)</span><span style=''>
+</span>112 <span style=''>  }
+</span>113 <span style=''>
+</span>114 <span style=''>  /**
+</span>115 <span style=''>   * @param error The error occurred
+</span>116 <span style=''>   * */
+</span>117 <span style=''>  final case class ErrorMessage(error: String)
+</span>118 <span style=''>  object ErrorMessage {
+</span>119 <span style=''>    implicit def ErrorCodecJson: CodecJson[ErrorMessage] =
+</span>120 <span style=''>      </span><span style='background: #AEF1AE'>casecodec1(</span><span style='background: #F0ADAD'>ErrorMessage.apply</span><span style='background: #AEF1AE'>,ErrorMessage.unapply)(&quot;error&quot;)</span><span style=''>
+</span>121 <span style=''>  }
+</span>122 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          445
+        </td>
+        <td>
+          899
+          -
+          918
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.messages.ToClientMessages.RoomBasicInfo.apply
+        </td>
+        <td style="background: #F0ADAD">
+          ToClientMessages.this.RoomBasicInfo.apply(name, actualNumberOfPlayer, maxNumberOfPlayer)
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          1136
+        </td>
+        <td>
+          941
+          -
+          941
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.EncodeJsons.StringEncodeJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.StringEncodeJson
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          995
+        </td>
+        <td>
+          888
+          -
+          993
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          argonaut.GeneratedCodecJsons.casecodec3
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.casecodec3[String, Int, Int, org.riskala.client.messages.ToClientMessages.RoomBasicInfo]({
+  ((name: String, actualNumberOfPlayer: Int, maxNumberOfPlayer: Int) =&gt; ToClientMessages.this.RoomBasicInfo.apply(name, actualNumberOfPlayer, maxNumberOfPlayer))
+}, {
+  ((x$0: org.riskala.client.messages.ToClientMessages.RoomBasicInfo) =&gt; ToClientMessages.this.RoomBasicInfo.unapply(x$0))
+})(&quot;name&quot;, &quot;actualNumberOfPlayer&quot;, &quot;maxNumberOfPlayer&quot;)(argonaut.Argonaut.StringEncodeJson, argonaut.Argonaut.StringDecodeJson, argonaut.Argonaut.IntEncodeJson, argonaut.Argonaut.IntDecodeJson, argonaut.Argonaut.IntEncodeJson, argonaut.Argonaut.IntDecodeJson)
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          1766
+        </td>
+        <td>
+          941
+          -
+          941
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.DecodeJsons.IntDecodeJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.IntDecodeJson
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          845
+        </td>
+        <td>
+          941
+          -
+          941
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.DecodeJsons.IntDecodeJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.IntDecodeJson
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          426
+        </td>
+        <td>
+          941
+          -
+          941
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.EncodeJsons.IntEncodeJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.IntEncodeJson
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          1664
+        </td>
+        <td>
+          941
+          -
+          941
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.EncodeJsons.IntEncodeJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.IntEncodeJson
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          1523
+        </td>
+        <td>
+          973
+          -
+          992
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;maxNumberOfPlayer&quot;
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          988
+        </td>
+        <td>
+          942
+          -
+          948
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;name&quot;
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          243
+        </td>
+        <td>
+          949
+          -
+          971
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;actualNumberOfPlayer&quot;
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          413
+        </td>
+        <td>
+          941
+          -
+          941
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.DecodeJsons.StringDecodeJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.StringDecodeJson
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          1827
+        </td>
+        <td>
+          919
+          -
+          940
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.messages.ToClientMessages.RoomBasicInfo.unapply
+        </td>
+        <td style="background: #F0ADAD">
+          ToClientMessages.this.RoomBasicInfo.unapply(x$0)
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          1528
+        </td>
+        <td>
+          1360
+          -
+          1376
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.messages.ToClientMessages.RoomInfo.unapply
+        </td>
+        <td style="background: #F0ADAD">
+          ToClientMessages.this.RoomInfo.unapply(x$0)
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          1635
+        </td>
+        <td>
+          1334
+          -
+          1411
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          argonaut.GeneratedCodecJsons.casecodec3
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.casecodec3[org.riskala.client.messages.ToClientMessages.RoomBasicInfo, Set[org.riskala.model.Player], String, org.riskala.client.messages.ToClientMessages.RoomInfo]({
+  ((basicInfo: org.riskala.client.messages.ToClientMessages.RoomBasicInfo, players: Set[org.riskala.model.Player], scenario: String) =&gt; ToClientMessages.this.RoomInfo.apply(basicInfo, players, scenario))
+}, {
+  ((x$0: org.riskala.client.messages.ToClientMessages.RoomInfo) =&gt; ToClientMessages.this.RoomInfo.unapply(x$0))
+})(&quot;basicInfo&quot;, &quot;players&quot;, &quot;scenario&quot;)(ToClientMessages.this.RoomBasicInfo.RoomBasicInfoCodecJson, ToClientMessages.this.RoomBasicInfo.RoomBasicInfoCodecJson, argonaut.Argonaut.SetEncodeJson[org.riskala.model.Player](model.this.Player.PlayerCodecJson), argonaut.Argonaut.SetDecodeJson[org.riskala.model.Player](model.this.Player.PlayerCodecJson), argonaut.Argonaut.StringEncodeJson, argonaut.Argonaut.StringDecodeJson)
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          1108
+        </td>
+        <td>
+          1378
+          -
+          1389
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;basicInfo&quot;
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          285
+        </td>
+        <td>
+          1377
+          -
+          1377
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.DecodeJsons.StringDecodeJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.StringDecodeJson
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          1885
+        </td>
+        <td>
+          1377
+          -
+          1377
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.Player.PlayerCodecJson
+        </td>
+        <td style="background: #F0ADAD">
+          model.this.Player.PlayerCodecJson
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          1666
+        </td>
+        <td>
+          1400
+          -
+          1410
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;scenario&quot;
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          1110
+        </td>
+        <td>
+          1377
+          -
+          1377
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.EncodeJsons.StringEncodeJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.StringEncodeJson
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          428
+        </td>
+        <td>
+          1377
+          -
+          1377
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.messages.ToClientMessages.RoomBasicInfo.RoomBasicInfoCodecJson
+        </td>
+        <td style="background: #F0ADAD">
+          ToClientMessages.this.RoomBasicInfo.RoomBasicInfoCodecJson
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          1597
+        </td>
+        <td>
+          1377
+          -
+          1377
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          argonaut.DecodeJsons.SetDecodeJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.SetDecodeJson[org.riskala.model.Player](model.this.Player.PlayerCodecJson)
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          171
+        </td>
+        <td>
+          1345
+          -
+          1359
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.messages.ToClientMessages.RoomInfo.apply
+        </td>
+        <td style="background: #F0ADAD">
+          ToClientMessages.this.RoomInfo.apply(basicInfo, players, scenario)
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          281
+        </td>
+        <td>
+          1390
+          -
+          1399
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;players&quot;
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          230
+        </td>
+        <td>
+          1377
+          -
+          1377
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.Player.PlayerCodecJson
+        </td>
+        <td style="background: #F0ADAD">
+          model.this.Player.PlayerCodecJson
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          957
+        </td>
+        <td>
+          1377
+          -
+          1377
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          argonaut.EncodeJsons.SetEncodeJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.SetEncodeJson[org.riskala.model.Player](model.this.Player.PlayerCodecJson)
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          906
+        </td>
+        <td>
+          1377
+          -
+          1377
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.messages.ToClientMessages.RoomBasicInfo.RoomBasicInfoCodecJson
+        </td>
+        <td style="background: #F0ADAD">
+          ToClientMessages.this.RoomBasicInfo.RoomBasicInfoCodecJson
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          122
+        </td>
+        <td>
+          1703
+          -
+          1723
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.messages.ToClientMessages.RoomNameInfo.unapply
+        </td>
+        <td style="background: #F0ADAD">
+          ToClientMessages.this.RoomNameInfo.unapply(x$0)
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          397
+        </td>
+        <td>
+          1724
+          -
+          1724
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.DecodeJsons.StringDecodeJson
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.StringDecodeJson
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          1602
+        </td>
+        <td>
+          1724
+          -
+          1724
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.DecodeJsons.StringDecodeJson
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.StringDecodeJson
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          913
+        </td>
+        <td>
+          1684
+          -
+          1702
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.messages.ToClientMessages.RoomNameInfo.apply
+        </td>
+        <td style="background: #F0ADAD">
+          ToClientMessages.this.RoomNameInfo.apply(name, players)
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          198
+        </td>
+        <td>
+          1724
+          -
+          1724
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.EncodeJsons.StringEncodeJson
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.StringEncodeJson
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          1134
+        </td>
+        <td>
+          1724
+          -
+          1724
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.EncodeJsons.StringEncodeJson
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.StringEncodeJson
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          960
+        </td>
+        <td>
+          1732
+          -
+          1741
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;players&quot;
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          1696
+        </td>
+        <td>
+          1673
+          -
+          1742
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          argonaut.GeneratedCodecJsons.casecodec2
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.casecodec2[String, String, org.riskala.client.messages.ToClientMessages.RoomNameInfo]({
+  ((name: String, players: String) =&gt; ToClientMessages.this.RoomNameInfo.apply(name, players))
+}, {
+  ((x$0: org.riskala.client.messages.ToClientMessages.RoomNameInfo) =&gt; ToClientMessages.this.RoomNameInfo.unapply(x$0))
+})(&quot;name&quot;, &quot;players&quot;)(argonaut.Argonaut.StringEncodeJson, argonaut.Argonaut.StringDecodeJson, argonaut.Argonaut.StringEncodeJson, argonaut.Argonaut.StringDecodeJson)
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          1887
+        </td>
+        <td>
+          1725
+          -
+          1731
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;name&quot;
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          200
+        </td>
+        <td>
+          2215
+          -
+          2232
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;terminatedGames&quot;
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          873
+        </td>
+        <td>
+          2164
+          -
+          2179
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.messages.ToClientMessages.LobbyInfo.apply
+        </td>
+        <td style="background: #F0ADAD">
+          ToClientMessages.this.LobbyInfo.apply(rooms, games, terminatedGames)
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          1797
+        </td>
+        <td>
+          2198
+          -
+          2198
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.DecodeJsons.StringDecodeJson
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.StringDecodeJson
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          53
+        </td>
+        <td>
+          2198
+          -
+          2198
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          argonaut.EncodeJsons.SetEncodeJson
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.SetEncodeJson[String](argonaut.Argonaut.StringEncodeJson)
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          125
+        </td>
+        <td>
+          2180
+          -
+          2197
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.messages.ToClientMessages.LobbyInfo.unapply
+        </td>
+        <td style="background: #AEF1AE">
+          ToClientMessages.this.LobbyInfo.unapply(x$0)
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          1632
+        </td>
+        <td>
+          2153
+          -
+          2233
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          argonaut.GeneratedCodecJsons.casecodec3
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.casecodec3[Set[org.riskala.client.messages.ToClientMessages.RoomNameInfo], Set[String], Set[String], org.riskala.client.messages.ToClientMessages.LobbyInfo]({
+  ((rooms: Set[org.riskala.client.messages.ToClientMessages.RoomNameInfo], games: Set[String], terminatedGames: Set[String]) =&gt; ToClientMessages.this.LobbyInfo.apply(rooms, games, terminatedGames))
+}, {
+  ((x$0: org.riskala.client.messages.ToClientMessages.LobbyInfo) =&gt; ToClientMessages.this.LobbyInfo.unapply(x$0))
+})(&quot;rooms&quot;, &quot;games&quot;, &quot;terminatedGames&quot;)(argonaut.Argonaut.SetEncodeJson[org.riskala.client.messages.ToClientMessages.RoomNameInfo](ToClientMessages.this.RoomNameInfo.RoomNameInfoCodecJson), argonaut.Argonaut.SetDecodeJson[org.riskala.client.messages.ToClientMessages.RoomNameInfo](ToClientMessages.this.RoomNameInfo.RoomNameInfoCodecJson), argonaut.Argonaut.SetEncodeJson[String](argonaut.Argonaut.StringEncodeJson), argonaut.Argonaut.SetDecodeJson[String](argonaut.Argonaut.StringDecodeJson), argonaut.Argonaut.SetEncodeJson[String](argonaut.Argonaut.StringEncodeJson), argonaut.Argonaut.SetDecodeJson[String](argonaut.Argonaut.StringDecodeJson))
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          881
+        </td>
+        <td>
+          2198
+          -
+          2198
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.EncodeJsons.StringEncodeJson
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.StringEncodeJson
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          953
+        </td>
+        <td>
+          2198
+          -
+          2198
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          argonaut.DecodeJsons.SetDecodeJson
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.SetDecodeJson[String](argonaut.Argonaut.StringDecodeJson)
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          184
+        </td>
+        <td>
+          2198
+          -
+          2198
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.EncodeJsons.StringEncodeJson
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.StringEncodeJson
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          1566
+        </td>
+        <td>
+          2198
+          -
+          2198
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.messages.ToClientMessages.RoomNameInfo.RoomNameInfoCodecJson
+        </td>
+        <td style="background: #AEF1AE">
+          ToClientMessages.this.RoomNameInfo.RoomNameInfoCodecJson
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          1829
+        </td>
+        <td>
+          2199
+          -
+          2206
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;rooms&quot;
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          1571
+        </td>
+        <td>
+          2198
+          -
+          2198
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          argonaut.EncodeJsons.SetEncodeJson
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.SetEncodeJson[String](argonaut.Argonaut.StringEncodeJson)
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          1065
+        </td>
+        <td>
+          2207
+          -
+          2214
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;games&quot;
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          742
+        </td>
+        <td>
+          2198
+          -
+          2198
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          argonaut.EncodeJsons.SetEncodeJson
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.SetEncodeJson[org.riskala.client.messages.ToClientMessages.RoomNameInfo](ToClientMessages.this.RoomNameInfo.RoomNameInfoCodecJson)
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          1684
+        </td>
+        <td>
+          2198
+          -
+          2198
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          argonaut.DecodeJsons.SetDecodeJson
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.SetDecodeJson[org.riskala.client.messages.ToClientMessages.RoomNameInfo](ToClientMessages.this.RoomNameInfo.RoomNameInfoCodecJson)
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          353
+        </td>
+        <td>
+          2198
+          -
+          2198
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.messages.ToClientMessages.RoomNameInfo.RoomNameInfoCodecJson
+        </td>
+        <td style="background: #AEF1AE">
+          ToClientMessages.this.RoomNameInfo.RoomNameInfoCodecJson
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          748
+        </td>
+        <td>
+          2198
+          -
+          2198
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.DecodeJsons.StringDecodeJson
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.StringDecodeJson
+        </td>
+      </tr><tr>
+        <td>
+          59
+        </td>
+        <td>
+          320
+        </td>
+        <td>
+          2198
+          -
+          2198
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          argonaut.DecodeJsons.SetDecodeJson
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.SetDecodeJson[String](argonaut.Argonaut.StringDecodeJson)
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          1799
+        </td>
+        <td>
+          2714
+          -
+          2725
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;objective&quot;
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          815
+        </td>
+        <td>
+          2713
+          -
+          2713
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          argonaut.DecodeJsons.ListDecodeJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.ListDecodeJson[org.riskala.model.Cards.Cards](model.this.Cards.CardEnumCodecJson)
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          1057
+        </td>
+        <td>
+          2727
+          -
+          2734
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;cards&quot;
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          707
+        </td>
+        <td>
+          2713
+          -
+          2713
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.Cards.CardEnumCodecJson
+        </td>
+        <td style="background: #F0ADAD">
+          model.this.Cards.CardEnumCodecJson
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          1726
+        </td>
+        <td>
+          2713
+          -
+          2713
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.Cards.CardEnumCodecJson
+        </td>
+        <td style="background: #F0ADAD">
+          model.this.Cards.CardEnumCodecJson
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          1505
+        </td>
+        <td>
+          2713
+          -
+          2713
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.Objectives.ObjectiveCodecJson
+        </td>
+        <td style="background: #F0ADAD">
+          model.this.Objectives.ObjectiveCodecJson
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          395
+        </td>
+        <td>
+          2713
+          -
+          2713
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          argonaut.EncodeJsons.ListEncodeJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.ListEncodeJson[org.riskala.model.Cards.Cards](model.this.Cards.CardEnumCodecJson)
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          144
+        </td>
+        <td>
+          2713
+          -
+          2713
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.Objectives.ObjectiveCodecJson
+        </td>
+        <td style="background: #F0ADAD">
+          model.this.Objectives.ObjectiveCodecJson
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          18
+        </td>
+        <td>
+          2688
+          -
+          2712
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.messages.ToClientMessages.GamePersonalInfo.unapply
+        </td>
+        <td style="background: #F0ADAD">
+          ToClientMessages.this.GamePersonalInfo.unapply(x$0)
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          24
+        </td>
+        <td>
+          2653
+          -
+          2735
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          argonaut.GeneratedCodecJsons.casecodec2
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.casecodec2[org.riskala.model.Objectives.Objective, List[org.riskala.model.Cards.Cards], org.riskala.client.messages.ToClientMessages.GamePersonalInfo]({
+  ((objective: org.riskala.model.Objectives.Objective, cards: List[org.riskala.model.Cards.Cards]) =&gt; ToClientMessages.this.GamePersonalInfo.apply(objective, cards))
+}, {
+  ((x$0: org.riskala.client.messages.ToClientMessages.GamePersonalInfo) =&gt; ToClientMessages.this.GamePersonalInfo.unapply(x$0))
+})(&quot;objective&quot;, &quot;cards&quot;)(model.this.Objectives.ObjectiveCodecJson, model.this.Objectives.ObjectiveCodecJson, argonaut.Argonaut.ListEncodeJson[org.riskala.model.Cards.Cards](model.this.Cards.CardEnumCodecJson), argonaut.Argonaut.ListDecodeJson[org.riskala.model.Cards.Cards](model.this.Cards.CardEnumCodecJson))
+        </td>
+      </tr><tr>
+        <td>
+          70
+        </td>
+        <td>
+          852
+        </td>
+        <td>
+          2664
+          -
+          2686
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.messages.ToClientMessages.GamePersonalInfo.apply
+        </td>
+        <td style="background: #F0ADAD">
+          ToClientMessages.this.GamePersonalInfo.apply(objective, cards)
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          1043
+        </td>
+        <td>
+          3670
+          -
+          3670
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.EncodeJsons.StringEncodeJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.StringEncodeJson
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          95
+        </td>
+        <td>
+          3749
+          -
+          3763
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;personalInfo&quot;
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          786
+        </td>
+        <td>
+          3670
+          -
+          3670
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          argonaut.DecodeJsons.SetDecodeJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.SetDecodeJson[String](argonaut.Argonaut.StringDecodeJson)
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          1731
+        </td>
+        <td>
+          3728
+          -
+          3733
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;map&quot;
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          717
+        </td>
+        <td>
+          3696
+          -
+          3712
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;troopsToDeploy&quot;
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          385
+        </td>
+        <td>
+          3670
+          -
+          3670
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.EncodeJsons.StringEncodeJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.StringEncodeJson
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          175
+        </td>
+        <td>
+          3670
+          -
+          3670
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          argonaut.EncodeJsons.OptionEncodeJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.OptionEncodeJson[org.riskala.model.Player](model.this.Player.PlayerCodecJson)
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          788
+        </td>
+        <td>
+          3670
+          -
+          3670
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.map.PlayerState.PlayerStateCodecJson
+        </td>
+        <td style="background: #F0ADAD">
+          map.this.PlayerState.PlayerStateCodecJson
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          1401
+        </td>
+        <td>
+          3670
+          -
+          3670
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.messages.ToClientMessages.GamePersonalInfo.GamePersonalInfoCodecJson
+        </td>
+        <td style="background: #F0ADAD">
+          ToClientMessages.this.GamePersonalInfo.GamePersonalInfoCodecJson
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          100
+        </td>
+        <td>
+          3670
+          -
+          3670
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.DecodeJsons.IntDecodeJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.IntDecodeJson
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          1392
+        </td>
+        <td>
+          3670
+          -
+          3670
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.EncodeJsons.BooleanEncodeJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.BooleanEncodeJson
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          64
+        </td>
+        <td>
+          3670
+          -
+          3670
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.messages.ToClientMessages.GamePersonalInfo.GamePersonalInfoCodecJson
+        </td>
+        <td style="background: #F0ADAD">
+          ToClientMessages.this.GamePersonalInfo.GamePersonalInfoCodecJson
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          1736
+        </td>
+        <td>
+          3670
+          -
+          3670
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.DecodeJsons.StringDecodeJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.StringDecodeJson
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          1404
+        </td>
+        <td>
+          3630
+          -
+          3648
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.messages.ToClientMessages.GameFullInfo.apply
+        </td>
+        <td style="background: #F0ADAD">
+          ToClientMessages.this.GameFullInfo.apply(players, actualPlayer, troopsToDeploy, isDeployOnly, map, playerStates, personalInfo, winner)
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          1063
+        </td>
+        <td>
+          3649
+          -
+          3669
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.messages.ToClientMessages.GameFullInfo.unapply
+        </td>
+        <td style="background: #F0ADAD">
+          ToClientMessages.this.GameFullInfo.unapply(x$0)
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          1413
+        </td>
+        <td>
+          3764
+          -
+          3772
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;winner&quot;
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          1045
+        </td>
+        <td>
+          3670
+          -
+          3670
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.DecodeJsons.BooleanDecodeJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.BooleanDecodeJson
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          384
+        </td>
+        <td>
+          3713
+          -
+          3727
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;isDeployOnly&quot;
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          249
+        </td>
+        <td>
+          3670
+          -
+          3670
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          argonaut.EncodeJsons.SetEncodeJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.SetEncodeJson[String](argonaut.Argonaut.StringEncodeJson)
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          680
+        </td>
+        <td>
+          3670
+          -
+          3670
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          argonaut.DecodeJsons.OptionDecodeJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.OptionDecodeJson[org.riskala.model.Player](model.this.Player.PlayerCodecJson)
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          1535
+        </td>
+        <td>
+          3670
+          -
+          3670
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.map.MapGeography.MapGeographyCodecJson
+        </td>
+        <td style="background: #F0ADAD">
+          map.this.MapGeography.MapGeographyCodecJson
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          853
+        </td>
+        <td>
+          3670
+          -
+          3670
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          argonaut.DecodeJsons.SetDecodeJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.SetDecodeJson[org.riskala.model.map.PlayerState](map.this.PlayerState.PlayerStateCodecJson)
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          147
+        </td>
+        <td>
+          3671
+          -
+          3680
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;players&quot;
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          2076
+        </td>
+        <td>
+          3619
+          -
+          3773
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          argonaut.GeneratedCodecJsons.casecodec8
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.casecodec8[Set[String], String, Int, Boolean, org.riskala.model.map.MapGeography, Set[org.riskala.model.map.PlayerState], org.riskala.client.messages.ToClientMessages.GamePersonalInfo, Option[org.riskala.model.Player], org.riskala.client.messages.ToClientMessages.GameFullInfo]({
+  ((players: Set[String], actualPlayer: String, troopsToDeploy: Int, isDeployOnly: Boolean, map: org.riskala.model.map.MapGeography, playerStates: Set[org.riskala.model.map.PlayerState], personalInfo: org.riskala.client.messages.ToClientMessages.GamePersonalInfo, winner: Option[org.riskala.model.Player]) =&gt; ToClientMessages.this.GameFullInfo.apply(players, actualPlayer, troopsToDeploy, isDeployOnly, map, playerStates, personalInfo, winner))
+}, {
+  ((x$0: org.riskala.client.messages.ToClientMessages.GameFullInfo) =&gt; ToClientMessages.this.GameFullInfo.unapply(x$0))
+})(&quot;players&quot;, &quot;actualPlayer&quot;, &quot;troopsToDeploy&quot;, &quot;isDeployOnly&quot;, &quot;map&quot;, &quot;playerStates&quot;, &quot;personalInfo&quot;, &quot;winner&quot;)(argonaut.Argonaut.SetEncodeJson[String](argonaut.Argonaut.StringEncodeJson), argonaut.Argonaut.SetDecodeJson[String](argonaut.Argonaut.StringDecodeJson), argonaut.Argonaut.StringEncodeJson, argonaut.Argonaut.StringDecodeJson, argonaut.Argonaut.IntEncodeJson, argonaut.Argonaut.IntDecodeJson, argonaut.Argonaut.BooleanEncodeJson, argonaut.Argonaut.BooleanDecodeJson, map.this.MapGeography.MapGeographyCodecJson, map.this.MapGeography.MapGeographyCodecJson, argonaut.Argonaut.SetEncodeJson[org.riskala.model.map.PlayerState](map.this.PlayerState.PlayerStateCodecJson), argonaut.Argonaut.SetDecodeJson[org.riskala.model.map.PlayerState](map.this.PlayerState.PlayerStateCodecJson), ToClientMessages.this.GamePersonalInfo.GamePersonalInfoCodecJson, ToClientMessages.this.GamePersonalInfo.GamePersonalInfoCodecJson, argonaut.Argonaut.OptionEncodeJson[org.riskala.model.Player](model.this.Player.PlayerCodecJson), argonaut.Argonaut.OptionDecodeJson[org.riskala.model.Player](model.this.Player.PlayerCodecJson))
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          186
+        </td>
+        <td>
+          3670
+          -
+          3670
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.map.MapGeography.MapGeographyCodecJson
+        </td>
+        <td style="background: #F0ADAD">
+          map.this.MapGeography.MapGeographyCodecJson
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          850
+        </td>
+        <td>
+          3670
+          -
+          3670
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.EncodeJsons.IntEncodeJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.IntEncodeJson
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          1705
+        </td>
+        <td>
+          3670
+          -
+          3670
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.map.PlayerState.PlayerStateCodecJson
+        </td>
+        <td style="background: #F0ADAD">
+          map.this.PlayerState.PlayerStateCodecJson
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          1537
+        </td>
+        <td>
+          3670
+          -
+          3670
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.Player.PlayerCodecJson
+        </td>
+        <td style="background: #F0ADAD">
+          model.this.Player.PlayerCodecJson
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          1564
+        </td>
+        <td>
+          3681
+          -
+          3695
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;actualPlayer&quot;
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          1567
+        </td>
+        <td>
+          3670
+          -
+          3670
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.DecodeJsons.StringDecodeJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.StringDecodeJson
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          1002
+        </td>
+        <td>
+          3670
+          -
+          3670
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.Player.PlayerCodecJson
+        </td>
+        <td style="background: #F0ADAD">
+          model.this.Player.PlayerCodecJson
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          876
+        </td>
+        <td>
+          3734
+          -
+          3748
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;playerStates&quot;
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          2108
+        </td>
+        <td>
+          3670
+          -
+          3670
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          argonaut.EncodeJsons.SetEncodeJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.SetEncodeJson[org.riskala.model.map.PlayerState](map.this.PlayerState.PlayerStateCodecJson)
+        </td>
+      </tr><tr>
+        <td>
+          102
+        </td>
+        <td>
+          1411
+        </td>
+        <td>
+          4302
+          -
+          4318
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;troopsToDeploy&quot;
+        </td>
+      </tr><tr>
+        <td>
+          102
+        </td>
+        <td>
+          837
+        </td>
+        <td>
+          4267
+          -
+          4285
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.messages.ToClientMessages.GameUpdate.unapply
+        </td>
+        <td style="background: #F0ADAD">
+          ToClientMessages.this.GameUpdate.unapply(x$0)
+        </td>
+      </tr><tr>
+        <td>
+          102
+        </td>
+        <td>
+          2084
+        </td>
+        <td>
+          4286
+          -
+          4286
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.DecodeJsons.StringDecodeJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.StringDecodeJson
+        </td>
+      </tr><tr>
+        <td>
+          102
+        </td>
+        <td>
+          68
+        </td>
+        <td>
+          4287
+          -
+          4301
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;actualPlayer&quot;
+        </td>
+      </tr><tr>
+        <td>
+          102
+        </td>
+        <td>
+          687
+        </td>
+        <td>
+          4286
+          -
+          4286
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          argonaut.DecodeJsons.SetDecodeJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.SetDecodeJson[org.riskala.model.map.PlayerState](map.this.PlayerState.PlayerStateCodecJson)
+        </td>
+      </tr><tr>
+        <td>
+          102
+        </td>
+        <td>
+          684
+        </td>
+        <td>
+          4286
+          -
+          4286
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.EncodeJsons.StringEncodeJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.StringEncodeJson
+        </td>
+      </tr><tr>
+        <td>
+          102
+        </td>
+        <td>
+          1512
+        </td>
+        <td>
+          4348
+          -
+          4362
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;personalInfo&quot;
+        </td>
+      </tr><tr>
+        <td>
+          102
+        </td>
+        <td>
+          597
+        </td>
+        <td>
+          4319
+          -
+          4333
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;isDeployOnly&quot;
+        </td>
+      </tr><tr>
+        <td>
+          102
+        </td>
+        <td>
+          1730
+        </td>
+        <td>
+          4250
+          -
+          4266
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.messages.ToClientMessages.GameUpdate.apply
+        </td>
+        <td style="background: #F0ADAD">
+          ToClientMessages.this.GameUpdate.apply(actualPlayer, troopsToDeploy, isDeployOnly, playerStates, personalInfo)
+        </td>
+      </tr><tr>
+        <td>
+          102
+        </td>
+        <td>
+          1703
+        </td>
+        <td>
+          4286
+          -
+          4286
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.messages.ToClientMessages.GamePersonalInfo.GamePersonalInfoCodecJson
+        </td>
+        <td style="background: #F0ADAD">
+          ToClientMessages.this.GamePersonalInfo.GamePersonalInfoCodecJson
+        </td>
+      </tr><tr>
+        <td>
+          102
+        </td>
+        <td>
+          925
+        </td>
+        <td>
+          4286
+          -
+          4286
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.DecodeJsons.IntDecodeJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.IntDecodeJson
+        </td>
+      </tr><tr>
+        <td>
+          102
+        </td>
+        <td>
+          129
+        </td>
+        <td>
+          4286
+          -
+          4286
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.EncodeJsons.BooleanEncodeJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.BooleanEncodeJson
+        </td>
+      </tr><tr>
+        <td>
+          102
+        </td>
+        <td>
+          2040
+        </td>
+        <td>
+          4286
+          -
+          4286
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.messages.ToClientMessages.GamePersonalInfo.GamePersonalInfoCodecJson
+        </td>
+        <td style="background: #F0ADAD">
+          ToClientMessages.this.GamePersonalInfo.GamePersonalInfoCodecJson
+        </td>
+      </tr><tr>
+        <td>
+          102
+        </td>
+        <td>
+          246
+        </td>
+        <td>
+          4334
+          -
+          4347
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;playerState&quot;
+        </td>
+      </tr><tr>
+        <td>
+          102
+        </td>
+        <td>
+          1609
+        </td>
+        <td>
+          4286
+          -
+          4286
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.map.PlayerState.PlayerStateCodecJson
+        </td>
+        <td style="background: #F0ADAD">
+          map.this.PlayerState.PlayerStateCodecJson
+        </td>
+      </tr><tr>
+        <td>
+          102
+        </td>
+        <td>
+          1699
+        </td>
+        <td>
+          4286
+          -
+          4286
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.EncodeJsons.IntEncodeJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.IntEncodeJson
+        </td>
+      </tr><tr>
+        <td>
+          102
+        </td>
+        <td>
+          1367
+        </td>
+        <td>
+          4286
+          -
+          4286
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.DecodeJsons.BooleanDecodeJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.BooleanDecodeJson
+        </td>
+      </tr><tr>
+        <td>
+          102
+        </td>
+        <td>
+          885
+        </td>
+        <td>
+          4239
+          -
+          4363
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          argonaut.GeneratedCodecJsons.casecodec5
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.casecodec5[String, Int, Boolean, Set[org.riskala.model.map.PlayerState], org.riskala.client.messages.ToClientMessages.GamePersonalInfo, org.riskala.client.messages.ToClientMessages.GameUpdate]({
+  ((actualPlayer: String, troopsToDeploy: Int, isDeployOnly: Boolean, playerStates: Set[org.riskala.model.map.PlayerState], personalInfo: org.riskala.client.messages.ToClientMessages.GamePersonalInfo) =&gt; ToClientMessages.this.GameUpdate.apply(actualPlayer, troopsToDeploy, isDeployOnly, playerStates, personalInfo))
+}, {
+  ((x$0: org.riskala.client.messages.ToClientMessages.GameUpdate) =&gt; ToClientMessages.this.GameUpdate.unapply(x$0))
+})(&quot;actualPlayer&quot;, &quot;troopsToDeploy&quot;, &quot;isDeployOnly&quot;, &quot;playerState&quot;, &quot;personalInfo&quot;)(argonaut.Argonaut.StringEncodeJson, argonaut.Argonaut.StringDecodeJson, argonaut.Argonaut.IntEncodeJson, argonaut.Argonaut.IntDecodeJson, argonaut.Argonaut.BooleanEncodeJson, argonaut.Argonaut.BooleanDecodeJson, argonaut.Argonaut.SetEncodeJson[org.riskala.model.map.PlayerState](map.this.PlayerState.PlayerStateCodecJson), argonaut.Argonaut.SetDecodeJson[org.riskala.model.map.PlayerState](map.this.PlayerState.PlayerStateCodecJson), ToClientMessages.this.GamePersonalInfo.GamePersonalInfoCodecJson, ToClientMessages.this.GamePersonalInfo.GamePersonalInfoCodecJson)
+        </td>
+      </tr><tr>
+        <td>
+          102
+        </td>
+        <td>
+          652
+        </td>
+        <td>
+          4286
+          -
+          4286
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.map.PlayerState.PlayerStateCodecJson
+        </td>
+        <td style="background: #F0ADAD">
+          map.this.PlayerState.PlayerStateCodecJson
+        </td>
+      </tr><tr>
+        <td>
+          102
+        </td>
+        <td>
+          203
+        </td>
+        <td>
+          4286
+          -
+          4286
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          argonaut.EncodeJsons.SetEncodeJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.SetEncodeJson[org.riskala.model.map.PlayerState](map.this.PlayerState.PlayerStateCodecJson)
+        </td>
+      </tr><tr>
+        <td>
+          111
+        </td>
+        <td>
+          209
+        </td>
+        <td>
+          4598
+          -
+          4598
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.Player.PlayerCodecJson
+        </td>
+        <td style="background: #F0ADAD">
+          model.this.Player.PlayerCodecJson
+        </td>
+      </tr><tr>
+        <td>
+          111
+        </td>
+        <td>
+          756
+        </td>
+        <td>
+          4557
+          -
+          4608
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          argonaut.GeneratedCodecJsons.casecodec1
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.casecodec1[org.riskala.model.Player, org.riskala.client.messages.ToClientMessages.GameEnd]({
+  ((winner: org.riskala.model.Player) =&gt; ToClientMessages.this.GameEnd.apply(winner))
+}, {
+  ((x$0: org.riskala.client.messages.ToClientMessages.GameEnd) =&gt; ToClientMessages.this.GameEnd.unapply(x$0))
+})(&quot;winner&quot;)(model.this.Player.PlayerCodecJson, model.this.Player.PlayerCodecJson)
+        </td>
+      </tr><tr>
+        <td>
+          111
+        </td>
+        <td>
+          1372
+        </td>
+        <td>
+          4582
+          -
+          4597
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.messages.ToClientMessages.GameEnd.unapply
+        </td>
+        <td style="background: #F0ADAD">
+          ToClientMessages.this.GameEnd.unapply(x$0)
+        </td>
+      </tr><tr>
+        <td>
+          111
+        </td>
+        <td>
+          1536
+        </td>
+        <td>
+          4598
+          -
+          4598
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.Player.PlayerCodecJson
+        </td>
+        <td style="background: #F0ADAD">
+          model.this.Player.PlayerCodecJson
+        </td>
+      </tr><tr>
+        <td>
+          111
+        </td>
+        <td>
+          630
+        </td>
+        <td>
+          4599
+          -
+          4607
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;winner&quot;
+        </td>
+      </tr><tr>
+        <td>
+          111
+        </td>
+        <td>
+          60
+        </td>
+        <td>
+          4568
+          -
+          4581
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.messages.ToClientMessages.GameEnd.apply
+        </td>
+        <td style="background: #F0ADAD">
+          ToClientMessages.this.GameEnd.apply(winner)
+        </td>
+      </tr><tr>
+        <td>
+          120
+        </td>
+        <td>
+          891
+        </td>
+        <td>
+          4862
+          -
+          4869
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;error&quot;
+        </td>
+      </tr><tr>
+        <td>
+          120
+        </td>
+        <td>
+          1294
+        </td>
+        <td>
+          4840
+          -
+          4860
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.messages.ToClientMessages.ErrorMessage.unapply
+        </td>
+        <td style="background: #AEF1AE">
+          ToClientMessages.this.ErrorMessage.unapply(x$0)
+        </td>
+      </tr><tr>
+        <td>
+          120
+        </td>
+        <td>
+          65
+        </td>
+        <td>
+          4861
+          -
+          4861
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.EncodeJsons.StringEncodeJson
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.StringEncodeJson
+        </td>
+      </tr><tr>
+        <td>
+          120
+        </td>
+        <td>
+          633
+        </td>
+        <td>
+          4810
+          -
+          4870
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          argonaut.GeneratedCodecJsons.casecodec1
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.casecodec1[String, org.riskala.client.messages.ToClientMessages.ErrorMessage]({
+  ((error: String) =&gt; ToClientMessages.this.ErrorMessage.apply(error))
+}, {
+  ((x$0: org.riskala.client.messages.ToClientMessages.ErrorMessage) =&gt; ToClientMessages.this.ErrorMessage.unapply(x$0))
+})(&quot;error&quot;)(argonaut.Argonaut.StringEncodeJson, argonaut.Argonaut.StringDecodeJson)
+        </td>
+      </tr><tr>
+        <td>
+          120
+        </td>
+        <td>
+          1448
+        </td>
+        <td>
+          4861
+          -
+          4861
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.DecodeJsons.StringDecodeJson
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.StringDecodeJson
+        </td>
+      </tr><tr>
+        <td>
+          120
+        </td>
+        <td>
+          2049
+        </td>
+        <td>
+          4821
+          -
+          4839
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.messages.ToClientMessages.ErrorMessage.apply
+        </td>
+        <td style="background: #F0ADAD">
+          ToClientMessages.this.ErrorMessage.apply(error)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

@@ -1,0 +1,3155 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          src\main\scala\org\riskala\controller\actors\game\GameManager.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier, monospace;'>1 <span style=''>package org.riskala.controller.actors.game
+</span>2 <span style=''>
+</span>3 <span style=''>import akka.actor.typed.{ActorRef, Behavior}
+</span>4 <span style=''>import akka.actor.typed.scaladsl.Behaviors
+</span>5 <span style=''>import org.riskala.controller.actors.player.PlayerMessages.{GameEndMessage, GameInfoMessage, GameReferent, GameUpdateMessage, PlayerMessage}
+</span>6 <span style=''>import org.riskala.controller.actors.Messages.{GameMessage, LobbyMessage, Logout}
+</span>7 <span style=''>import org.riskala.model.{Player, logic}
+</span>8 <span style=''>import org.riskala.model.logic.{Command, Deploy, Event, EventStore, GameInitialized, GameSnapshot, SnapshotGenerator}
+</span>9 <span style=''>import org.riskala.controller.actors.game.GameMessages._
+</span>10 <span style=''>import org.riskala.controller.actors.lobby.LobbyMessages.EndGame
+</span>11 <span style=''>import org.riskala.controller.actors.lobby.LobbyMessages.Subscribe
+</span>12 <span style=''>import org.riskala.utils.Utils
+</span>13 <span style=''>import org.riskala.client.messages.ToClientMessages.GamePersonalInfo
+</span>14 <span style=''>
+</span>15 <span style=''>object GameManager {
+</span>16 <span style=''>  /**
+</span>17 <span style=''>   * Creates the GameManeger behavior
+</span>18 <span style=''>   * @param gameName The name of the new game
+</span>19 <span style=''>   * @param subscribers Set of players who subscribe to the game
+</span>20 <span style=''>   * @param participants Map of player who are actually connected to the game
+</span>21 <span style=''>   * @param players The name of players
+</span>22 <span style=''>   * @param scenarioName The name of the scenario
+</span>23 <span style=''>   * @param lobby ActorRef of the lobby
+</span>24 <span style=''>   * */
+</span>25 <span style=''>  def apply(gameName: String,
+</span>26 <span style=''>            subscribers: Set[ActorRef[PlayerMessage]],
+</span>27 <span style=''>            participants: Map[Player,ActorRef[PlayerMessage]],
+</span>28 <span style=''>            players: Set[Player],
+</span>29 <span style=''>            scenarioName: String,
+</span>30 <span style=''>            lobby: ActorRef[LobbyMessage]): Behavior[GameMessage] =
+</span>31 <span style=''>    </span><span style='background: #AEF1AE'>Behaviors.setup { context =&gt;
+</span>32 <span style=''></span><span style='background: #AEF1AE'>      subscribers.foreach(</span><span style='background: #F0ADAD'>_ ! GameReferent(context.self)</span><span style='background: #AEF1AE'>)
+</span>33 <span style=''></span><span style='background: #AEF1AE'>      participants.values.foreach(_ ! GameReferent(context.self))
+</span>34 <span style=''></span><span style='background: #AEF1AE'>      val gameSnapshot: GameSnapshot = GameSnapshot.newGame(players.toSeq, scenarioName)
+</span>35 <span style=''></span><span style='background: #AEF1AE'>      val eventStore: EventStore[Event] = EventStore(Seq(GameInitialized(gameSnapshot)))
+</span>36 <span style=''></span><span style='background: #AEF1AE'>      gameManager(gameName, subscribers, participants, players, scenarioName, lobby, eventStore, gameSnapshot)
+</span>37 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
+</span>38 <span style=''>
+</span>39 <span style=''>  private def gameManager(gameName: String,
+</span>40 <span style=''>                          subscribers: Set[ActorRef[PlayerMessage]],
+</span>41 <span style=''>                          participants: Map[Player,ActorRef[PlayerMessage]],
+</span>42 <span style=''>                          players: Set[Player],
+</span>43 <span style=''>                          scenarioName: String,
+</span>44 <span style=''>                          lobby: ActorRef[LobbyMessage],
+</span>45 <span style=''>                          eventStore: EventStore[Event],
+</span>46 <span style=''>                          gameSnapshot: GameSnapshot): Behavior[GameMessage] =
+</span>47 <span style=''>    </span><span style='background: #AEF1AE'>Behaviors.receive { (context,message) =&gt; {
+</span>48 <span style=''></span><span style='background: #AEF1AE'>
+</span>49 <span style=''></span><span style='background: #AEF1AE'>      def nextBehavior(updateName: String = gameName,
+</span>50 <span style=''></span><span style='background: #AEF1AE'>                       updatedSub: Set[ActorRef[PlayerMessage]] = subscribers,
+</span>51 <span style=''></span><span style='background: #AEF1AE'>                       updatedParticipants: Map[Player,ActorRef[PlayerMessage]] = participants,
+</span>52 <span style=''></span><span style='background: #AEF1AE'>                       updatedPlayers: Set[Player] = players,
+</span>53 <span style=''></span><span style='background: #AEF1AE'>                       updateScenario: String = scenarioName,
+</span>54 <span style=''></span><span style='background: #AEF1AE'>                       updateLobby: ActorRef[LobbyMessage] = lobby,
+</span>55 <span style=''></span><span style='background: #AEF1AE'>                       eventStore: EventStore[Event] = eventStore,
+</span>56 <span style=''></span><span style='background: #AEF1AE'>                       gameSnapshot: GameSnapshot = gameSnapshot
+</span>57 <span style=''></span><span style='background: #AEF1AE'>                      ): Behavior[GameMessage] =
+</span>58 <span style=''></span><span style='background: #AEF1AE'>        </span><span style='background: #F0ADAD'>gameManager(updateName, updatedSub, updatedParticipants, updatedPlayers, updateScenario, updateLobby, eventStore, gameSnapshot)</span><span style='background: #AEF1AE'>
+</span>59 <span style=''></span><span style='background: #AEF1AE'>
+</span>60 <span style=''></span><span style='background: #AEF1AE'>      def evolveEventStore(command: Command) : (EventStore[Event], GameSnapshot) = {
+</span>61 <span style=''></span><span style='background: #AEF1AE'>        // Executing the command over the state produces a set of new events (a behavior)
+</span>62 <span style=''></span><span style='background: #AEF1AE'>        val behavior = </span><span style='background: #F0ADAD'>command.execution(gameSnapshot)</span><span style='background: #AEF1AE'>
+</span>63 <span style=''></span><span style='background: #AEF1AE'>        // The event store is updated with the new events
+</span>64 <span style=''></span><span style='background: #AEF1AE'>        val newEventStore = </span><span style='background: #F0ADAD'>eventStore.perform(behavior)</span><span style='background: #AEF1AE'>
+</span>65 <span style=''></span><span style='background: #AEF1AE'>        // A new state is computed by projecting the behavior over the old state
+</span>66 <span style=''></span><span style='background: #AEF1AE'>        val newSnapshot = </span><span style='background: #F0ADAD'>SnapshotGenerator().project(gameSnapshot, behavior)</span><span style='background: #AEF1AE'>
+</span>67 <span style=''></span><span style='background: #AEF1AE'>        </span><span style='background: #F0ADAD'>(newEventStore, newSnapshot)</span><span style='background: #AEF1AE'>
+</span>68 <span style=''></span><span style='background: #AEF1AE'>      }
+</span>69 <span style=''></span><span style='background: #AEF1AE'>
+</span>70 <span style=''></span><span style='background: #AEF1AE'>      def getPersonalInfo(optPlayer: Option[Player], gameSnapshot: GameSnapshot): GamePersonalInfo = {
+</span>71 <span style=''></span><span style='background: #AEF1AE'>        </span><span style='background: #F0ADAD'>optPlayer.fold(GamePersonalInfo())(p=&gt;GamePersonalInfo(gameSnapshot.objectives(p),gameSnapshot.cards(p).toList))</span><span style='background: #AEF1AE'>
+</span>72 <span style=''></span><span style='background: #AEF1AE'>      }
+</span>73 <span style=''></span><span style='background: #AEF1AE'>
+</span>74 <span style=''></span><span style='background: #AEF1AE'>      def notifyUpdate(gameSnapshot: GameSnapshot): Unit = {
+</span>75 <span style=''></span><span style='background: #AEF1AE'>        val msgFromPersonalInfo = (personalInfo:GamePersonalInfo) =&gt; </span><span style='background: #F0ADAD'>GameUpdateMessage(gameSnapshot.nowPlaying.nickname,
+</span>76 <span style=''></span><span style='background: #F0ADAD'>          gameSnapshot.deployableTroops,
+</span>77 <span style=''></span><span style='background: #F0ADAD'>          gameSnapshot.turn&lt;=players.size,
+</span>78 <span style=''></span><span style='background: #F0ADAD'>          gameSnapshot.geopolitics,
+</span>79 <span style=''></span><span style='background: #F0ADAD'>          personalInfo)</span><span style='background: #AEF1AE'>
+</span>80 <span style=''></span><span style='background: #AEF1AE'>        val handleWin =
+</span>81 <span style=''></span><span style='background: #AEF1AE'>          </span><span style='background: #F0ADAD'>gameSnapshot.winner
+</span>82 <span style=''></span><span style='background: #F0ADAD'>            .fold((_:ActorRef[PlayerMessage])=&gt;{})(p=&gt;(a:ActorRef[PlayerMessage])=&gt;{a ! GameEndMessage(p)})</span><span style='background: #AEF1AE'>
+</span>83 <span style=''></span><span style='background: #AEF1AE'>        </span><span style='background: #F0ADAD'>subscribers.foreach(sub =&gt; {
+</span>84 <span style=''></span><span style='background: #F0ADAD'>          sub ! msgFromPersonalInfo(GamePersonalInfo())
+</span>85 <span style=''></span><span style='background: #F0ADAD'>          handleWin(sub)
+</span>86 <span style=''></span><span style='background: #F0ADAD'>        })</span><span style='background: #AEF1AE'>
+</span>87 <span style=''></span><span style='background: #AEF1AE'>        </span><span style='background: #F0ADAD'>participants.foreach(part =&gt; {
+</span>88 <span style=''></span><span style='background: #F0ADAD'>          val playerOpt = players.find(_==part._1)
+</span>89 <span style=''></span><span style='background: #F0ADAD'>          part._2 ! msgFromPersonalInfo(getPersonalInfo(playerOpt,gameSnapshot))
+</span>90 <span style=''></span><span style='background: #F0ADAD'>          handleWin(part._2)
+</span>91 <span style=''></span><span style='background: #F0ADAD'>        })</span><span style='background: #AEF1AE'>
+</span>92 <span style=''></span><span style='background: #AEF1AE'>        </span><span style='background: #F0ADAD'>gameSnapshot.winner.foreach(_ =&gt; lobby ! EndGame(gameName,context.self))</span><span style='background: #AEF1AE'>
+</span>93 <span style=''></span><span style='background: #AEF1AE'>      }
+</span>94 <span style=''></span><span style='background: #AEF1AE'>
+</span>95 <span style=''></span><span style='background: #AEF1AE'>      </span><span style='background: #F0ADAD'>context.log.info(s&quot;GameManager $gameName: $message&quot;)</span><span style='background: #AEF1AE'>
+</span>96 <span style=''></span><span style='background: #AEF1AE'>
+</span>97 <span style=''></span><span style='background: #AEF1AE'>      message match {
+</span>98 <span style=''></span><span style='background: #AEF1AE'>        case JoinGame(actor) =&gt;
+</span>99 <span style=''></span><span style='background: #AEF1AE'>          </span><span style='background: #F0ADAD'>actor ! GameReferent(context.self)</span><span style='background: #AEF1AE'>
+</span>100 <span style=''></span><span style='background: #AEF1AE'>          </span><span style='background: #F0ADAD'>nextBehavior()</span><span style='background: #AEF1AE'>
+</span>101 <span style=''></span><span style='background: #AEF1AE'>
+</span>102 <span style=''></span><span style='background: #AEF1AE'>        case Leave(actor) =&gt;
+</span>103 <span style=''></span><span style='background: #AEF1AE'>          val newSubs = </span><span style='background: #F0ADAD'>subscribers-actor</span><span style='background: #AEF1AE'>
+</span>104 <span style=''></span><span style='background: #AEF1AE'>          val newPart = </span><span style='background: #F0ADAD'>participants.filterNot(kv=&gt;kv._2==actor)</span><span style='background: #AEF1AE'>
+</span>105 <span style=''></span><span style='background: #AEF1AE'>          </span><span style='background: #F0ADAD'>lobby ! Subscribe(actor)</span><span style='background: #AEF1AE'>
+</span>106 <span style=''></span><span style='background: #AEF1AE'>          </span><span style='background: #F0ADAD'>nextBehavior(updatedSub = newSubs, updatedParticipants = newPart)</span><span style='background: #AEF1AE'>
+</span>107 <span style=''></span><span style='background: #AEF1AE'>
+</span>108 <span style=''></span><span style='background: #AEF1AE'>        case ActionAttack(playerName, from, to, troops) =&gt;
+</span>109 <span style=''></span><span style='background: #AEF1AE'>          val (newEventStore, newSnapshot) = evolveEventStore(logic.Attack(from, to, troops))
+</span>110 <span style=''></span><span style='background: #AEF1AE'>          </span><span style='background: #F0ADAD'>notifyUpdate(newSnapshot)</span><span style='background: #AEF1AE'>
+</span>111 <span style=''></span><span style='background: #AEF1AE'>          </span><span style='background: #F0ADAD'>nextBehavior(eventStore = newEventStore, gameSnapshot = newSnapshot)</span><span style='background: #AEF1AE'>
+</span>112 <span style=''></span><span style='background: #AEF1AE'>
+</span>113 <span style=''></span><span style='background: #AEF1AE'>        case ActionMove(playerName, from, to, troops) =&gt;
+</span>114 <span style=''></span><span style='background: #AEF1AE'>          val (newEventStore, newSnapshot) = evolveEventStore(logic.MoveTroops(from, to, troops))
+</span>115 <span style=''></span><span style='background: #AEF1AE'>          </span><span style='background: #F0ADAD'>notifyUpdate(newSnapshot)</span><span style='background: #AEF1AE'>
+</span>116 <span style=''></span><span style='background: #AEF1AE'>          </span><span style='background: #F0ADAD'>nextBehavior(eventStore = newEventStore, gameSnapshot = newSnapshot)</span><span style='background: #AEF1AE'>
+</span>117 <span style=''></span><span style='background: #AEF1AE'>
+</span>118 <span style=''></span><span style='background: #AEF1AE'>        case ActionDeploy(playerName, from, to, troops) =&gt;
+</span>119 <span style=''></span><span style='background: #AEF1AE'>          val (newEventStore, newSnapshot) = evolveEventStore(Deploy(to,troops))
+</span>120 <span style=''></span><span style='background: #AEF1AE'>          </span><span style='background: #F0ADAD'>notifyUpdate(newSnapshot)</span><span style='background: #AEF1AE'>
+</span>121 <span style=''></span><span style='background: #AEF1AE'>          </span><span style='background: #F0ADAD'>nextBehavior(eventStore = newEventStore, gameSnapshot = newSnapshot)</span><span style='background: #AEF1AE'>
+</span>122 <span style=''></span><span style='background: #AEF1AE'>
+</span>123 <span style=''></span><span style='background: #AEF1AE'>        case RedeemBonus(playerName, card) =&gt;
+</span>124 <span style=''></span><span style='background: #AEF1AE'>          val player = </span><span style='background: #F0ADAD'>getPlayerByName(players, playerName).get</span><span style='background: #AEF1AE'>
+</span>125 <span style=''></span><span style='background: #AEF1AE'>          val (newEventStore, newSnapshot) = evolveEventStore(logic.RedeemBonus(player, card))
+</span>126 <span style=''></span><span style='background: #AEF1AE'>          </span><span style='background: #F0ADAD'>notifyUpdate(newSnapshot)</span><span style='background: #AEF1AE'>
+</span>127 <span style=''></span><span style='background: #AEF1AE'>          </span><span style='background: #F0ADAD'>nextBehavior(eventStore = newEventStore, gameSnapshot = newSnapshot)</span><span style='background: #AEF1AE'>
+</span>128 <span style=''></span><span style='background: #AEF1AE'>
+</span>129 <span style=''></span><span style='background: #AEF1AE'>        case GetFullInfo(playerName, actor) =&gt;
+</span>130 <span style=''></span><span style='background: #AEF1AE'>          val optAskingPlayer = </span><span style='background: #F0ADAD'>getPlayerByName(gameSnapshot.players.toSet, playerName)</span><span style='background: #AEF1AE'>
+</span>131 <span style=''></span><span style='background: #AEF1AE'>          val newParticipants = </span><span style='background: #F0ADAD'>optAskingPlayer.fold(participants)(p=&gt;participants + (p -&gt; actor))</span><span style='background: #AEF1AE'>
+</span>132 <span style=''></span><span style='background: #AEF1AE'>          val newSubs = </span><span style='background: #F0ADAD'>optAskingPlayer.fold(subscribers+actor)(_ =&gt; subscribers)</span><span style='background: #AEF1AE'>
+</span>133 <span style=''></span><span style='background: #AEF1AE'>          val personalInfo = </span><span style='background: #F0ADAD'>getPersonalInfo(optAskingPlayer,gameSnapshot)</span><span style='background: #AEF1AE'>
+</span>134 <span style=''></span><span style='background: #AEF1AE'>          val gameInfoMessage: GameInfoMessage = </span><span style='background: #F0ADAD'>GameInfoMessage(gameSnapshot.players.map(p=&gt;p.nickname).toSet,
+</span>135 <span style=''></span><span style='background: #F0ADAD'>            gameSnapshot.nowPlaying.nickname,
+</span>136 <span style=''></span><span style='background: #F0ADAD'>            gameSnapshot.deployableTroops,
+</span>137 <span style=''></span><span style='background: #F0ADAD'>            gameSnapshot.scenario,
+</span>138 <span style=''></span><span style='background: #F0ADAD'>            gameSnapshot.turn&lt;=players.size,
+</span>139 <span style=''></span><span style='background: #F0ADAD'>            gameSnapshot.geopolitics,
+</span>140 <span style=''></span><span style='background: #F0ADAD'>            personalInfo,
+</span>141 <span style=''></span><span style='background: #F0ADAD'>            gameSnapshot.winner)</span><span style='background: #AEF1AE'>
+</span>142 <span style=''></span><span style='background: #AEF1AE'>          </span><span style='background: #F0ADAD'>actor ! gameInfoMessage</span><span style='background: #AEF1AE'>
+</span>143 <span style=''></span><span style='background: #AEF1AE'>          </span><span style='background: #F0ADAD'>nextBehavior(updatedSub = newSubs,updatedParticipants = newParticipants)</span><span style='background: #AEF1AE'>
+</span>144 <span style=''></span><span style='background: #AEF1AE'>
+</span>145 <span style=''></span><span style='background: #AEF1AE'>        case EndTurn(playerName) =&gt;
+</span>146 <span style=''></span><span style='background: #AEF1AE'>          val player = </span><span style='background: #F0ADAD'>getPlayerByName(players, playerName).get</span><span style='background: #AEF1AE'>
+</span>147 <span style=''></span><span style='background: #AEF1AE'>          val (newEventStore, newSnapshot) = evolveEventStore(logic.EndTurn(player))
+</span>148 <span style=''></span><span style='background: #AEF1AE'>          </span><span style='background: #F0ADAD'>notifyUpdate(newSnapshot)</span><span style='background: #AEF1AE'>
+</span>149 <span style=''></span><span style='background: #AEF1AE'>          val nextPlayer = </span><span style='background: #F0ADAD'>newSnapshot.nowPlaying</span><span style='background: #AEF1AE'>
+</span>150 <span style=''></span><span style='background: #AEF1AE'>          if(</span><span style='background: #F0ADAD'>!participants.contains(nextPlayer)</span><span style='background: #AEF1AE'>)
+</span>151 <span style=''></span><span style='background: #AEF1AE'>            </span><span style='background: #F0ADAD'>Utils.sendUserTurnNotification(nextPlayer.nickname, gameName)</span><span style='background: #AEF1AE'>
+</span>152 <span style=''></span><span style='background: #AEF1AE'>          </span><span style='background: #F0ADAD'>nextBehavior(eventStore = newEventStore, gameSnapshot = newSnapshot)</span><span style='background: #AEF1AE'>
+</span>153 <span style=''></span><span style='background: #AEF1AE'>        case Logout(actor) =&gt;
+</span>154 <span style=''></span><span style='background: #AEF1AE'>          val newSubs = </span><span style='background: #F0ADAD'>subscribers-actor</span><span style='background: #AEF1AE'>
+</span>155 <span style=''></span><span style='background: #AEF1AE'>          val newPart = </span><span style='background: #F0ADAD'>participants.filterNot(kv=&gt;kv._2==actor)</span><span style='background: #AEF1AE'>
+</span>156 <span style=''></span><span style='background: #AEF1AE'>          </span><span style='background: #F0ADAD'>nextBehavior(updatedSub = newSubs, updatedParticipants = newPart)</span><span style='background: #AEF1AE'>
+</span>157 <span style=''></span><span style='background: #AEF1AE'>      }
+</span>158 <span style=''></span><span style='background: #AEF1AE'>    }
+</span>159 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
+</span>160 <span style=''>
+</span>161 <span style=''>  private def getPlayerByName(players: Set[Player], playerName: String): Option[Player] = {
+</span>162 <span style=''>    </span><span style='background: #F0ADAD'>players.collectFirst({case p if p.nickname.equals(playerName) =&gt; p})</span><span style=''>
+</span>163 <span style=''>  }
+</span>164 <span style=''>
+</span>165 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          1281
+        </td>
+        <td>
+          1514
+          -
+          1967
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.actor.typed.scaladsl.Behaviors.setup
+        </td>
+        <td style="background: #AEF1AE">
+          akka.actor.typed.scaladsl.Behaviors.setup[org.riskala.controller.actors.Messages.GameMessage](((context: akka.actor.typed.scaladsl.ActorContext[org.riskala.controller.actors.Messages.GameMessage]) =&gt; {
+  subscribers.foreach[Unit](((x$1: akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]) =&gt; typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage](x$1).!(org.riskala.controller.actors.player.PlayerMessages.GameReferent.apply(context.self))));
+  participants.values.foreach[Unit](((x$2: akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]) =&gt; typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage](x$2).!(org.riskala.controller.actors.player.PlayerMessages.GameReferent.apply(context.self))));
+  val gameSnapshot: org.riskala.model.logic.GameSnapshot = org.riskala.model.logic.GameSnapshot.newGame(players.toSeq, scenarioName);
+  val eventStore: org.riskala.model.logic.EventStore[org.riskala.model.logic.Event] = org.riskala.model.logic.EventStore.apply[org.riskala.model.logic.Event](scala.collection.Seq.apply[org.riskala.model.logic.GameInitialized](org.riskala.model.logic.GameInitialized.apply(gameSnapshot)));
+  GameManager.this.gameManager(gameName, subscribers, participants, players, scenarioName, lobby, eventStore, gameSnapshot)
+}))
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          403
+        </td>
+        <td>
+          1550
+          -
+          1601
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.foreach
+        </td>
+        <td style="background: #AEF1AE">
+          subscribers.foreach[Unit](((x$1: akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]) =&gt; typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage](x$1).!(org.riskala.controller.actors.player.PlayerMessages.GameReferent.apply(context.self))))
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          1219
+        </td>
+        <td>
+          1570
+          -
+          1600
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.actor.typed.ActorRef.ActorRefOps.!
+        </td>
+        <td style="background: #F0ADAD">
+          typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage](x$1).!(org.riskala.controller.actors.player.PlayerMessages.GameReferent.apply(context.self))
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          1978
+        </td>
+        <td>
+          1574
+          -
+          1600
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.player.PlayerMessages.GameReferent.apply
+        </td>
+        <td style="background: #F0ADAD">
+          org.riskala.controller.actors.player.PlayerMessages.GameReferent.apply(context.self)
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          581
+        </td>
+        <td>
+          1587
+          -
+          1599
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          akka.actor.typed.scaladsl.ActorContext.self
+        </td>
+        <td style="background: #F0ADAD">
+          context.self
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          2151
+        </td>
+        <td>
+          1654
+          -
+          1666
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          akka.actor.typed.scaladsl.ActorContext.self
+        </td>
+        <td style="background: #AEF1AE">
+          context.self
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          1843
+        </td>
+        <td>
+          1609
+          -
+          1668
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.foreach
+        </td>
+        <td style="background: #AEF1AE">
+          participants.values.foreach[Unit](((x$2: akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]) =&gt; typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage](x$2).!(org.riskala.controller.actors.player.PlayerMessages.GameReferent.apply(context.self))))
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          1307
+        </td>
+        <td>
+          1641
+          -
+          1667
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.player.PlayerMessages.GameReferent.apply
+        </td>
+        <td style="background: #AEF1AE">
+          org.riskala.controller.actors.player.PlayerMessages.GameReferent.apply(context.self)
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          511
+        </td>
+        <td>
+          1637
+          -
+          1667
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.actor.typed.ActorRef.ActorRefOps.!
+        </td>
+        <td style="background: #AEF1AE">
+          typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage](x$2).!(org.riskala.controller.actors.player.PlayerMessages.GameReferent.apply(context.self))
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          985
+        </td>
+        <td>
+          1730
+          -
+          1743
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.SetLike.toSeq
+        </td>
+        <td style="background: #AEF1AE">
+          players.toSeq
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          625
+        </td>
+        <td>
+          1709
+          -
+          1758
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.logic.GameSnapshot.newGame
+        </td>
+        <td style="background: #AEF1AE">
+          org.riskala.model.logic.GameSnapshot.newGame(players.toSeq, scenarioName)
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          367
+        </td>
+        <td>
+          1802
+          -
+          1848
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.logic.EventStore.apply
+        </td>
+        <td style="background: #AEF1AE">
+          org.riskala.model.logic.EventStore.apply[org.riskala.model.logic.Event](scala.collection.Seq.apply[org.riskala.model.logic.GameInitialized](org.riskala.model.logic.GameInitialized.apply(gameSnapshot)))
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          1985
+        </td>
+        <td>
+          1817
+          -
+          1846
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.logic.GameInitialized.apply
+        </td>
+        <td style="background: #AEF1AE">
+          org.riskala.model.logic.GameInitialized.apply(gameSnapshot)
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          1117
+        </td>
+        <td>
+          1813
+          -
+          1847
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.Seq.apply[org.riskala.model.logic.GameInitialized](org.riskala.model.logic.GameInitialized.apply(gameSnapshot))
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          2025
+        </td>
+        <td>
+          1856
+          -
+          1960
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.game.GameManager.gameManager
+        </td>
+        <td style="background: #AEF1AE">
+          GameManager.this.gameManager(gameName, subscribers, participants, players, scenarioName, lobby, eventStore, gameSnapshot)
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          139
+        </td>
+        <td>
+          2462
+          -
+          8198
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.actor.typed.scaladsl.Behaviors.receive
+        </td>
+        <td style="background: #AEF1AE">
+          akka.actor.typed.scaladsl.Behaviors.receive[org.riskala.controller.actors.Messages.GameMessage](((context: akka.actor.typed.scaladsl.ActorContext[org.riskala.controller.actors.Messages.GameMessage], message: org.riskala.controller.actors.Messages.GameMessage) =&gt; {
+  def nextBehavior(updateName: String = gameName, updatedSub: Set[akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]] = subscribers, updatedParticipants: Map[org.riskala.model.Player,akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]] = participants, updatedPlayers: Set[org.riskala.model.Player] = players, updateScenario: String = scenarioName, updateLobby: akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.LobbyMessage] = lobby, eventStore: org.riskala.model.logic.EventStore[org.riskala.model.logic.Event] = eventStore, gameSnapshot: org.riskala.model.logic.GameSnapshot = gameSnapshot): akka.actor.typed.Behavior[org.riskala.controller.actors.Messages.GameMessage] = GameManager.this.gameManager(updateName, updatedSub, updatedParticipants, updatedPlayers, updateScenario, updateLobby, eventStore, gameSnapshot);
+  &lt;synthetic&gt; def nextBehavior$default$1: String @scala.annotation.unchecked.uncheckedVariance = gameName;
+  &lt;synthetic&gt; def nextBehavior$default$2: Set[akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]] @scala.annotation.unchecked.uncheckedVariance = subscribers;
+  &lt;synthetic&gt; def nextBehavior$default$3: Map[org.riskala.model.Player,akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]] @scala.annotation.unchecked.uncheckedVariance = participants;
+  &lt;synthetic&gt; def nextBehavior$default$4: Set[org.riskala.model.Player] @scala.annotation.unchecked.uncheckedVariance = players;
+  &lt;synthetic&gt; def nextBehavior$default$5: String @scala.annotation.unchecked.uncheckedVariance = scenarioName;
+  &lt;synthetic&gt; def nextBehavior$default$6: akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.LobbyMessage] @scala.annotation.unchecked.uncheckedVariance = lobby;
+  &lt;synthetic&gt; def nextBehavior$default$7: org.riskala.model.logic.EventStore[org.riskala.model.logic.Event] @scala.annotation.unchecked.uncheckedVariance = eventStore;
+  &lt;synthetic&gt; def nextBehavior$default$8: org.riskala.model.logic.GameSnapshot @scala.annotation.unchecked.uncheckedVariance = gameSnapshot;
+  def evolveEventStore(command: org.riskala.model.logic.Command): (org.riskala.model.logic.EventStore[org.riskala.model.logic.Event], org.riskala.model.logic.GameSnapshot) = {
+    val behavior: org.riskala.model.logic.EventStore.Behavior[org.riskala.model.logic.Event] = command.execution(gameSnapshot);
+    val newEventStore: org.riskala.model.logic.EventStore[org.riskala.model.logic.Event] = eventStore.perform(behavior);
+    val newSnapshot: org.riskala.model.logic.GameSnapshot = org.riskala.model.logic.SnapshotGenerator.apply().project.apply(gameSnapshot, behavior);
+    scala.Tuple2.apply[org.riskala.model.logic.EventStore[org.riskala.model.logic.Event], org.riskala.model.logic.GameSnapshot](newEventStore, newSnapshot)
+  };
+  def getPersonalInfo(optPlayer: Option[org.riskala.model.Player], gameSnapshot: org.riskala.model.logic.GameSnapshot): org.riskala.client.messages.ToClientMessages.GamePersonalInfo = optPlayer.fold[org.riskala.client.messages.ToClientMessages.GamePersonalInfo](org.riskala.client.messages.ToClientMessages.GamePersonalInfo.apply(org.riskala.client.messages.ToClientMessages.GamePersonalInfo.apply$default$1, org.riskala.client.messages.ToClientMessages.GamePersonalInfo.apply$default$2))(((p: org.riskala.model.Player) =&gt; org.riskala.client.messages.ToClientMessages.GamePersonalInfo.apply(gameSnapshot.objectives.apply(p), gameSnapshot.cards.apply(p).toList)));
+  def notifyUpdate(gameSnapshot: org.riskala.model.logic.GameSnapshot): Unit = {
+    val msgFromPersonalInfo: org.riskala.client.messages.ToClientMessages.GamePersonalInfo =&gt; org.riskala.controller.actors.player.PlayerMessages.GameUpdateMessage = ((personalInfo: org.riskala.client.messages.ToClientMessages.GamePersonalInfo) =&gt; org.riskala.controller.actors.player.PlayerMessages.GameUpdateMessage.apply(gameSnapshot.nowPlaying.nickname, gameSnapshot.deployableTroops, gameSnapshot.turn.&lt;=(players.size), map.this.Geopolitics.geopolitics2states(gameSnapshot.geopolitics), personalInfo));
+    val handleWin: akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage] =&gt; Unit = gameSnapshot.winner.fold[akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage] =&gt; Unit](((x$3: akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]) =&gt; ()))(((p: org.riskala.model.Player) =&gt; ((a: akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]) =&gt; typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage](a).!(org.riskala.controller.actors.player.PlayerMessages.GameEndMessage.apply(p)))));
+    subscribers.foreach[Unit](((sub: akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]) =&gt; {
+      typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage](sub).!(msgFromPersonalInfo.apply(org.riskala.client.messages.ToClientMessages.GamePersonalInfo.apply(org.riskala.client.messages.ToClientMessages.GamePersonalInfo.apply$default$1, org.riskala.client.messages.ToClientMessages.GamePersonalInfo.apply$default$2)));
+      handleWin.apply(sub)
+    }));
+    participants.foreach[Unit](((part: (org.riskala.model.Player, akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage])) =&gt; {
+      val playerOpt: Option[org.riskala.model.Player] = players.find(((x$4: org.riskala.model.Player) =&gt; x$4.==(part._1)));
+      typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage](part._2).!(msgFromPersonalInfo.apply(getPersonalInfo(playerOpt, gameSnapshot)));
+      handleWin.apply(part._2)
+    }));
+    gameSnapshot.winner.foreach[Unit](((x$5: org.riskala.model.Player) =&gt; typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.Messages.LobbyMessage](lobby).!(org.riskala.controller.actors.lobby.LobbyMessages.EndGame.apply(gameName, context.self))))
+  };
+  context.log.info(scala.StringContext.apply(&quot;GameManager &quot;, &quot;: &quot;, &quot;&quot;).s(gameName, message));
+  message match {
+    case (actor: akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage])org.riskala.controller.actors.game.GameMessages.JoinGame((actor @ _)) =&gt; {
+      typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage](actor).!(org.riskala.controller.actors.player.PlayerMessages.GameReferent.apply(context.self));
+      nextBehavior(nextBehavior$default$1, nextBehavior$default$2, nextBehavior$default$3, nextBehavior$default$4, nextBehavior$default$5, nextBehavior$default$6, nextBehavior$default$7, nextBehavior$default$8)
+    }
+    case (actor: akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage])org.riskala.controller.actors.game.GameMessages.Leave((actor @ _)) =&gt; {
+      val newSubs: scala.collection.immutable.Set[akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]] = subscribers.-(actor);
+      val newPart: scala.collection.immutable.Map[org.riskala.model.Player,akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]] = participants.filterNot(((kv: (org.riskala.model.Player, akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage])) =&gt; kv._2.==(actor)));
+      typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.Messages.LobbyMessage](lobby).!(org.riskala.controller.actors.lobby.LobbyMessages.Subscribe.apply(actor));
+      {
+        &lt;artifact&gt; val x$1: scala.collection.immutable.Set[akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]] @scala.reflect.internal.annotations.uncheckedBounds = newSubs;
+        &lt;artifact&gt; val x$2: scala.collection.immutable.Map[org.riskala.model.Player,akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]] @scala.reflect.internal.annotations.uncheckedBounds = newPart;
+        &lt;artifact&gt; val x$3: String @scala.annotation.unchecked.uncheckedVariance = nextBehavior$default$1;
+        &lt;artifact&gt; val x$4: Set[org.riskala.model.Player] @scala.reflect.internal.annotations.uncheckedBounds @scala.annotation.unchecked.uncheckedVariance = nextBehavior$default$4;
+        &lt;artifact&gt; val x$5: String @scala.annotation.unchecked.uncheckedVariance = nextBehavior$default$5;
+        &lt;artifact&gt; val x$6: akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.LobbyMessage] @scala.reflect.internal.annotations.uncheckedBounds @scala.annotation.unchecked.uncheckedVariance = nextBehavior$default$6;
+        &lt;artifact&gt; val x$7: org.riskala.model.logic.EventStore[org.riskala.model.logic.Event] @scala.reflect.internal.annotations.uncheckedBounds @scala.annotation.unchecked.uncheckedVariance = nextBehavior$default$7;
+        &lt;artifact&gt; val x$8: org.riskala.model.logic.GameSnapshot @scala.annotation.unchecked.uncheckedVariance = nextBehavior$default$8;
+        nextBehavior(x$3, x$1, x$2, x$4, x$5, x$6, x$7, x$8)
+      }
+    }
+    case (playerName: String, from: String, to: String, troops: Int)org.riskala.controller.actors.game.GameMessages.ActionAttack((playerName @ _), (from @ _), (to @ _), (troops @ _)) =&gt; {
+      &lt;synthetic&gt; &lt;artifact&gt; private[this] val x$6: (org.riskala.model.logic.EventStore[org.riskala.model.logic.Event], org.riskala.model.logic.GameSnapshot) = (evolveEventStore(org.riskala.model.logic.Attack.apply(from, to, troops)): (org.riskala.model.logic.EventStore[org.riskala.model.logic.Event], org.riskala.model.logic.GameSnapshot) @unchecked) match {
+        case (_1: org.riskala.model.logic.EventStore[org.riskala.model.logic.Event], _2: org.riskala.model.logic.GameSnapshot)(org.riskala.model.logic.EventStore[org.riskala.model.logic.Event], org.riskala.model.logic.GameSnapshot)((newEventStore @ _), (newSnapshot @ _)) =&gt; scala.Tuple2.apply[org.riskala.model.logic.EventStore[org.riskala.model.logic.Event], org.riskala.model.logic.GameSnapshot](newEventStore, newSnapshot)
+      };
+      val newEventStore: org.riskala.model.logic.EventStore[org.riskala.model.logic.Event] = x$6._1;
+      val newSnapshot: org.riskala.model.logic.GameSnapshot = x$6._2;
+      notifyUpdate(newSnapshot);
+      {
+        &lt;artifact&gt; val x$9: org.riskala.model.logic.EventStore[org.riskala.model.logic.Event] @scala.reflect.internal.annotations.uncheckedBounds = newEventStore;
+        &lt;artifact&gt; val x$10: org.riskala.model.logic.GameSnapshot = newSnapshot;
+        &lt;artifact&gt; val x$11: String @scala.annotation.unchecked.uncheckedVariance = nextBehavior$default$1;
+        &lt;artifact&gt; val x$12: Set[akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]] @scala.reflect.internal.annotations.uncheckedBounds @scala.annotation.unchecked.uncheckedVariance = nextBehavior$default$2;
+        &lt;artifact&gt; val x$13: Map[org.riskala.model.Player,akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]] @scala.reflect.internal.annotations.uncheckedBounds @scala.annotation.unchecked.uncheckedVariance = nextBehavior$default$3;
+        &lt;artifact&gt; val x$14: Set[org.riskala.model.Player] @scala.reflect.internal.annotations.uncheckedBounds @scala.annotation.unchecked.uncheckedVariance = nextBehavior$default$4;
+        &lt;artifact&gt; val x$15: String @scala.annotation.unchecked.uncheckedVariance = nextBehavior$default$5;
+        &lt;artifact&gt; val x$16: akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.LobbyMessage] @scala.reflect.internal.annotations.uncheckedBounds @scala.annotation.unchecked.uncheckedVariance = nextBehavior$default$6;
+        nextBehavior(x$11, x$12, x$13, x$14, x$15, x$16, x$9, x$10)
+      }
+    }
+    case (playerName: String, from: String, to: String, troops: Int)org.riskala.controller.actors.game.GameMessages.ActionMove((playerName @ _), (from @ _), (to @ _), (troops @ _)) =&gt; {
+      &lt;synthetic&gt; &lt;artifact&gt; private[this] val x$7: (org.riskala.model.logic.EventStore[org.riskala.model.logic.Event], org.riskala.model.logic.GameSnapshot) = (evolveEventStore(org.riskala.model.logic.MoveTroops.apply(from, to, troops)): (org.riskala.model.logic.EventStore[org.riskala.model.logic.Event], org.riskala.model.logic.GameSnapshot) @unchecked) match {
+        case (_1: org.riskala.model.logic.EventStore[org.riskala.model.logic.Event], _2: org.riskala.model.logic.GameSnapshot)(org.riskala.model.logic.EventStore[org.riskala.model.logic.Event], org.riskala.model.logic.GameSnapshot)((newEventStore @ _), (newSnapshot @ _)) =&gt; scala.Tuple2.apply[org.riskala.model.logic.EventStore[org.riskala.model.logic.Event], org.riskala.model.logic.GameSnapshot](newEventStore, newSnapshot)
+      };
+      val newEventStore: org.riskala.model.logic.EventStore[org.riskala.model.logic.Event] = x$7._1;
+      val newSnapshot: org.riskala.model.logic.GameSnapshot = x$7._2;
+      notifyUpdate(newSnapshot);
+      {
+        &lt;artifact&gt; val x$17: org.riskala.model.logic.EventStore[org.riskala.model.logic.Event] @scala.reflect.internal.annotations.uncheckedBounds = newEventStore;
+        &lt;artifact&gt; val x$18: org.riskala.model.logic.GameSnapshot = newSnapshot;
+        &lt;artifact&gt; val x$19: String @scala.annotation.unchecked.uncheckedVariance = nextBehavior$default$1;
+        &lt;artifact&gt; val x$20: Set[akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]] @scala.reflect.internal.annotations.uncheckedBounds @scala.annotation.unchecked.uncheckedVariance = nextBehavior$default$2;
+        &lt;artifact&gt; val x$21: Map[org.riskala.model.Player,akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]] @scala.reflect.internal.annotations.uncheckedBounds @scala.annotation.unchecked.uncheckedVariance = nextBehavior$default$3;
+        &lt;artifact&gt; val x$22: Set[org.riskala.model.Player] @scala.reflect.internal.annotations.uncheckedBounds @scala.annotation.unchecked.uncheckedVariance = nextBehavior$default$4;
+        &lt;artifact&gt; val x$23: String @scala.annotation.unchecked.uncheckedVariance = nextBehavior$default$5;
+        &lt;artifact&gt; val x$24: akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.LobbyMessage] @scala.reflect.internal.annotations.uncheckedBounds @scala.annotation.unchecked.uncheckedVariance = nextBehavior$default$6;
+        nextBehavior(x$19, x$20, x$21, x$22, x$23, x$24, x$17, x$18)
+      }
+    }
+    case (playerName: String, from: String, to: String, troops: Int)org.riskala.controller.actors.game.GameMessages.ActionDeploy((playerName @ _), (from @ _), (to @ _), (troops @ _)) =&gt; {
+      &lt;synthetic&gt; &lt;artifact&gt; private[this] val x$8: (org.riskala.model.logic.EventStore[org.riskala.model.logic.Event], org.riskala.model.logic.GameSnapshot) = (evolveEventStore(org.riskala.model.logic.Deploy.apply(to, troops)): (org.riskala.model.logic.EventStore[org.riskala.model.logic.Event], org.riskala.model.logic.GameSnapshot) @unchecked) match {
+        case (_1: org.riskala.model.logic.EventStore[org.riskala.model.logic.Event], _2: org.riskala.model.logic.GameSnapshot)(org.riskala.model.logic.EventStore[org.riskala.model.logic.Event], org.riskala.model.logic.GameSnapshot)((newEventStore @ _), (newSnapshot @ _)) =&gt; scala.Tuple2.apply[org.riskala.model.logic.EventStore[org.riskala.model.logic.Event], org.riskala.model.logic.GameSnapshot](newEventStore, newSnapshot)
+      };
+      val newEventStore: org.riskala.model.logic.EventStore[org.riskala.model.logic.Event] = x$8._1;
+      val newSnapshot: org.riskala.model.logic.GameSnapshot = x$8._2;
+      notifyUpdate(newSnapshot);
+      {
+        &lt;artifact&gt; val x$25: org.riskala.model.logic.EventStore[org.riskala.model.logic.Event] @scala.reflect.internal.annotations.uncheckedBounds = newEventStore;
+        &lt;artifact&gt; val x$26: org.riskala.model.logic.GameSnapshot = newSnapshot;
+        &lt;artifact&gt; val x$27: String @scala.annotation.unchecked.uncheckedVariance = nextBehavior$default$1;
+        &lt;artifact&gt; val x$28: Set[akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]] @scala.reflect.internal.annotations.uncheckedBounds @scala.annotation.unchecked.uncheckedVariance = nextBehavior$default$2;
+        &lt;artifact&gt; val x$29: Map[org.riskala.model.Player,akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]] @scala.reflect.internal.annotations.uncheckedBounds @scala.annotation.unchecked.uncheckedVariance = nextBehavior$default$3;
+        &lt;artifact&gt; val x$30: Set[org.riskala.model.Player] @scala.reflect.internal.annotations.uncheckedBounds @scala.annotation.unchecked.uncheckedVariance = nextBehavior$default$4;
+        &lt;artifact&gt; val x$31: String @scala.annotation.unchecked.uncheckedVariance = nextBehavior$default$5;
+        &lt;artifact&gt; val x$32: akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.LobbyMessage] @scala.reflect.internal.annotations.uncheckedBounds @scala.annotation.unchecked.uncheckedVariance = nextBehavior$default$6;
+        nextBehavior(x$27, x$28, x$29, x$30, x$31, x$32, x$25, x$26)
+      }
+    }
+    case (playerName: String, card: org.riskala.model.Cards.Cards)org.riskala.controller.actors.game.GameMessages.RedeemBonus((playerName @ _), (card @ _)) =&gt; {
+      val player: org.riskala.model.Player = GameManager.this.getPlayerByName(players, playerName).get;
+      &lt;synthetic&gt; &lt;artifact&gt; private[this] val x$9: (org.riskala.model.logic.EventStore[org.riskala.model.logic.Event], org.riskala.model.logic.GameSnapshot) = (evolveEventStore(org.riskala.model.logic.RedeemBonus.apply(player, card)): (org.riskala.model.logic.EventStore[org.riskala.model.logic.Event], org.riskala.model.logic.GameSnapshot) @unchecked) match {
+        case (_1: org.riskala.model.logic.EventStore[org.riskala.model.logic.Event], _2: org.riskala.model.logic.GameSnapshot)(org.riskala.model.logic.EventStore[org.riskala.model.logic.Event], org.riskala.model.logic.GameSnapshot)((newEventStore @ _), (newSnapshot @ _)) =&gt; scala.Tuple2.apply[org.riskala.model.logic.EventStore[org.riskala.model.logic.Event], org.riskala.model.logic.GameSnapshot](newEventStore, newSnapshot)
+      };
+      val newEventStore: org.riskala.model.logic.EventStore[org.riskala.model.logic.Event] = x$9._1;
+      val newSnapshot: org.riskala.model.logic.GameSnapshot = x$9._2;
+      notifyUpdate(newSnapshot);
+      {
+        &lt;artifact&gt; val x$33: org.riskala.model.logic.EventStore[org.riskala.model.logic.Event] @scala.reflect.internal.annotations.uncheckedBounds = newEventStore;
+        &lt;artifact&gt; val x$34: org.riskala.model.logic.GameSnapshot = newSnapshot;
+        &lt;artifact&gt; val x$35: String @scala.annotation.unchecked.uncheckedVariance = nextBehavior$default$1;
+        &lt;artifact&gt; val x$36: Set[akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]] @scala.reflect.internal.annotations.uncheckedBounds @scala.annotation.unchecked.uncheckedVariance = nextBehavior$default$2;
+        &lt;artifact&gt; val x$37: Map[org.riskala.model.Player,akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]] @scala.reflect.internal.annotations.uncheckedBounds @scala.annotation.unchecked.uncheckedVariance = nextBehavior$default$3;
+        &lt;artifact&gt; val x$38: Set[org.riskala.model.Player] @scala.reflect.internal.annotations.uncheckedBounds @scala.annotation.unchecked.uncheckedVariance = nextBehavior$default$4;
+        &lt;artifact&gt; val x$39: String @scala.annotation.unchecked.uncheckedVariance = nextBehavior$default$5;
+        &lt;artifact&gt; val x$40: akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.LobbyMessage] @scala.reflect.internal.annotations.uncheckedBounds @scala.annotation.unchecked.uncheckedVariance = nextBehavior$default$6;
+        nextBehavior(x$35, x$36, x$37, x$38, x$39, x$40, x$33, x$34)
+      }
+    }
+    case (playerName: String, actor: akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage])org.riskala.controller.actors.game.GameMessages.GetFullInfo((playerName @ _), (actor @ _)) =&gt; {
+      val optAskingPlayer: Option[org.riskala.model.Player] = GameManager.this.getPlayerByName(gameSnapshot.players.toSet[org.riskala.model.Player], playerName);
+      val newParticipants: Map[org.riskala.model.Player,akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]] = optAskingPlayer.fold[Map[org.riskala.model.Player,akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]]](participants)(((p: org.riskala.model.Player) =&gt; participants.+[akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]](scala.Predef.ArrowAssoc[org.riskala.model.Player](p).-&gt;[akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]](actor))));
+      val newSubs: scala.collection.immutable.Set[akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]] = optAskingPlayer.fold[scala.collection.immutable.Set[akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]]](subscribers.+(actor))(((x$10: org.riskala.model.Player) =&gt; subscribers));
+      val personalInfo: org.riskala.client.messages.ToClientMessages.GamePersonalInfo = getPersonalInfo(optAskingPlayer, gameSnapshot);
+      val gameInfoMessage: org.riskala.controller.actors.player.PlayerMessages.GameInfoMessage = org.riskala.controller.actors.player.PlayerMessages.GameInfoMessage.apply(gameSnapshot.players.map[String, Seq[String]](((p: org.riskala.model.Player) =&gt; p.nickname))(collection.this.Seq.canBuildFrom[String]).toSet[String], gameSnapshot.nowPlaying.nickname, gameSnapshot.deployableTroops, gameSnapshot.scenario, gameSnapshot.turn.&lt;=(players.size), map.this.Geopolitics.geopolitics2states(gameSnapshot.geopolitics), personalInfo, gameSnapshot.winner);
+      typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage](actor).!(gameInfoMessage);
+      {
+        &lt;artifact&gt; val x$41: scala.collection.immutable.Set[akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]] @scala.reflect.internal.annotations.uncheckedBounds = newSubs;
+        &lt;artifact&gt; val x$42: Map[org.riskala.model.Player,akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]] @scala.reflect.internal.annotations.uncheckedBounds = newParticipants;
+        &lt;artifact&gt; val x$43: String @scala.annotation.unchecked.uncheckedVariance = nextBehavior$default$1;
+        &lt;artifact&gt; val x$44: Set[org.riskala.model.Player] @scala.reflect.internal.annotations.uncheckedBounds @scala.annotation.unchecked.uncheckedVariance = nextBehavior$default$4;
+        &lt;artifact&gt; val x$45: String @scala.annotation.unchecked.uncheckedVariance = nextBehavior$default$5;
+        &lt;artifact&gt; val x$46: akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.LobbyMessage] @scala.reflect.internal.annotations.uncheckedBounds @scala.annotation.unchecked.uncheckedVariance = nextBehavior$default$6;
+        &lt;artifact&gt; val x$47: org.riskala.model.logic.EventStore[org.riskala.model.logic.Event] @scala.reflect.internal.annotations.uncheckedBounds @scala.annotation.unchecked.uncheckedVariance = nextBehavior$default$7;
+        &lt;artifact&gt; val x$48: org.riskala.model.logic.GameSnapshot @scala.annotation.unchecked.uncheckedVariance = nextBehavior$default$8;
+        nextBehavior(x$43, x$41, x$42, x$44, x$45, x$46, x$47, x$48)
+      }
+    }
+    case (playerName: String)org.riskala.controller.actors.game.GameMessages.EndTurn((playerName @ _)) =&gt; {
+      val player: org.riskala.model.Player = GameManager.this.getPlayerByName(players, playerName).get;
+      &lt;synthetic&gt; &lt;artifact&gt; private[this] val x$11: (org.riskala.model.logic.EventStore[org.riskala.model.logic.Event], org.riskala.model.logic.GameSnapshot) = (evolveEventStore(org.riskala.model.logic.EndTurn.apply(player)): (org.riskala.model.logic.EventStore[org.riskala.model.logic.Event], org.riskala.model.logic.GameSnapshot) @unchecked) match {
+        case (_1: org.riskala.model.logic.EventStore[org.riskala.model.logic.Event], _2: org.riskala.model.logic.GameSnapshot)(org.riskala.model.logic.EventStore[org.riskala.model.logic.Event], org.riskala.model.logic.GameSnapshot)((newEventStore @ _), (newSnapshot @ _)) =&gt; scala.Tuple2.apply[org.riskala.model.logic.EventStore[org.riskala.model.logic.Event], org.riskala.model.logic.GameSnapshot](newEventStore, newSnapshot)
+      };
+      val newEventStore: org.riskala.model.logic.EventStore[org.riskala.model.logic.Event] = x$11._1;
+      val newSnapshot: org.riskala.model.logic.GameSnapshot = x$11._2;
+      notifyUpdate(newSnapshot);
+      val nextPlayer: org.riskala.model.Player = newSnapshot.nowPlaying;
+      if (participants.contains(nextPlayer).unary_!)
+        org.riskala.utils.Utils.sendUserTurnNotification(nextPlayer.nickname, gameName)
+      else
+        ();
+      {
+        &lt;artifact&gt; val x$49: org.riskala.model.logic.EventStore[org.riskala.model.logic.Event] @scala.reflect.internal.annotations.uncheckedBounds = newEventStore;
+        &lt;artifact&gt; val x$50: org.riskala.model.logic.GameSnapshot = newSnapshot;
+        &lt;artifact&gt; val x$51: String @scala.annotation.unchecked.uncheckedVariance = nextBehavior$default$1;
+        &lt;artifact&gt; val x$52: Set[akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]] @scala.reflect.internal.annotations.uncheckedBounds @scala.annotation.unchecked.uncheckedVariance = nextBehavior$default$2;
+        &lt;artifact&gt; val x$53: Map[org.riskala.model.Player,akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]] @scala.reflect.internal.annotations.uncheckedBounds @scala.annotation.unchecked.uncheckedVariance = nextBehavior$default$3;
+        &lt;artifact&gt; val x$54: Set[org.riskala.model.Player] @scala.reflect.internal.annotations.uncheckedBounds @scala.annotation.unchecked.uncheckedVariance = nextBehavior$default$4;
+        &lt;artifact&gt; val x$55: String @scala.annotation.unchecked.uncheckedVariance = nextBehavior$default$5;
+        &lt;artifact&gt; val x$56: akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.LobbyMessage] @scala.reflect.internal.annotations.uncheckedBounds @scala.annotation.unchecked.uncheckedVariance = nextBehavior$default$6;
+        nextBehavior(x$51, x$52, x$53, x$54, x$55, x$56, x$49, x$50)
+      }
+    }
+    case (actor: akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage])org.riskala.controller.actors.Messages.Logout((actor @ _)) =&gt; {
+      val newSubs: scala.collection.immutable.Set[akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]] = subscribers.-(actor);
+      val newPart: scala.collection.immutable.Map[org.riskala.model.Player,akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]] = participants.filterNot(((kv: (org.riskala.model.Player, akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage])) =&gt; kv._2.==(actor)));
+      {
+        &lt;artifact&gt; val x$57: scala.collection.immutable.Set[akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]] @scala.reflect.internal.annotations.uncheckedBounds = newSubs;
+        &lt;artifact&gt; val x$58: scala.collection.immutable.Map[org.riskala.model.Player,akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]] @scala.reflect.internal.annotations.uncheckedBounds = newPart;
+        &lt;artifact&gt; val x$59: String @scala.annotation.unchecked.uncheckedVariance = nextBehavior$default$1;
+        &lt;artifact&gt; val x$60: Set[org.riskala.model.Player] @scala.reflect.internal.annotations.uncheckedBounds @scala.annotation.unchecked.uncheckedVariance = nextBehavior$default$4;
+        &lt;artifact&gt; val x$61: String @scala.annotation.unchecked.uncheckedVariance = nextBehavior$default$5;
+        &lt;artifact&gt; val x$62: akka.actor.typed.ActorRef[org.riskala.controller.actors.Messages.LobbyMessage] @scala.reflect.internal.annotations.uncheckedBounds @scala.annotation.unchecked.uncheckedVariance = nextBehavior$default$6;
+        &lt;artifact&gt; val x$63: org.riskala.model.logic.EventStore[org.riskala.model.logic.Event] @scala.reflect.internal.annotations.uncheckedBounds @scala.annotation.unchecked.uncheckedVariance = nextBehavior$default$7;
+        &lt;artifact&gt; val x$64: org.riskala.model.logic.GameSnapshot @scala.annotation.unchecked.uncheckedVariance = nextBehavior$default$8;
+        nextBehavior(x$59, x$57, x$58, x$60, x$61, x$62, x$63, x$64)
+      }
+    }
+  }
+}))
+        </td>
+      </tr><tr>
+        <td>
+          58
+        </td>
+        <td>
+          516
+        </td>
+        <td>
+          3127
+          -
+          3254
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.game.GameManager.gameManager
+        </td>
+        <td style="background: #F0ADAD">
+          GameManager.this.gameManager(updateName, updatedSub, updatedParticipants, updatedPlayers, updateScenario, updateLobby, eventStore, gameSnapshot)
+        </td>
+      </tr><tr>
+        <td>
+          62
+        </td>
+        <td>
+          1810
+        </td>
+        <td>
+          3458
+          -
+          3489
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.logic.Command.execution
+        </td>
+        <td style="background: #F0ADAD">
+          command.execution(gameSnapshot)
+        </td>
+      </tr><tr>
+        <td>
+          64
+        </td>
+        <td>
+          1032
+        </td>
+        <td>
+          3578
+          -
+          3606
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.logic.EventStore.perform
+        </td>
+        <td style="background: #F0ADAD">
+          eventStore.perform(behavior)
+        </td>
+      </tr><tr>
+        <td>
+          66
+        </td>
+        <td>
+          627
+        </td>
+        <td>
+          3716
+          -
+          3767
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Function2.apply
+        </td>
+        <td style="background: #F0ADAD">
+          org.riskala.model.logic.SnapshotGenerator.apply().project.apply(gameSnapshot, behavior)
+        </td>
+      </tr><tr>
+        <td>
+          67
+        </td>
+        <td>
+          1949
+        </td>
+        <td>
+          3777
+          -
+          3805
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Tuple2.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Tuple2.apply[org.riskala.model.logic.EventStore[org.riskala.model.logic.Event], org.riskala.model.logic.GameSnapshot](newEventStore, newSnapshot)
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          1034
+        </td>
+        <td>
+          3930
+          -
+          4042
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.fold
+        </td>
+        <td style="background: #F0ADAD">
+          optPlayer.fold[org.riskala.client.messages.ToClientMessages.GamePersonalInfo](org.riskala.client.messages.ToClientMessages.GamePersonalInfo.apply(org.riskala.client.messages.ToClientMessages.GamePersonalInfo.apply$default$1, org.riskala.client.messages.ToClientMessages.GamePersonalInfo.apply$default$2))(((p: org.riskala.model.Player) =&gt; org.riskala.client.messages.ToClientMessages.GamePersonalInfo.apply(gameSnapshot.objectives.apply(p), gameSnapshot.cards.apply(p).toList)))
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          1817
+        </td>
+        <td>
+          3968
+          -
+          4041
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.messages.ToClientMessages.GamePersonalInfo.apply
+        </td>
+        <td style="background: #F0ADAD">
+          org.riskala.client.messages.ToClientMessages.GamePersonalInfo.apply(gameSnapshot.objectives.apply(p), gameSnapshot.cards.apply(p).toList)
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          1120
+        </td>
+        <td>
+          3945
+          -
+          3945
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.messages.ToClientMessages.GamePersonalInfo.apply$default$1
+        </td>
+        <td style="background: #F0ADAD">
+          org.riskala.client.messages.ToClientMessages.GamePersonalInfo.apply$default$1
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          420
+        </td>
+        <td>
+          4012
+          -
+          4040
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toList
+        </td>
+        <td style="background: #F0ADAD">
+          gameSnapshot.cards.apply(p).toList
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          372
+        </td>
+        <td>
+          3945
+          -
+          3945
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.messages.ToClientMessages.GamePersonalInfo.apply$default$2
+        </td>
+        <td style="background: #F0ADAD">
+          org.riskala.client.messages.ToClientMessages.GamePersonalInfo.apply$default$2
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          2145
+        </td>
+        <td>
+          3945
+          -
+          3963
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.messages.ToClientMessages.GamePersonalInfo.apply
+        </td>
+        <td style="background: #F0ADAD">
+          org.riskala.client.messages.ToClientMessages.GamePersonalInfo.apply(org.riskala.client.messages.ToClientMessages.GamePersonalInfo.apply$default$1, org.riskala.client.messages.ToClientMessages.GamePersonalInfo.apply$default$2)
+        </td>
+      </tr><tr>
+        <td>
+          71
+        </td>
+        <td>
+          1286
+        </td>
+        <td>
+          3985
+          -
+          4011
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.MapLike.apply
+        </td>
+        <td style="background: #F0ADAD">
+          gameSnapshot.objectives.apply(p)
+        </td>
+      </tr><tr>
+        <td>
+          75
+        </td>
+        <td>
+          669
+        </td>
+        <td>
+          4204
+          -
+          4236
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.Player.nickname
+        </td>
+        <td style="background: #F0ADAD">
+          gameSnapshot.nowPlaying.nickname
+        </td>
+      </tr><tr>
+        <td>
+          75
+        </td>
+        <td>
+          422
+        </td>
+        <td>
+          4186
+          -
+          4385
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.player.PlayerMessages.GameUpdateMessage.apply
+        </td>
+        <td style="background: #F0ADAD">
+          org.riskala.controller.actors.player.PlayerMessages.GameUpdateMessage.apply(gameSnapshot.nowPlaying.nickname, gameSnapshot.deployableTroops, gameSnapshot.turn.&lt;=(players.size), map.this.Geopolitics.geopolitics2states(gameSnapshot.geopolitics), personalInfo)
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          1951
+        </td>
+        <td>
+          4249
+          -
+          4278
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.logic.GameSnapshot.deployableTroops
+        </td>
+        <td style="background: #F0ADAD">
+          gameSnapshot.deployableTroops
+        </td>
+      </tr><tr>
+        <td>
+          77
+        </td>
+        <td>
+          1125
+        </td>
+        <td>
+          4310
+          -
+          4322
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.size
+        </td>
+        <td style="background: #F0ADAD">
+          players.size
+        </td>
+      </tr><tr>
+        <td>
+          77
+        </td>
+        <td>
+          341
+        </td>
+        <td>
+          4291
+          -
+          4322
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&lt;=
+        </td>
+        <td style="background: #F0ADAD">
+          gameSnapshot.turn.&lt;=(players.size)
+        </td>
+      </tr><tr>
+        <td>
+          78
+        </td>
+        <td>
+          1347
+        </td>
+        <td>
+          4335
+          -
+          4359
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          org.riskala.model.map.Geopolitics.geopolitics2states
+        </td>
+        <td style="background: #F0ADAD">
+          map.this.Geopolitics.geopolitics2states(gameSnapshot.geopolitics)
+        </td>
+      </tr><tr>
+        <td>
+          78
+        </td>
+        <td>
+          1651
+        </td>
+        <td>
+          4335
+          -
+          4359
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.logic.GameSnapshot.geopolitics
+        </td>
+        <td style="background: #F0ADAD">
+          gameSnapshot.geopolitics
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          1823
+        </td>
+        <td>
+          4490
+          -
+          4492
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          674
+        </td>
+        <td>
+          4527
+          -
+          4548
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.actor.typed.ActorRef.ActorRefOps.!
+        </td>
+        <td style="background: #F0ADAD">
+          typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage](a).!(org.riskala.controller.actors.player.PlayerMessages.GameEndMessage.apply(p))
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          1939
+        </td>
+        <td>
+          4422
+          -
+          4550
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.fold
+        </td>
+        <td style="background: #F0ADAD">
+          gameSnapshot.winner.fold[akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage] =&gt; Unit](((x$3: akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]) =&gt; ()))(((p: org.riskala.model.Player) =&gt; ((a: akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]) =&gt; typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage](a).!(org.riskala.controller.actors.player.PlayerMessages.GameEndMessage.apply(p)))))
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          1074
+        </td>
+        <td>
+          4531
+          -
+          4548
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.player.PlayerMessages.GameEndMessage.apply
+        </td>
+        <td style="background: #F0ADAD">
+          org.riskala.controller.actors.player.PlayerMessages.GameEndMessage.apply(p)
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          1082
+        </td>
+        <td>
+          4560
+          -
+          4683
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.foreach
+        </td>
+        <td style="background: #F0ADAD">
+          subscribers.foreach[Unit](((sub: akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]) =&gt; {
+  typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage](sub).!(msgFromPersonalInfo.apply(org.riskala.client.messages.ToClientMessages.GamePersonalInfo.apply(org.riskala.client.messages.ToClientMessages.GamePersonalInfo.apply$default$1, org.riskala.client.messages.ToClientMessages.GamePersonalInfo.apply$default$2)));
+  handleWin.apply(sub)
+}))
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          1351
+        </td>
+        <td>
+          4606
+          -
+          4645
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Function1.apply
+        </td>
+        <td style="background: #F0ADAD">
+          msgFromPersonalInfo.apply(org.riskala.client.messages.ToClientMessages.GamePersonalInfo.apply(org.riskala.client.messages.ToClientMessages.GamePersonalInfo.apply$default$1, org.riskala.client.messages.ToClientMessages.GamePersonalInfo.apply$default$2))
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          513
+        </td>
+        <td>
+          4600
+          -
+          4645
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.actor.typed.ActorRef.ActorRefOps.!
+        </td>
+        <td style="background: #F0ADAD">
+          typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage](sub).!(msgFromPersonalInfo.apply(org.riskala.client.messages.ToClientMessages.GamePersonalInfo.apply(org.riskala.client.messages.ToClientMessages.GamePersonalInfo.apply$default$1, org.riskala.client.messages.ToClientMessages.GamePersonalInfo.apply$default$2)))
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          348
+        </td>
+        <td>
+          4626
+          -
+          4626
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.messages.ToClientMessages.GamePersonalInfo.apply$default$2
+        </td>
+        <td style="background: #F0ADAD">
+          org.riskala.client.messages.ToClientMessages.GamePersonalInfo.apply$default$2
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          1747
+        </td>
+        <td>
+          4626
+          -
+          4644
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.messages.ToClientMessages.GamePersonalInfo.apply
+        </td>
+        <td style="background: #F0ADAD">
+          org.riskala.client.messages.ToClientMessages.GamePersonalInfo.apply(org.riskala.client.messages.ToClientMessages.GamePersonalInfo.apply$default$1, org.riskala.client.messages.ToClientMessages.GamePersonalInfo.apply$default$2)
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          1101
+        </td>
+        <td>
+          4626
+          -
+          4626
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.messages.ToClientMessages.GamePersonalInfo.apply$default$1
+        </td>
+        <td style="background: #F0ADAD">
+          org.riskala.client.messages.ToClientMessages.GamePersonalInfo.apply$default$1
+        </td>
+      </tr><tr>
+        <td>
+          85
+        </td>
+        <td>
+          1789
+        </td>
+        <td>
+          4657
+          -
+          4671
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Function1.apply
+        </td>
+        <td style="background: #F0ADAD">
+          handleWin.apply(sub)
+        </td>
+      </tr><tr>
+        <td>
+          87
+        </td>
+        <td>
+          270
+        </td>
+        <td>
+          4693
+          -
+          4899
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.foreach
+        </td>
+        <td style="background: #F0ADAD">
+          participants.foreach[Unit](((part: (org.riskala.model.Player, akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage])) =&gt; {
+  val playerOpt: Option[org.riskala.model.Player] = players.find(((x$4: org.riskala.model.Player) =&gt; x$4.==(part._1)));
+  typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage](part._2).!(msgFromPersonalInfo.apply(getPersonalInfo(playerOpt, gameSnapshot)));
+  handleWin.apply(part._2)
+}))
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          1946
+        </td>
+        <td>
+          4764
+          -
+          4774
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #F0ADAD">
+          x$4.==(part._1)
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          265
+        </td>
+        <td>
+          4767
+          -
+          4774
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Tuple2._1
+        </td>
+        <td style="background: #F0ADAD">
+          part._1
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          1201
+        </td>
+        <td>
+          4751
+          -
+          4775
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.find
+        </td>
+        <td style="background: #F0ADAD">
+          players.find(((x$4: org.riskala.model.Player) =&gt; x$4.==(part._1)))
+        </td>
+      </tr><tr>
+        <td>
+          89
+        </td>
+        <td>
+          390
+        </td>
+        <td>
+          4787
+          -
+          4794
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Tuple2._2
+        </td>
+        <td style="background: #F0ADAD">
+          part._2
+        </td>
+      </tr><tr>
+        <td>
+          89
+        </td>
+        <td>
+          1266
+        </td>
+        <td>
+          4797
+          -
+          4857
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Function1.apply
+        </td>
+        <td style="background: #F0ADAD">
+          msgFromPersonalInfo.apply(getPersonalInfo(playerOpt, gameSnapshot))
+        </td>
+      </tr><tr>
+        <td>
+          89
+        </td>
+        <td>
+          1756
+        </td>
+        <td>
+          4817
+          -
+          4856
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.game.GameManager.getPersonalInfo
+        </td>
+        <td style="background: #F0ADAD">
+          getPersonalInfo(playerOpt, gameSnapshot)
+        </td>
+      </tr><tr>
+        <td>
+          89
+        </td>
+        <td>
+          475
+        </td>
+        <td>
+          4787
+          -
+          4857
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.actor.typed.ActorRef.ActorRefOps.!
+        </td>
+        <td style="background: #F0ADAD">
+          typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage](part._2).!(msgFromPersonalInfo.apply(getPersonalInfo(playerOpt, gameSnapshot)))
+        </td>
+      </tr><tr>
+        <td>
+          90
+        </td>
+        <td>
+          1879
+        </td>
+        <td>
+          4879
+          -
+          4886
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Tuple2._2
+        </td>
+        <td style="background: #F0ADAD">
+          part._2
+        </td>
+      </tr><tr>
+        <td>
+          90
+        </td>
+        <td>
+          1050
+        </td>
+        <td>
+          4869
+          -
+          4887
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Function1.apply
+        </td>
+        <td style="background: #F0ADAD">
+          handleWin.apply(part._2)
+        </td>
+      </tr><tr>
+        <td>
+          92
+        </td>
+        <td>
+          1716
+        </td>
+        <td>
+          4909
+          -
+          4981
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.foreach
+        </td>
+        <td style="background: #F0ADAD">
+          gameSnapshot.winner.foreach[Unit](((x$5: org.riskala.model.Player) =&gt; typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.Messages.LobbyMessage](lobby).!(org.riskala.controller.actors.lobby.LobbyMessages.EndGame.apply(gameName, context.self))))
+        </td>
+      </tr><tr>
+        <td>
+          92
+        </td>
+        <td>
+          1168
+        </td>
+        <td>
+          4950
+          -
+          4980
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.lobby.LobbyMessages.EndGame.apply
+        </td>
+        <td style="background: #F0ADAD">
+          org.riskala.controller.actors.lobby.LobbyMessages.EndGame.apply(gameName, context.self)
+        </td>
+      </tr><tr>
+        <td>
+          92
+        </td>
+        <td>
+          339
+        </td>
+        <td>
+          4942
+          -
+          4980
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.actor.typed.ActorRef.ActorRefOps.!
+        </td>
+        <td style="background: #F0ADAD">
+          typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.Messages.LobbyMessage](lobby).!(org.riskala.controller.actors.lobby.LobbyMessages.EndGame.apply(gameName, context.self))
+        </td>
+      </tr><tr>
+        <td>
+          92
+        </td>
+        <td>
+          1950
+        </td>
+        <td>
+          4967
+          -
+          4979
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          akka.actor.typed.scaladsl.ActorContext.self
+        </td>
+        <td style="background: #F0ADAD">
+          context.self
+        </td>
+      </tr><tr>
+        <td>
+          95
+        </td>
+        <td>
+          1267
+        </td>
+        <td>
+          5017
+          -
+          5051
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;GameManager &quot;, &quot;: &quot;, &quot;&quot;).s(gameName, message)
+        </td>
+      </tr><tr>
+        <td>
+          95
+        </td>
+        <td>
+          480
+        </td>
+        <td>
+          5000
+          -
+          5052
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.slf4j.Logger.info
+        </td>
+        <td style="background: #F0ADAD">
+          context.log.info(scala.StringContext.apply(&quot;GameManager &quot;, &quot;: &quot;, &quot;&quot;).s(gameName, message))
+        </td>
+      </tr><tr>
+        <td>
+          99
+        </td>
+        <td>
+          140
+        </td>
+        <td>
+          5122
+          -
+          5156
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.actor.typed.ActorRef.ActorRefOps.!
+        </td>
+        <td style="background: #F0ADAD">
+          typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage](actor).!(org.riskala.controller.actors.player.PlayerMessages.GameReferent.apply(context.self))
+        </td>
+      </tr><tr>
+        <td>
+          99
+        </td>
+        <td>
+          1781
+        </td>
+        <td>
+          5143
+          -
+          5155
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          akka.actor.typed.scaladsl.ActorContext.self
+        </td>
+        <td style="background: #F0ADAD">
+          context.self
+        </td>
+      </tr><tr>
+        <td>
+          99
+        </td>
+        <td>
+          1015
+        </td>
+        <td>
+          5130
+          -
+          5156
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.player.PlayerMessages.GameReferent.apply
+        </td>
+        <td style="background: #F0ADAD">
+          org.riskala.controller.actors.player.PlayerMessages.GameReferent.apply(context.self)
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          1922
+        </td>
+        <td>
+          5168
+          -
+          5182
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.game.GameManager.nextBehavior
+        </td>
+        <td style="background: #F0ADAD">
+          nextBehavior(nextBehavior$default$1, nextBehavior$default$2, nextBehavior$default$3, nextBehavior$default$4, nextBehavior$default$5, nextBehavior$default$6, nextBehavior$default$7, nextBehavior$default$8)
+        </td>
+      </tr><tr>
+        <td>
+          103
+        </td>
+        <td>
+          1171
+        </td>
+        <td>
+          5240
+          -
+          5257
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.SetLike.-
+        </td>
+        <td style="background: #F0ADAD">
+          subscribers.-(actor)
+        </td>
+      </tr><tr>
+        <td>
+          104
+        </td>
+        <td>
+          303
+        </td>
+        <td>
+          5310
+          -
+          5322
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #F0ADAD">
+          kv._2.==(actor)
+        </td>
+      </tr><tr>
+        <td>
+          104
+        </td>
+        <td>
+          1678
+        </td>
+        <td>
+          5283
+          -
+          5323
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.MapLike.filterNot
+        </td>
+        <td style="background: #F0ADAD">
+          participants.filterNot(((kv: (org.riskala.model.Player, akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage])) =&gt; kv._2.==(actor)))
+        </td>
+      </tr><tr>
+        <td>
+          105
+        </td>
+        <td>
+          442
+        </td>
+        <td>
+          5335
+          -
+          5359
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.actor.typed.ActorRef.ActorRefOps.!
+        </td>
+        <td style="background: #F0ADAD">
+          typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.Messages.LobbyMessage](lobby).!(org.riskala.controller.actors.lobby.LobbyMessages.Subscribe.apply(actor))
+        </td>
+      </tr><tr>
+        <td>
+          105
+        </td>
+        <td>
+          868
+        </td>
+        <td>
+          5343
+          -
+          5359
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.lobby.LobbyMessages.Subscribe.apply
+        </td>
+        <td style="background: #F0ADAD">
+          org.riskala.controller.actors.lobby.LobbyMessages.Subscribe.apply(actor)
+        </td>
+      </tr><tr>
+        <td>
+          106
+        </td>
+        <td>
+          1786
+        </td>
+        <td>
+          5371
+          -
+          5436
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.game.GameManager.nextBehavior
+        </td>
+        <td style="background: #F0ADAD">
+          nextBehavior(x$3, x$1, x$2, x$4, x$5, x$6, x$7, x$8)
+        </td>
+      </tr><tr>
+        <td>
+          109
+        </td>
+        <td>
+          262
+        </td>
+        <td>
+          5530
+          -
+          5530
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Tuple2._2
+        </td>
+        <td style="background: #F0ADAD">
+          x$6._2
+        </td>
+      </tr><tr>
+        <td>
+          109
+        </td>
+        <td>
+          984
+        </td>
+        <td>
+          5515
+          -
+          5515
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Tuple2._1
+        </td>
+        <td style="background: #F0ADAD">
+          x$6._1
+        </td>
+      </tr><tr>
+        <td>
+          110
+        </td>
+        <td>
+          1925
+        </td>
+        <td>
+          5605
+          -
+          5630
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.game.GameManager.notifyUpdate
+        </td>
+        <td style="background: #F0ADAD">
+          notifyUpdate(newSnapshot)
+        </td>
+      </tr><tr>
+        <td>
+          111
+        </td>
+        <td>
+          1222
+        </td>
+        <td>
+          5642
+          -
+          5710
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.game.GameManager.nextBehavior
+        </td>
+        <td style="background: #F0ADAD">
+          nextBehavior(x$11, x$12, x$13, x$14, x$15, x$16, x$9, x$10)
+        </td>
+      </tr><tr>
+        <td>
+          114
+        </td>
+        <td>
+          306
+        </td>
+        <td>
+          5787
+          -
+          5787
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Tuple2._1
+        </td>
+        <td style="background: #F0ADAD">
+          x$7._1
+        </td>
+      </tr><tr>
+        <td>
+          114
+        </td>
+        <td>
+          1681
+        </td>
+        <td>
+          5802
+          -
+          5802
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Tuple2._2
+        </td>
+        <td style="background: #F0ADAD">
+          x$7._2
+        </td>
+      </tr><tr>
+        <td>
+          115
+        </td>
+        <td>
+          939
+        </td>
+        <td>
+          5881
+          -
+          5906
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.game.GameManager.notifyUpdate
+        </td>
+        <td style="background: #F0ADAD">
+          notifyUpdate(newSnapshot)
+        </td>
+      </tr><tr>
+        <td>
+          116
+        </td>
+        <td>
+          446
+        </td>
+        <td>
+          5918
+          -
+          5986
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.game.GameManager.nextBehavior
+        </td>
+        <td style="background: #F0ADAD">
+          nextBehavior(x$19, x$20, x$21, x$22, x$23, x$24, x$17, x$18)
+        </td>
+      </tr><tr>
+        <td>
+          119
+        </td>
+        <td>
+          1895
+        </td>
+        <td>
+          6065
+          -
+          6065
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Tuple2._1
+        </td>
+        <td style="background: #F0ADAD">
+          x$8._1
+        </td>
+      </tr><tr>
+        <td>
+          119
+        </td>
+        <td>
+          990
+        </td>
+        <td>
+          6080
+          -
+          6080
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Tuple2._2
+        </td>
+        <td style="background: #F0ADAD">
+          x$8._2
+        </td>
+      </tr><tr>
+        <td>
+          120
+        </td>
+        <td>
+          268
+        </td>
+        <td>
+          6142
+          -
+          6167
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.game.GameManager.notifyUpdate
+        </td>
+        <td style="background: #F0ADAD">
+          notifyUpdate(newSnapshot)
+        </td>
+      </tr><tr>
+        <td>
+          121
+        </td>
+        <td>
+          1621
+        </td>
+        <td>
+          6179
+          -
+          6247
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.game.GameManager.nextBehavior
+        </td>
+        <td style="background: #F0ADAD">
+          nextBehavior(x$27, x$28, x$29, x$30, x$31, x$32, x$25, x$26)
+        </td>
+      </tr><tr>
+        <td>
+          124
+        </td>
+        <td>
+          1091
+        </td>
+        <td>
+          6321
+          -
+          6361
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Option.get
+        </td>
+        <td style="background: #F0ADAD">
+          GameManager.this.getPlayerByName(players, playerName).get
+        </td>
+      </tr><tr>
+        <td>
+          125
+        </td>
+        <td>
+          1713
+        </td>
+        <td>
+          6393
+          -
+          6393
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Tuple2._2
+        </td>
+        <td style="background: #F0ADAD">
+          x$9._2
+        </td>
+      </tr><tr>
+        <td>
+          125
+        </td>
+        <td>
+          314
+        </td>
+        <td>
+          6378
+          -
+          6378
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Tuple2._1
+        </td>
+        <td style="background: #F0ADAD">
+          x$9._1
+        </td>
+      </tr><tr>
+        <td>
+          126
+        </td>
+        <td>
+          945
+        </td>
+        <td>
+          6469
+          -
+          6494
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.game.GameManager.notifyUpdate
+        </td>
+        <td style="background: #F0ADAD">
+          notifyUpdate(newSnapshot)
+        </td>
+      </tr><tr>
+        <td>
+          127
+        </td>
+        <td>
+          436
+        </td>
+        <td>
+          6506
+          -
+          6574
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.game.GameManager.nextBehavior
+        </td>
+        <td style="background: #F0ADAD">
+          nextBehavior(x$35, x$36, x$37, x$38, x$39, x$40, x$33, x$34)
+        </td>
+      </tr><tr>
+        <td>
+          130
+        </td>
+        <td>
+          994
+        </td>
+        <td>
+          6658
+          -
+          6713
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.game.GameManager.getPlayerByName
+        </td>
+        <td style="background: #F0ADAD">
+          GameManager.this.getPlayerByName(gameSnapshot.players.toSet[org.riskala.model.Player], playerName)
+        </td>
+      </tr><tr>
+        <td>
+          130
+        </td>
+        <td>
+          1767
+        </td>
+        <td>
+          6674
+          -
+          6700
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toSet
+        </td>
+        <td style="background: #F0ADAD">
+          gameSnapshot.players.toSet[org.riskala.model.Player]
+        </td>
+      </tr><tr>
+        <td>
+          131
+        </td>
+        <td>
+          1124
+        </td>
+        <td>
+          6747
+          -
+          6813
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.fold
+        </td>
+        <td style="background: #F0ADAD">
+          optAskingPlayer.fold[Map[org.riskala.model.Player,akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]]](participants)(((p: org.riskala.model.Player) =&gt; participants.+[akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]](scala.Predef.ArrowAssoc[org.riskala.model.Player](p).-&gt;[akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]](actor))))
+        </td>
+      </tr><tr>
+        <td>
+          131
+        </td>
+        <td>
+          223
+        </td>
+        <td>
+          6801
+          -
+          6811
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.ArrowAssoc.-&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Predef.ArrowAssoc[org.riskala.model.Player](p).-&gt;[akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]](actor)
+        </td>
+      </tr><tr>
+        <td>
+          131
+        </td>
+        <td>
+          1624
+        </td>
+        <td>
+          6785
+          -
+          6812
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.immutable.Map.+
+        </td>
+        <td style="background: #F0ADAD">
+          participants.+[akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]](scala.Predef.ArrowAssoc[org.riskala.model.Player](p).-&gt;[akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]](actor))
+        </td>
+      </tr><tr>
+        <td>
+          132
+        </td>
+        <td>
+          1719
+        </td>
+        <td>
+          6839
+          -
+          6896
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.fold
+        </td>
+        <td style="background: #F0ADAD">
+          optAskingPlayer.fold[scala.collection.immutable.Set[akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage]]](subscribers.+(actor))(((x$10: org.riskala.model.Player) =&gt; subscribers))
+        </td>
+      </tr><tr>
+        <td>
+          132
+        </td>
+        <td>
+          282
+        </td>
+        <td>
+          6860
+          -
+          6877
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.SetLike.+
+        </td>
+        <td style="background: #F0ADAD">
+          subscribers.+(actor)
+        </td>
+      </tr><tr>
+        <td>
+          133
+        </td>
+        <td>
+          908
+        </td>
+        <td>
+          6927
+          -
+          6972
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.game.GameManager.getPersonalInfo
+        </td>
+        <td style="background: #F0ADAD">
+          getPersonalInfo(optAskingPlayer, gameSnapshot)
+        </td>
+      </tr><tr>
+        <td>
+          134
+        </td>
+        <td>
+          439
+        </td>
+        <td>
+          7067
+          -
+          7077
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.Player.nickname
+        </td>
+        <td style="background: #F0ADAD">
+          p.nickname
+        </td>
+      </tr><tr>
+        <td>
+          134
+        </td>
+        <td>
+          1859
+        </td>
+        <td>
+          7063
+          -
+          7063
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #F0ADAD">
+          collection.this.Seq.canBuildFrom[String]
+        </td>
+      </tr><tr>
+        <td>
+          134
+        </td>
+        <td>
+          1036
+        </td>
+        <td>
+          7039
+          -
+          7084
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.toSet
+        </td>
+        <td style="background: #F0ADAD">
+          gameSnapshot.players.map[String, Seq[String]](((p: org.riskala.model.Player) =&gt; p.nickname))(collection.this.Seq.canBuildFrom[String]).toSet[String]
+        </td>
+      </tr><tr>
+        <td>
+          134
+        </td>
+        <td>
+          987
+        </td>
+        <td>
+          7023
+          -
+          7358
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.player.PlayerMessages.GameInfoMessage.apply
+        </td>
+        <td style="background: #F0ADAD">
+          org.riskala.controller.actors.player.PlayerMessages.GameInfoMessage.apply(gameSnapshot.players.map[String, Seq[String]](((p: org.riskala.model.Player) =&gt; p.nickname))(collection.this.Seq.canBuildFrom[String]).toSet[String], gameSnapshot.nowPlaying.nickname, gameSnapshot.deployableTroops, gameSnapshot.scenario, gameSnapshot.turn.&lt;=(players.size), map.this.Geopolitics.geopolitics2states(gameSnapshot.geopolitics), personalInfo, gameSnapshot.winner)
+        </td>
+      </tr><tr>
+        <td>
+          135
+        </td>
+        <td>
+          229
+        </td>
+        <td>
+          7099
+          -
+          7131
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.Player.nickname
+        </td>
+        <td style="background: #F0ADAD">
+          gameSnapshot.nowPlaying.nickname
+        </td>
+      </tr><tr>
+        <td>
+          136
+        </td>
+        <td>
+          1518
+        </td>
+        <td>
+          7146
+          -
+          7175
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.logic.GameSnapshot.deployableTroops
+        </td>
+        <td style="background: #F0ADAD">
+          gameSnapshot.deployableTroops
+        </td>
+      </tr><tr>
+        <td>
+          137
+        </td>
+        <td>
+          1129
+        </td>
+        <td>
+          7190
+          -
+          7211
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.logic.GameSnapshot.scenario
+        </td>
+        <td style="background: #F0ADAD">
+          gameSnapshot.scenario
+        </td>
+      </tr><tr>
+        <td>
+          138
+        </td>
+        <td>
+          376
+        </td>
+        <td>
+          7245
+          -
+          7257
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.size
+        </td>
+        <td style="background: #F0ADAD">
+          players.size
+        </td>
+      </tr><tr>
+        <td>
+          138
+        </td>
+        <td>
+          1693
+        </td>
+        <td>
+          7226
+          -
+          7257
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&lt;=
+        </td>
+        <td style="background: #F0ADAD">
+          gameSnapshot.turn.&lt;=(players.size)
+        </td>
+      </tr><tr>
+        <td>
+          139
+        </td>
+        <td>
+          42
+        </td>
+        <td>
+          7272
+          -
+          7296
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          org.riskala.model.map.Geopolitics.geopolitics2states
+        </td>
+        <td style="background: #F0ADAD">
+          map.this.Geopolitics.geopolitics2states(gameSnapshot.geopolitics)
+        </td>
+      </tr><tr>
+        <td>
+          139
+        </td>
+        <td>
+          915
+        </td>
+        <td>
+          7272
+          -
+          7296
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.logic.GameSnapshot.geopolitics
+        </td>
+        <td style="background: #F0ADAD">
+          gameSnapshot.geopolitics
+        </td>
+      </tr><tr>
+        <td>
+          141
+        </td>
+        <td>
+          1826
+        </td>
+        <td>
+          7338
+          -
+          7357
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.logic.GameSnapshot.winner
+        </td>
+        <td style="background: #F0ADAD">
+          gameSnapshot.winner
+        </td>
+      </tr><tr>
+        <td>
+          142
+        </td>
+        <td>
+          197
+        </td>
+        <td>
+          7370
+          -
+          7393
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.actor.typed.ActorRef.ActorRefOps.!
+        </td>
+        <td style="background: #F0ADAD">
+          typed.this.ActorRef.ActorRefOps[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage](actor).!(gameInfoMessage)
+        </td>
+      </tr><tr>
+        <td>
+          143
+        </td>
+        <td>
+          1522
+        </td>
+        <td>
+          7405
+          -
+          7477
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.game.GameManager.nextBehavior
+        </td>
+        <td style="background: #F0ADAD">
+          nextBehavior(x$43, x$41, x$42, x$44, x$45, x$46, x$47, x$48)
+        </td>
+      </tr><tr>
+        <td>
+          146
+        </td>
+        <td>
+          1133
+        </td>
+        <td>
+          7541
+          -
+          7581
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Option.get
+        </td>
+        <td style="background: #F0ADAD">
+          GameManager.this.getPlayerByName(players, playerName).get
+        </td>
+      </tr><tr>
+        <td>
+          147
+        </td>
+        <td>
+          409
+        </td>
+        <td>
+          7598
+          -
+          7598
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Tuple2._1
+        </td>
+        <td style="background: #F0ADAD">
+          x$11._1
+        </td>
+      </tr><tr>
+        <td>
+          147
+        </td>
+        <td>
+          1662
+        </td>
+        <td>
+          7613
+          -
+          7613
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Tuple2._2
+        </td>
+        <td style="background: #F0ADAD">
+          x$11._2
+        </td>
+      </tr><tr>
+        <td>
+          148
+        </td>
+        <td>
+          875
+        </td>
+        <td>
+          7679
+          -
+          7704
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.game.GameManager.notifyUpdate
+        </td>
+        <td style="background: #F0ADAD">
+          notifyUpdate(newSnapshot)
+        </td>
+      </tr><tr>
+        <td>
+          149
+        </td>
+        <td>
+          48
+        </td>
+        <td>
+          7733
+          -
+          7755
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.logic.GameSnapshot.nowPlaying
+        </td>
+        <td style="background: #F0ADAD">
+          newSnapshot.nowPlaying
+        </td>
+      </tr><tr>
+        <td>
+          150
+        </td>
+        <td>
+          1106
+        </td>
+        <td>
+          7767
+          -
+          7767
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          150
+        </td>
+        <td>
+          280
+        </td>
+        <td>
+          7767
+          -
+          7767
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          150
+        </td>
+        <td>
+          1830
+        </td>
+        <td>
+          7770
+          -
+          7804
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Boolean.unary_!
+        </td>
+        <td style="background: #F0ADAD">
+          participants.contains(nextPlayer).unary_!
+        </td>
+      </tr><tr>
+        <td>
+          151
+        </td>
+        <td>
+          1088
+        </td>
+        <td>
+          7850
+          -
+          7869
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.Player.nickname
+        </td>
+        <td style="background: #F0ADAD">
+          nextPlayer.nickname
+        </td>
+      </tr><tr>
+        <td>
+          151
+        </td>
+        <td>
+          1527
+        </td>
+        <td>
+          7819
+          -
+          7880
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          org.riskala.utils.Utils.sendUserTurnNotification
+        </td>
+        <td style="background: #F0ADAD">
+          org.riskala.utils.Utils.sendUserTurnNotification(nextPlayer.nickname, gameName)
+        </td>
+      </tr><tr>
+        <td>
+          151
+        </td>
+        <td>
+          170
+        </td>
+        <td>
+          7819
+          -
+          7880
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.utils.Utils.sendUserTurnNotification
+        </td>
+        <td style="background: #F0ADAD">
+          org.riskala.utils.Utils.sendUserTurnNotification(nextPlayer.nickname, gameName)
+        </td>
+      </tr><tr>
+        <td>
+          152
+        </td>
+        <td>
+          1764
+        </td>
+        <td>
+          7892
+          -
+          7960
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.game.GameManager.nextBehavior
+        </td>
+        <td style="background: #F0ADAD">
+          nextBehavior(x$51, x$52, x$53, x$54, x$55, x$56, x$49, x$50)
+        </td>
+      </tr><tr>
+        <td>
+          154
+        </td>
+        <td>
+          904
+        </td>
+        <td>
+          8017
+          -
+          8034
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.SetLike.-
+        </td>
+        <td style="background: #F0ADAD">
+          subscribers.-(actor)
+        </td>
+      </tr><tr>
+        <td>
+          155
+        </td>
+        <td>
+          52
+        </td>
+        <td>
+          8087
+          -
+          8099
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #F0ADAD">
+          kv._2.==(actor)
+        </td>
+      </tr><tr>
+        <td>
+          155
+        </td>
+        <td>
+          1884
+        </td>
+        <td>
+          8060
+          -
+          8100
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.MapLike.filterNot
+        </td>
+        <td style="background: #F0ADAD">
+          participants.filterNot(((kv: (org.riskala.model.Player, akka.actor.typed.ActorRef[org.riskala.controller.actors.player.PlayerMessages.PlayerMessage])) =&gt; kv._2.==(actor)))
+        </td>
+      </tr><tr>
+        <td>
+          156
+        </td>
+        <td>
+          955
+        </td>
+        <td>
+          8112
+          -
+          8177
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.game.GameManager.nextBehavior
+        </td>
+        <td style="background: #F0ADAD">
+          nextBehavior(x$59, x$57, x$58, x$60, x$61, x$62, x$63, x$64)
+        </td>
+      </tr><tr>
+        <td>
+          162
+        </td>
+        <td>
+          394
+        </td>
+        <td>
+          8299
+          -
+          8367
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.TraversableOnce.collectFirst
+        </td>
+        <td style="background: #F0ADAD">
+          players.collectFirst[org.riskala.model.Player](({
+  @SerialVersionUID(value = 0) final &lt;synthetic&gt; class $anonfun extends scala.runtime.AbstractPartialFunction[org.riskala.model.Player,org.riskala.model.Player] with Serializable {
+    def &lt;init&gt;(): &lt;$anon: org.riskala.model.Player =&gt; org.riskala.model.Player&gt; = {
+      $anonfun.super.&lt;init&gt;();
+      ()
+    };
+    final override def applyOrElse[A1 &lt;: org.riskala.model.Player, B1 &gt;: org.riskala.model.Player](x1: A1, default: A1 =&gt; B1): B1 = ((x1.asInstanceOf[org.riskala.model.Player]: org.riskala.model.Player): org.riskala.model.Player @unchecked) match {
+      case (p @ _) if p.nickname.equals(playerName) =&gt; p
+      case (defaultCase$ @ _) =&gt; default.apply(x1)
+    };
+    final def isDefinedAt(x1: org.riskala.model.Player): Boolean = ((x1.asInstanceOf[org.riskala.model.Player]: org.riskala.model.Player): org.riskala.model.Player @unchecked) match {
+      case (p @ _) if p.nickname.equals(playerName) =&gt; true
+      case (defaultCase$ @ _) =&gt; false
+    }
+  };
+  new $anonfun()
+}: PartialFunction[org.riskala.model.Player,org.riskala.model.Player]))
+        </td>
+      </tr><tr>
+        <td>
+          162
+        </td>
+        <td>
+          752
+        </td>
+        <td>
+          8320
+          -
+          8320
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.game.GameManager.$anonfun.&lt;init&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          new $anonfun()
+        </td>
+      </tr><tr>
+        <td>
+          162
+        </td>
+        <td>
+          1595
+        </td>
+        <td>
+          8331
+          -
+          8360
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.equals
+        </td>
+        <td style="background: #F0ADAD">
+          p.nickname.equals(playerName)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

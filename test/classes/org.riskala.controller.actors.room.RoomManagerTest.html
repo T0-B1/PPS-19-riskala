@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta http-equiv="x-ua-compatible" content="IE=edge"/>
+<title>Test results - Class org.riskala.controller.actors.room.RoomManagerTest</title>
+<link href="../css/base-style.css" rel="stylesheet" type="text/css"/>
+<link href="../css/style.css" rel="stylesheet" type="text/css"/>
+<script src="../js/report.js" type="text/javascript"></script>
+</head>
+<body>
+<div id="content">
+<h1>Class org.riskala.controller.actors.room.RoomManagerTest</h1>
+<div class="breadcrumbs">
+<a href="../index.html">all</a> &gt; 
+<a href="../packages/org.riskala.controller.actors.room.html">org.riskala.controller.actors.room</a> &gt; RoomManagerTest</div>
+<div id="summary">
+<table>
+<tr>
+<td>
+<div class="summaryGroup">
+<table>
+<tr>
+<td>
+<div class="infoBox" id="tests">
+<div class="counter">6</div>
+<p>tests</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="failures">
+<div class="counter">0</div>
+<p>failures</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="ignored">
+<div class="counter">0</div>
+<p>ignored</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="duration">
+<div class="counter">0.498s</div>
+<p>duration</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</td>
+<td>
+<div class="infoBox success" id="successRate">
+<div class="percent">100%</div>
+<p>successful</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div id="tabs">
+<ul class="tabLinks">
+<li>
+<a href="#tab0">Tests</a>
+</li>
+<li>
+<a href="#tab1">Standard error</a>
+</li>
+</ul>
+<div id="tab0" class="tab">
+<h2>Tests</h2>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>Duration</th>
+<th>Result</th>
+</tr>
+</thead>
+<tr>
+<td class="success">Everybody logout to a room should remove form roomInfo</td>
+<td class="success">0.231s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">Everybody ready in room should start game</td>
+<td class="success">0.012s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">Join to room should give roomInfo</td>
+<td class="success">0.004s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">Leave room should remove user from roomUpdateInfo</td>
+<td class="success">0.222s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">Ready in room should give roomInfo</td>
+<td class="success">0.018s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">Submitting command UnReady to room should remove from roomInfo</td>
+<td class="success">0.011s</td>
+<td class="success">passed</td>
+</tr>
+</table>
+</div>
+<div id="tab1" class="tab">
+<h2>Standard error</h2>
+<span class="code">
+<pre>[RoomManagerTest-akka.actor.default-dispatcher-3] INFO akka.event.slf4j.Slf4jLogger - Slf4jLogger started
+[RoomManagerTest-akka.actor.default-dispatcher-7] INFO org.riskala.controller.actors.room.RoomManager$ - Room received JOIN message
+[RoomManagerTest-akka.actor.default-dispatcher-7] INFO org.riskala.controller.actors.room.RoomManager$ - Number of subscribers after subscriprion into the room 1
+[RoomManagerTest-akka.actor.default-dispatcher-7] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated subscribers: -&gt; List(Actor[akka://RoomManagerTest/system/playerJoin-22#-1740255270])
+[RoomManagerTest-akka.actor.default-dispatcher-7] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated ready player: -&gt; List()
+[RoomManagerTest-akka.actor.default-dispatcher-7] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated room info: -&gt; RoomInfo(RoomBasicInfo(Europa,0,4),Set(),)
+[RoomManagerTest-akka.actor.default-dispatcher-7] INFO org.riskala.controller.actors.room.RoomManager$ - ------- --------
+[RoomManagerTest-akka.actor.default-dispatcher-7] INFO org.riskala.controller.actors.room.RoomManager$ - Room received JOIN message
+[RoomManagerTest-akka.actor.default-dispatcher-7] INFO org.riskala.controller.actors.room.RoomManager$ - Number of subscribers after subscriprion into the room 2
+[RoomManagerTest-akka.actor.default-dispatcher-7] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated subscribers: -&gt; List(Actor[akka://RoomManagerTest/system/playerJoin-22#-1740255270], Actor[akka://RoomManagerTest/system/player2Join-23#-948098064])
+[RoomManagerTest-akka.actor.default-dispatcher-7] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated ready player: -&gt; List()
+[RoomManagerTest-akka.actor.default-dispatcher-7] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated room info: -&gt; RoomInfo(RoomBasicInfo(Europa,0,4),Set(),)
+[RoomManagerTest-akka.actor.default-dispatcher-7] INFO org.riskala.controller.actors.room.RoomManager$ - ------- --------
+[RoomManagerTest-akka.actor.default-dispatcher-7] INFO org.riskala.controller.actors.room.RoomManager$ - Room received JOIN message
+[RoomManagerTest-akka.actor.default-dispatcher-7] INFO org.riskala.controller.actors.room.RoomManager$ - Number of subscribers after subscriprion into the room 1
+[RoomManagerTest-akka.actor.default-dispatcher-7] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated subscribers: -&gt; List(Actor[akka://RoomManagerTest/system/playerLeave-25#-1214128887])
+[RoomManagerTest-akka.actor.default-dispatcher-7] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated ready player: -&gt; List()
+[RoomManagerTest-akka.actor.default-dispatcher-7] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated room info: -&gt; RoomInfo(RoomBasicInfo(Europa,0,4),Set(),)
+[RoomManagerTest-akka.actor.default-dispatcher-7] INFO org.riskala.controller.actors.room.RoomManager$ - ------- --------
+[RoomManagerTest-akka.actor.default-dispatcher-7] INFO org.riskala.controller.actors.room.RoomManager$ - Room received JOIN message
+[RoomManagerTest-akka.actor.default-dispatcher-7] INFO org.riskala.controller.actors.room.RoomManager$ - Number of subscribers after subscriprion into the room 2
+[RoomManagerTest-akka.actor.default-dispatcher-7] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated subscribers: -&gt; List(Actor[akka://RoomManagerTest/system/playerLeave-25#-1214128887], Actor[akka://RoomManagerTest/system/player2Leave-26#1932549612])
+[RoomManagerTest-akka.actor.default-dispatcher-7] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated ready player: -&gt; List()
+[RoomManagerTest-akka.actor.default-dispatcher-7] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated room info: -&gt; RoomInfo(RoomBasicInfo(Europa,0,4),Set(),)
+[RoomManagerTest-akka.actor.default-dispatcher-7] INFO org.riskala.controller.actors.room.RoomManager$ - ------- --------
+[RoomManagerTest-akka.actor.default-dispatcher-7] INFO org.riskala.controller.actors.room.RoomManager$ - Room received LEAVE message
+[RoomManagerTest-akka.actor.default-dispatcher-7] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated subscribers: -&gt; List(Actor[akka://RoomManagerTest/system/player2Leave-26#1932549612])
+[RoomManagerTest-akka.actor.default-dispatcher-7] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated ready player: -&gt; List()
+[RoomManagerTest-akka.actor.default-dispatcher-7] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated room info: -&gt; RoomInfo(RoomBasicInfo(Europa,0,4),Set(),)
+[RoomManagerTest-akka.actor.default-dispatcher-7] INFO org.riskala.controller.actors.room.RoomManager$ - ------- --------
+[RoomManagerTest-akka.actor.default-dispatcher-7] INFO org.riskala.controller.actors.room.RoomManager$ - Room received LEAVE message
+[RoomManagerTest-akka.actor.default-dispatcher-7] INFO org.riskala.controller.actors.room.RoomManager$ - Everybody left the room - Behavior stopped
+[RoomManagerTest-akka.actor.default-dispatcher-7] INFO org.riskala.controller.actors.room.RoomManager$ - Room received JOIN message
+[RoomManagerTest-akka.actor.default-dispatcher-7] INFO org.riskala.controller.actors.room.RoomManager$ - Number of subscribers after subscriprion into the room 1
+[RoomManagerTest-akka.actor.default-dispatcher-7] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated subscribers: -&gt; List(Actor[akka://RoomManagerTest/system/playerReady-28#-1860768301])
+[RoomManagerTest-akka.actor.default-dispatcher-7] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated ready player: -&gt; List()
+[RoomManagerTest-akka.actor.default-dispatcher-7] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated room info: -&gt; RoomInfo(RoomBasicInfo(Europa,0,4),Set(),)
+[RoomManagerTest-akka.actor.default-dispatcher-7] INFO org.riskala.controller.actors.room.RoomManager$ - ------- --------
+[RoomManagerTest-akka.actor.default-dispatcher-7] INFO org.riskala.controller.actors.room.RoomManager$ - Room received JOIN message
+[RoomManagerTest-akka.actor.default-dispatcher-7] INFO org.riskala.controller.actors.room.RoomManager$ - Number of subscribers after subscriprion into the room 2
+[RoomManagerTest-akka.actor.default-dispatcher-7] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated subscribers: -&gt; List(Actor[akka://RoomManagerTest/system/playerReady-28#-1860768301], Actor[akka://RoomManagerTest/system/player-29#-2016894266])
+[RoomManagerTest-akka.actor.default-dispatcher-7] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated ready player: -&gt; List()
+[RoomManagerTest-akka.actor.default-dispatcher-7] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated room info: -&gt; RoomInfo(RoomBasicInfo(Europa,0,4),Set(),)
+[RoomManagerTest-akka.actor.default-dispatcher-7] INFO org.riskala.controller.actors.room.RoomManager$ - ------- --------
+[RoomManagerTest-akka.actor.default-dispatcher-7] INFO org.riskala.controller.actors.room.RoomManager$ - Room received READY message
+[RoomManagerTest-akka.actor.default-dispatcher-7] INFO org.riskala.controller.actors.room.RoomManager$ - Updated newRoomInfo - RoomInfo(RoomBasicInfo(Europa,1,4),Set(Player(playerReady,)),)
+[RoomManagerTest-akka.actor.default-dispatcher-7] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated subscribers: -&gt; List(Actor[akka://RoomManagerTest/system/player-29#-2016894266])
+[RoomManagerTest-akka.actor.default-dispatcher-7] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated ready player: -&gt; List((Player(playerReady,),Actor[akka://RoomManagerTest/system/playerReady-28#-1860768301]))
+[RoomManagerTest-akka.actor.default-dispatcher-7] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated room info: -&gt; RoomInfo(RoomBasicInfo(Europa,1,4),Set(Player(playerReady,)),)
+[RoomManagerTest-akka.actor.default-dispatcher-7] INFO org.riskala.controller.actors.room.RoomManager$ - ------- --------
+[RoomManagerTest-akka.actor.default-dispatcher-3] INFO org.riskala.controller.actors.room.RoomManager$ - Room received JOIN message
+[RoomManagerTest-akka.actor.default-dispatcher-3] INFO org.riskala.controller.actors.room.RoomManager$ - Number of subscribers after subscriprion into the room 1
+[RoomManagerTest-akka.actor.default-dispatcher-3] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated subscribers: -&gt; List(Actor[akka://RoomManagerTest/system/playerUnReady-31#27574691])
+[RoomManagerTest-akka.actor.default-dispatcher-3] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated ready player: -&gt; List()
+[RoomManagerTest-akka.actor.default-dispatcher-3] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated room info: -&gt; RoomInfo(RoomBasicInfo(Europa,0,4),Set(),)
+[RoomManagerTest-akka.actor.default-dispatcher-3] INFO org.riskala.controller.actors.room.RoomManager$ - ------- --------
+[RoomManagerTest-akka.actor.default-dispatcher-3] INFO org.riskala.controller.actors.room.RoomManager$ - Room received JOIN message
+[RoomManagerTest-akka.actor.default-dispatcher-3] INFO org.riskala.controller.actors.room.RoomManager$ - Number of subscribers after subscriprion into the room 2
+[RoomManagerTest-akka.actor.default-dispatcher-3] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated subscribers: -&gt; List(Actor[akka://RoomManagerTest/system/playerUnReady-31#27574691], Actor[akka://RoomManagerTest/system/player_Join-32#-924564417])
+[RoomManagerTest-akka.actor.default-dispatcher-3] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated ready player: -&gt; List()
+[RoomManagerTest-akka.actor.default-dispatcher-3] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated room info: -&gt; RoomInfo(RoomBasicInfo(Europa,0,4),Set(),)
+[RoomManagerTest-akka.actor.default-dispatcher-3] INFO org.riskala.controller.actors.room.RoomManager$ - ------- --------
+[RoomManagerTest-akka.actor.default-dispatcher-3] INFO org.riskala.controller.actors.room.RoomManager$ - Room received READY message
+[RoomManagerTest-akka.actor.default-dispatcher-3] INFO org.riskala.controller.actors.room.RoomManager$ - Updated newRoomInfo - RoomInfo(RoomBasicInfo(Europa,1,4),Set(Player(playerUnReady,)),)
+[RoomManagerTest-akka.actor.default-dispatcher-3] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated subscribers: -&gt; List(Actor[akka://RoomManagerTest/system/player_Join-32#-924564417])
+[RoomManagerTest-akka.actor.default-dispatcher-3] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated ready player: -&gt; List((Player(playerUnReady,),Actor[akka://RoomManagerTest/system/playerUnReady-31#27574691]))
+[RoomManagerTest-akka.actor.default-dispatcher-3] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated room info: -&gt; RoomInfo(RoomBasicInfo(Europa,1,4),Set(Player(playerUnReady,)),)
+[RoomManagerTest-akka.actor.default-dispatcher-3] INFO org.riskala.controller.actors.room.RoomManager$ - ------- --------
+[RoomManagerTest-akka.actor.default-dispatcher-3] INFO org.riskala.controller.actors.room.RoomManager$ - Room received UNREADY message
+[RoomManagerTest-akka.actor.default-dispatcher-3] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated subscribers: -&gt; List(Actor[akka://RoomManagerTest/system/player_Join-32#-924564417], Actor[akka://RoomManagerTest/system/playerUnReady-31#27574691])
+[RoomManagerTest-akka.actor.default-dispatcher-3] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated ready player: -&gt; List()
+[RoomManagerTest-akka.actor.default-dispatcher-3] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated room info: -&gt; RoomInfo(RoomBasicInfo(Europa,0,4),Set(),)
+[RoomManagerTest-akka.actor.default-dispatcher-3] INFO org.riskala.controller.actors.room.RoomManager$ - ------- --------
+[RoomManagerTest-akka.actor.default-dispatcher-9] INFO org.riskala.controller.actors.room.RoomManager$ - Room received JOIN message
+[RoomManagerTest-akka.actor.default-dispatcher-9] INFO org.riskala.controller.actors.room.RoomManager$ - Number of subscribers after subscriprion into the room 1
+[RoomManagerTest-akka.actor.default-dispatcher-9] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated subscribers: -&gt; List(Actor[akka://RoomManagerTest/system/player-34#1227007895])
+[RoomManagerTest-akka.actor.default-dispatcher-9] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated ready player: -&gt; List()
+[RoomManagerTest-akka.actor.default-dispatcher-9] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated room info: -&gt; RoomInfo(RoomBasicInfo(Europa,0,4),Set(),)
+[RoomManagerTest-akka.actor.default-dispatcher-9] INFO org.riskala.controller.actors.room.RoomManager$ - ------- --------
+[RoomManagerTest-akka.actor.default-dispatcher-9] INFO org.riskala.controller.actors.room.RoomManager$ - Room received JOIN message
+[RoomManagerTest-akka.actor.default-dispatcher-9] INFO org.riskala.controller.actors.room.RoomManager$ - Number of subscribers after subscriprion into the room 2
+[RoomManagerTest-akka.actor.default-dispatcher-9] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated subscribers: -&gt; List(Actor[akka://RoomManagerTest/system/player-34#1227007895], Actor[akka://RoomManagerTest/system/player2-35#-1723498689])
+[RoomManagerTest-akka.actor.default-dispatcher-9] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated ready player: -&gt; List()
+[RoomManagerTest-akka.actor.default-dispatcher-9] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated room info: -&gt; RoomInfo(RoomBasicInfo(Europa,0,4),Set(),)
+[RoomManagerTest-akka.actor.default-dispatcher-9] INFO org.riskala.controller.actors.room.RoomManager$ - ------- --------
+[RoomManagerTest-akka.actor.default-dispatcher-9] INFO org.riskala.controller.actors.room.RoomManager$ - Room received JOIN message
+[RoomManagerTest-akka.actor.default-dispatcher-9] INFO org.riskala.controller.actors.room.RoomManager$ - Number of subscribers after subscriprion into the room 3
+[RoomManagerTest-akka.actor.default-dispatcher-9] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated subscribers: -&gt; List(Actor[akka://RoomManagerTest/system/player-34#1227007895], Actor[akka://RoomManagerTest/system/player2-35#-1723498689], Actor[akka://RoomManagerTest/system/player3-36#-2053756532])
+[RoomManagerTest-akka.actor.default-dispatcher-9] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated ready player: -&gt; List()
+[RoomManagerTest-akka.actor.default-dispatcher-9] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated room info: -&gt; RoomInfo(RoomBasicInfo(Europa,0,4),Set(),)
+[RoomManagerTest-akka.actor.default-dispatcher-9] INFO org.riskala.controller.actors.room.RoomManager$ - ------- --------
+[RoomManagerTest-akka.actor.default-dispatcher-9] INFO org.riskala.controller.actors.room.RoomManager$ - Room received JOIN message
+[RoomManagerTest-akka.actor.default-dispatcher-9] INFO org.riskala.controller.actors.room.RoomManager$ - Number of subscribers after subscriprion into the room 4
+[RoomManagerTest-akka.actor.default-dispatcher-9] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated subscribers: -&gt; List(Actor[akka://RoomManagerTest/system/player-34#1227007895], Actor[akka://RoomManagerTest/system/player2-35#-1723498689], Actor[akka://RoomManagerTest/system/player3-36#-2053756532], Actor[akka://RoomManagerTest/system/player4-37#-1205323249])
+[RoomManagerTest-akka.actor.default-dispatcher-9] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated ready player: -&gt; List()
+[RoomManagerTest-akka.actor.default-dispatcher-9] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated room info: -&gt; RoomInfo(RoomBasicInfo(Europa,0,4),Set(),)
+[RoomManagerTest-akka.actor.default-dispatcher-9] INFO org.riskala.controller.actors.room.RoomManager$ - ------- --------
+[RoomManagerTest-akka.actor.default-dispatcher-9] INFO org.riskala.controller.actors.room.RoomManager$ - Room received READY message
+[RoomManagerTest-akka.actor.default-dispatcher-9] INFO org.riskala.controller.actors.room.RoomManager$ - Updated newRoomInfo - RoomInfo(RoomBasicInfo(Europa,1,4),Set(Player(NarcAle,)),)
+[RoomManagerTest-akka.actor.default-dispatcher-9] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated subscribers: -&gt; List(Actor[akka://RoomManagerTest/system/player2-35#-1723498689], Actor[akka://RoomManagerTest/system/player3-36#-2053756532], Actor[akka://RoomManagerTest/system/player4-37#-1205323249])
+[RoomManagerTest-akka.actor.default-dispatcher-9] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated ready player: -&gt; List((Player(NarcAle,),Actor[akka://RoomManagerTest/system/player-34#1227007895]))
+[RoomManagerTest-akka.actor.default-dispatcher-9] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated room info: -&gt; RoomInfo(RoomBasicInfo(Europa,1,4),Set(Player(NarcAle,)),)
+[RoomManagerTest-akka.actor.default-dispatcher-9] INFO org.riskala.controller.actors.room.RoomManager$ - ------- --------
+[RoomManagerTest-akka.actor.default-dispatcher-9] INFO org.riskala.controller.actors.room.RoomManager$ - Room received READY message
+[RoomManagerTest-akka.actor.default-dispatcher-9] INFO org.riskala.controller.actors.room.RoomManager$ - Updated newRoomInfo - RoomInfo(RoomBasicInfo(Europa,2,4),Set(Player(NarcAle,), Player(Giordo,)),)
+[RoomManagerTest-akka.actor.default-dispatcher-9] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated subscribers: -&gt; List(Actor[akka://RoomManagerTest/system/player3-36#-2053756532], Actor[akka://RoomManagerTest/system/player4-37#-1205323249])
+[RoomManagerTest-akka.actor.default-dispatcher-9] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated ready player: -&gt; List((Player(NarcAle,),Actor[akka://RoomManagerTest/system/player-34#1227007895]), (Player(Giordo,),Actor[akka://RoomManagerTest/system/player2-35#-1723498689]))
+[RoomManagerTest-akka.actor.default-dispatcher-9] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated room info: -&gt; RoomInfo(RoomBasicInfo(Europa,2,4),Set(Player(NarcAle,), Player(Giordo,)),)
+[RoomManagerTest-akka.actor.default-dispatcher-9] INFO org.riskala.controller.actors.room.RoomManager$ - ------- --------
+[RoomManagerTest-akka.actor.default-dispatcher-9] INFO org.riskala.controller.actors.room.RoomManager$ - Room received READY message
+[RoomManagerTest-akka.actor.default-dispatcher-9] INFO org.riskala.controller.actors.room.RoomManager$ - Updated newRoomInfo - RoomInfo(RoomBasicInfo(Europa,3,4),Set(Player(NarcAle,), Player(Giordo,), Player(Marto,)),)
+[RoomManagerTest-akka.actor.default-dispatcher-9] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated subscribers: -&gt; List(Actor[akka://RoomManagerTest/system/player4-37#-1205323249])
+[RoomManagerTest-akka.actor.default-dispatcher-9] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated ready player: -&gt; List((Player(NarcAle,),Actor[akka://RoomManagerTest/system/player-34#1227007895]), (Player(Giordo,),Actor[akka://RoomManagerTest/system/player2-35#-1723498689]), (Player(Marto,),Actor[akka://RoomManagerTest/system/player3-36#-2053756532]))
+[RoomManagerTest-akka.actor.default-dispatcher-9] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated room info: -&gt; RoomInfo(RoomBasicInfo(Europa,3,4),Set(Player(NarcAle,), Player(Giordo,), Player(Marto,)),)
+[RoomManagerTest-akka.actor.default-dispatcher-9] INFO org.riskala.controller.actors.room.RoomManager$ - ------- --------
+[RoomManagerTest-akka.actor.default-dispatcher-9] INFO org.riskala.controller.actors.room.RoomManager$ - Room received READY message
+[RoomManagerTest-akka.actor.default-dispatcher-9] INFO org.riskala.controller.actors.room.RoomManager$ - Updated newRoomInfo - RoomInfo(RoomBasicInfo(Europa,4,4),Set(Player(NarcAle,), Player(Giordo,), Player(Marto,), Player(Luca,)),)
+[RoomManagerTest-akka.actor.default-dispatcher-9] INFO org.riskala.controller.actors.room.RoomManager$ - Everybody into the room are ready. Start game and Room behavior stopped
+[RoomManagerTest-akka.actor.default-dispatcher-10] INFO org.riskala.controller.actors.room.RoomManager$ - Room received JOIN message
+[RoomManagerTest-akka.actor.default-dispatcher-10] INFO org.riskala.controller.actors.room.RoomManager$ - Number of subscribers after subscriprion into the room 1
+[RoomManagerTest-akka.actor.default-dispatcher-10] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated subscribers: -&gt; List(Actor[akka://RoomManagerTest/system/player_-39#-1872366893])
+[RoomManagerTest-akka.actor.default-dispatcher-10] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated ready player: -&gt; List()
+[RoomManagerTest-akka.actor.default-dispatcher-10] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated room info: -&gt; RoomInfo(RoomBasicInfo(Europa,0,4),Set(),)
+[RoomManagerTest-akka.actor.default-dispatcher-10] INFO org.riskala.controller.actors.room.RoomManager$ - ------- --------
+[RoomManagerTest-akka.actor.default-dispatcher-10] INFO org.riskala.controller.actors.room.RoomManager$ - Room received JOIN message
+[RoomManagerTest-akka.actor.default-dispatcher-10] INFO org.riskala.controller.actors.room.RoomManager$ - Number of subscribers after subscriprion into the room 2
+[RoomManagerTest-akka.actor.default-dispatcher-10] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated subscribers: -&gt; List(Actor[akka://RoomManagerTest/system/player_-39#-1872366893], Actor[akka://RoomManagerTest/system/player2_-40#1947448832])
+[RoomManagerTest-akka.actor.default-dispatcher-10] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated ready player: -&gt; List()
+[RoomManagerTest-akka.actor.default-dispatcher-10] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated room info: -&gt; RoomInfo(RoomBasicInfo(Europa,0,4),Set(),)
+[RoomManagerTest-akka.actor.default-dispatcher-10] INFO org.riskala.controller.actors.room.RoomManager$ - ------- --------
+[RoomManagerTest-akka.actor.default-dispatcher-10] INFO org.riskala.controller.actors.room.RoomManager$ - Room received JOIN message
+[RoomManagerTest-akka.actor.default-dispatcher-10] INFO org.riskala.controller.actors.room.RoomManager$ - Number of subscribers after subscriprion into the room 3
+[RoomManagerTest-akka.actor.default-dispatcher-10] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated subscribers: -&gt; List(Actor[akka://RoomManagerTest/system/player_-39#-1872366893], Actor[akka://RoomManagerTest/system/player2_-40#1947448832], Actor[akka://RoomManagerTest/system/player3_-41#-364745550])
+[RoomManagerTest-akka.actor.default-dispatcher-10] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated ready player: -&gt; List()
+[RoomManagerTest-akka.actor.default-dispatcher-10] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated room info: -&gt; RoomInfo(RoomBasicInfo(Europa,0,4),Set(),)
+[RoomManagerTest-akka.actor.default-dispatcher-10] INFO org.riskala.controller.actors.room.RoomManager$ - ------- --------
+[RoomManagerTest-akka.actor.default-dispatcher-10] INFO org.riskala.controller.actors.room.RoomManager$ - Room received JOIN message
+[RoomManagerTest-akka.actor.default-dispatcher-10] INFO org.riskala.controller.actors.room.RoomManager$ - Number of subscribers after subscriprion into the room 4
+[RoomManagerTest-akka.actor.default-dispatcher-10] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated subscribers: -&gt; List(Actor[akka://RoomManagerTest/system/player_-39#-1872366893], Actor[akka://RoomManagerTest/system/player2_-40#1947448832], Actor[akka://RoomManagerTest/system/player3_-41#-364745550], Actor[akka://RoomManagerTest/system/player4_-42#-515169235])
+[RoomManagerTest-akka.actor.default-dispatcher-10] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated ready player: -&gt; List()
+[RoomManagerTest-akka.actor.default-dispatcher-10] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated room info: -&gt; RoomInfo(RoomBasicInfo(Europa,0,4),Set(),)
+[RoomManagerTest-akka.actor.default-dispatcher-10] INFO org.riskala.controller.actors.room.RoomManager$ - ------- --------
+[RoomManagerTest-akka.actor.default-dispatcher-10] INFO org.riskala.controller.actors.room.RoomManager$ - Room received READY message
+[RoomManagerTest-akka.actor.default-dispatcher-10] INFO org.riskala.controller.actors.room.RoomManager$ - Updated newRoomInfo - RoomInfo(RoomBasicInfo(Europa,1,4),Set(Player(NarcAle,)),)
+[RoomManagerTest-akka.actor.default-dispatcher-10] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated subscribers: -&gt; List(Actor[akka://RoomManagerTest/system/player2_-40#1947448832], Actor[akka://RoomManagerTest/system/player3_-41#-364745550], Actor[akka://RoomManagerTest/system/player4_-42#-515169235])
+[RoomManagerTest-akka.actor.default-dispatcher-10] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated ready player: -&gt; List((Player(NarcAle,),Actor[akka://RoomManagerTest/system/player_-39#-1872366893]))
+[RoomManagerTest-akka.actor.default-dispatcher-10] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated room info: -&gt; RoomInfo(RoomBasicInfo(Europa,1,4),Set(Player(NarcAle,)),)
+[RoomManagerTest-akka.actor.default-dispatcher-10] INFO org.riskala.controller.actors.room.RoomManager$ - ------- --------
+[RoomManagerTest-akka.actor.default-dispatcher-10] INFO org.riskala.controller.actors.room.RoomManager$ - Room received READY message
+[RoomManagerTest-akka.actor.default-dispatcher-10] INFO org.riskala.controller.actors.room.RoomManager$ - Updated newRoomInfo - RoomInfo(RoomBasicInfo(Europa,2,4),Set(Player(NarcAle,), Player(Giordo,)),)
+[RoomManagerTest-akka.actor.default-dispatcher-10] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated subscribers: -&gt; List(Actor[akka://RoomManagerTest/system/player3_-41#-364745550], Actor[akka://RoomManagerTest/system/player4_-42#-515169235])
+[RoomManagerTest-akka.actor.default-dispatcher-10] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated ready player: -&gt; List((Player(NarcAle,),Actor[akka://RoomManagerTest/system/player_-39#-1872366893]), (Player(Giordo,),Actor[akka://RoomManagerTest/system/player2_-40#1947448832]))
+[RoomManagerTest-akka.actor.default-dispatcher-10] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated room info: -&gt; RoomInfo(RoomBasicInfo(Europa,2,4),Set(Player(NarcAle,), Player(Giordo,)),)
+[RoomManagerTest-akka.actor.default-dispatcher-10] INFO org.riskala.controller.actors.room.RoomManager$ - ------- --------
+[RoomManagerTest-akka.actor.default-dispatcher-10] INFO org.riskala.controller.actors.room.RoomManager$ - Room received READY message
+[RoomManagerTest-akka.actor.default-dispatcher-10] INFO org.riskala.controller.actors.room.RoomManager$ - Updated newRoomInfo - RoomInfo(RoomBasicInfo(Europa,3,4),Set(Player(NarcAle,), Player(Giordo,), Player(Marto,)),)
+[RoomManagerTest-akka.actor.default-dispatcher-10] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated subscribers: -&gt; List(Actor[akka://RoomManagerTest/system/player4_-42#-515169235])
+[RoomManagerTest-akka.actor.default-dispatcher-10] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated ready player: -&gt; List((Player(NarcAle,),Actor[akka://RoomManagerTest/system/player_-39#-1872366893]), (Player(Giordo,),Actor[akka://RoomManagerTest/system/player2_-40#1947448832]), (Player(Marto,),Actor[akka://RoomManagerTest/system/player3_-41#-364745550]))
+[RoomManagerTest-akka.actor.default-dispatcher-10] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated room info: -&gt; RoomInfo(RoomBasicInfo(Europa,3,4),Set(Player(NarcAle,), Player(Giordo,), Player(Marto,)),)
+[RoomManagerTest-akka.actor.default-dispatcher-10] INFO org.riskala.controller.actors.room.RoomManager$ - ------- --------
+[RoomManagerTest-akka.actor.default-dispatcher-10] INFO org.riskala.controller.actors.room.RoomManager$ - Room received LOGOUT message
+[RoomManagerTest-akka.actor.default-dispatcher-10] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated subscribers: -&gt; List(Actor[akka://RoomManagerTest/system/player4_-42#-515169235])
+[RoomManagerTest-akka.actor.default-dispatcher-10] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated ready player: -&gt; List((Player(Giordo,),Actor[akka://RoomManagerTest/system/player2_-40#1947448832]), (Player(Marto,),Actor[akka://RoomManagerTest/system/player3_-41#-364745550]))
+[RoomManagerTest-akka.actor.default-dispatcher-10] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated room info: -&gt; RoomInfo(RoomBasicInfo(Europa,2,4),Set(Player(Giordo,), Player(Marto,)),)
+[RoomManagerTest-akka.actor.default-dispatcher-10] INFO org.riskala.controller.actors.room.RoomManager$ - ------- --------
+[RoomManagerTest-akka.actor.default-dispatcher-10] INFO org.riskala.controller.actors.room.RoomManager$ - Room received LOGOUT message
+[RoomManagerTest-akka.actor.default-dispatcher-10] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated subscribers: -&gt; List()
+[RoomManagerTest-akka.actor.default-dispatcher-10] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated ready player: -&gt; List((Player(Giordo,),Actor[akka://RoomManagerTest/system/player2_-40#1947448832]), (Player(Marto,),Actor[akka://RoomManagerTest/system/player3_-41#-364745550]))
+[RoomManagerTest-akka.actor.default-dispatcher-10] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated room info: -&gt; RoomInfo(RoomBasicInfo(Europa,2,4),Set(Player(Giordo,), Player(Marto,)),)
+[RoomManagerTest-akka.actor.default-dispatcher-10] INFO org.riskala.controller.actors.room.RoomManager$ - ------- --------
+[RoomManagerTest-akka.actor.default-dispatcher-10] INFO org.riskala.controller.actors.room.RoomManager$ - Room received LOGOUT message
+[RoomManagerTest-akka.actor.default-dispatcher-10] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated subscribers: -&gt; List()
+[RoomManagerTest-akka.actor.default-dispatcher-10] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated ready player: -&gt; List((Player(Marto,),Actor[akka://RoomManagerTest/system/player3_-41#-364745550]))
+[RoomManagerTest-akka.actor.default-dispatcher-10] INFO org.riskala.controller.actors.room.RoomManager$ - Room updated room info: -&gt; RoomInfo(RoomBasicInfo(Europa,1,4),Set(Player(Marto,)),)
+[RoomManagerTest-akka.actor.default-dispatcher-10] INFO org.riskala.controller.actors.room.RoomManager$ - ------- --------
+[RoomManagerTest-akka.actor.default-dispatcher-10] INFO org.riskala.controller.actors.room.RoomManager$ - Room received LOGOUT message
+[RoomManagerTest-akka.actor.default-dispatcher-10] INFO org.riskala.controller.actors.room.RoomManager$ - Everybody into the room logout. Room is empty and behavior stopped
+</pre>
+</span>
+</div>
+</div>
+<div id="footer">
+<p>
+<div>
+<label class="hidden" id="label-for-line-wrapping-toggle" for="line-wrapping-toggle">Wrap lines
+<input id="line-wrapping-toggle" type="checkbox" autocomplete="off"/>
+</label>
+</div>Generated by 
+<a href="http://www.gradle.org">Gradle 6.5.1</a> at 23 set 2020, 06:42:56</p>
+</div>
+</div>
+</body>
+</html>

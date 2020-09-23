@@ -1,0 +1,654 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          src\main\scala\org\riskala\client\creation\ClientCreateRoom.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier, monospace;'>1 <span style=''>package org.riskala.client.creation
+</span>2 <span style=''>
+</span>3 <span style=''>import argonaut.Argonaut._
+</span>4 <span style=''>import org.riskala.utils.Parser
+</span>5 <span style=''>import org.riskala.client.messages.FromClientMessages.CreateMessage
+</span>6 <span style=''>import org.riskala.client.messages.ToClientMessages.ErrorMessage
+</span>7 <span style=''>import org.riskala.client.messages.WrappedMessage
+</span>8 <span style=''>
+</span>9 <span style=''>import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
+</span>10 <span style=''>
+</span>11 <span style=''>/**
+</span>12 <span style=''> * #scala.js
+</span>13 <span style=''> */
+</span>14 <span style=''>@JSExportTopLevel(&quot;ClientCreateRoom&quot;)
+</span>15 <span style=''>object ClientCreateRoom {
+</span>16 <span style=''>
+</span>17 <span style=''>  /**
+</span>18 <span style=''>   * Method that gives a wrapped Create message in JSON-format string
+</span>19 <span style=''>   * */
+</span>20 <span style=''>  @JSExport
+</span>21 <span style=''>  def getCreateMsgWrapped(name: String, maxPlayer: Int, scenario: String): String = {
+</span>22 <span style=''>    </span><span style='background: #F0ADAD'>WrappedMessage(&quot;CreateMessage&quot;,CreateMessage(name,maxPlayer,scenario).asJson.pretty(nospace)).asJson.pretty(nospace)</span><span style=''>
+</span>23 <span style=''>  }
+</span>24 <span style=''>
+</span>25 <span style=''>  /**
+</span>26 <span style=''>   * Method used to menage messages that are sent to createRoom page
+</span>27 <span style=''>   * */
+</span>28 <span style=''>  @JSExport
+</span>29 <span style=''>  def handleCreateMessage(message: String, createRoomFacade: CreateRoomFacade): Unit = {
+</span>30 <span style=''>    </span><span style='background: #F0ADAD'>println(s&quot;inside handleCreate. Message = $message&quot;)</span><span style=''>
+</span>31 <span style=''>    val wrappedMsg = </span><span style='background: #F0ADAD'>Parser.retrieveWrapped(message).get</span><span style=''>
+</span>32 <span style=''>    </span><span style='background: #F0ADAD'>println(s&quot;wrappedMessage = $wrappedMsg&quot;)</span><span style=''>
+</span>33 <span style=''>    </span><span style='background: #F0ADAD'>wrappedMsg.classType</span><span style=''> match {
+</span>34 <span style=''>      case &quot;RoomInfo&quot; =&gt;
+</span>35 <span style=''>        </span><span style='background: #F0ADAD'>createRoomFacade.goToRoom(wrappedMsg.payload)</span><span style=''>
+</span>36 <span style=''>      case &quot;LobbyInfo&quot; =&gt;
+</span>37 <span style=''>        </span><span style='background: #F0ADAD'>createRoomFacade.updateLobby(wrappedMsg.payload)</span><span style=''>
+</span>38 <span style=''>      case &quot;ErrorMessage&quot; =&gt;
+</span>39 <span style=''>        </span><span style='background: #F0ADAD'>println(&quot;received error message&quot;)</span><span style=''>
+</span>40 <span style=''>        val errorMsg = </span><span style='background: #F0ADAD'>Parser.retrieveMessage(wrappedMsg.payload, ErrorMessage.ErrorCodecJson.Decoder).get</span><span style=''>
+</span>41 <span style=''>        </span><span style='background: #F0ADAD'>createRoomFacade.notifyCreateError(errorMsg.error)</span><span style=''>
+</span>42 <span style=''>        
+</span>43 <span style=''>      case unhandled =&gt; </span><span style='background: #F0ADAD'>println(s&quot;Ignored message: $unhandled&quot;)</span><span style=''>
+</span>44 <span style=''>    }
+</span>45 <span style=''>  }
+</span>46 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          1790
+        </td>
+        <td>
+          708
+          -
+          708
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.messages.FromClientMessages.CreateMessage.CreateCodecJson
+        </td>
+        <td style="background: #F0ADAD">
+          FromClientMessages.this.CreateMessage.CreateCodecJson
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          1757
+        </td>
+        <td>
+          638
+          -
+          754
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          argonaut.Json.pretty
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.ToJsonIdentity[org.riskala.client.messages.WrappedMessage](org.riskala.client.messages.WrappedMessage.apply(&quot;CreateMessage&quot;, argonaut.Argonaut.ToJsonIdentity[org.riskala.client.messages.FromClientMessages.CreateMessage](org.riskala.client.messages.FromClientMessages.CreateMessage.apply(name, maxPlayer, scenario)).asJson(FromClientMessages.this.CreateMessage.CreateCodecJson).pretty(argonaut.Argonaut.nospace))).asJson(messages.this.WrappedMessage.WrappedCodecJson).pretty(argonaut.Argonaut.nospace)
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          546
+        </td>
+        <td>
+          669
+          -
+          730
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          argonaut.Json.pretty
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.ToJsonIdentity[org.riskala.client.messages.FromClientMessages.CreateMessage](org.riskala.client.messages.FromClientMessages.CreateMessage.apply(name, maxPlayer, scenario)).asJson(FromClientMessages.this.CreateMessage.CreateCodecJson).pretty(argonaut.Argonaut.nospace)
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          1105
+        </td>
+        <td>
+          732
+          -
+          732
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.messages.WrappedMessage.WrappedCodecJson
+        </td>
+        <td style="background: #F0ADAD">
+          messages.this.WrappedMessage.WrappedCodecJson
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          312
+        </td>
+        <td>
+          746
+          -
+          753
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.PrettyParamss.nospace
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.nospace
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          1020
+        </td>
+        <td>
+          722
+          -
+          729
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.PrettyParamss.nospace
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.nospace
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          1929
+        </td>
+        <td>
+          638
+          -
+          731
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.messages.WrappedMessage.apply
+        </td>
+        <td style="background: #F0ADAD">
+          org.riskala.client.messages.WrappedMessage.apply(&quot;CreateMessage&quot;, argonaut.Argonaut.ToJsonIdentity[org.riskala.client.messages.FromClientMessages.CreateMessage](org.riskala.client.messages.FromClientMessages.CreateMessage.apply(name, maxPlayer, scenario)).asJson(FromClientMessages.this.CreateMessage.CreateCodecJson).pretty(argonaut.Argonaut.nospace))
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          485
+        </td>
+        <td>
+          669
+          -
+          707
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.messages.FromClientMessages.CreateMessage.apply
+        </td>
+        <td style="background: #F0ADAD">
+          org.riskala.client.messages.FromClientMessages.CreateMessage.apply(name, maxPlayer, scenario)
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          1271
+        </td>
+        <td>
+          653
+          -
+          668
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;CreateMessage&quot;
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          416
+        </td>
+        <td>
+          956
+          -
+          1007
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.println
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Predef.println(scala.StringContext.apply(&quot;inside handleCreate. Message = &quot;, &quot;&quot;).s(message))
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          1223
+        </td>
+        <td>
+          964
+          -
+          1006
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;inside handleCreate. Message = &quot;, &quot;&quot;).s(message)
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          1794
+        </td>
+        <td>
+          1030
+          -
+          1065
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Option.get
+        </td>
+        <td style="background: #F0ADAD">
+          org.riskala.utils.Parser.retrieveWrapped(message).get
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          1022
+        </td>
+        <td>
+          1079
+          -
+          1110
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;wrappedMessage = &quot;, &quot;&quot;).s(wrappedMsg)
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          645
+        </td>
+        <td>
+          1071
+          -
+          1111
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.println
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Predef.println(scala.StringContext.apply(&quot;wrappedMessage = &quot;, &quot;&quot;).s(wrappedMsg))
+        </td>
+      </tr><tr>
+        <td>
+          33
+        </td>
+        <td>
+          1897
+        </td>
+        <td>
+          1117
+          -
+          1137
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.messages.WrappedMessage.classType
+        </td>
+        <td style="background: #F0ADAD">
+          wrappedMsg.classType
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          316
+        </td>
+        <td>
+          1181
+          -
+          1226
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.creation.CreateRoomFacade.goToRoom
+        </td>
+        <td style="background: #F0ADAD">
+          createRoomFacade.goToRoom(wrappedMsg.payload)
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          1093
+        </td>
+        <td>
+          1207
+          -
+          1225
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.messages.WrappedMessage.payload
+        </td>
+        <td style="background: #F0ADAD">
+          wrappedMsg.payload
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          1318
+        </td>
+        <td>
+          1263
+          -
+          1311
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.creation.CreateRoomFacade.updateLobby
+        </td>
+        <td style="background: #F0ADAD">
+          createRoomFacade.updateLobby(wrappedMsg.payload)
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          1765
+        </td>
+        <td>
+          1292
+          -
+          1310
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.messages.WrappedMessage.payload
+        </td>
+        <td style="background: #F0ADAD">
+          wrappedMsg.payload
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          481
+        </td>
+        <td>
+          1351
+          -
+          1384
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.println
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Predef.println(&quot;received error message&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          1770
+        </td>
+        <td>
+          1432
+          -
+          1450
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.messages.WrappedMessage.payload
+        </td>
+        <td style="background: #F0ADAD">
+          wrappedMsg.payload
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          1054
+        </td>
+        <td>
+          1452
+          -
+          1487
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.CodecJson.Decoder
+        </td>
+        <td style="background: #F0ADAD">
+          org.riskala.client.messages.ToClientMessages.ErrorMessage.ErrorCodecJson.Decoder
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          141
+        </td>
+        <td>
+          1409
+          -
+          1492
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Option.get
+        </td>
+        <td style="background: #F0ADAD">
+          org.riskala.utils.Parser.retrieveMessage[org.riskala.client.messages.ToClientMessages.ErrorMessage](wrappedMsg.payload, org.riskala.client.messages.ToClientMessages.ErrorMessage.ErrorCodecJson.Decoder).get
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          1174
+        </td>
+        <td>
+          1502
+          -
+          1552
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.client.creation.CreateRoomFacade.notifyCreateError
+        </td>
+        <td style="background: #F0ADAD">
+          createRoomFacade.notifyCreateError(errorMsg.error)
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          1923
+        </td>
+        <td>
+          1537
+          -
+          1551
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.client.messages.ToClientMessages.ErrorMessage.error
+        </td>
+        <td style="background: #F0ADAD">
+          errorMsg.error
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          1722
+        </td>
+        <td>
+          1588
+          -
+          1627
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.println
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Predef.println(scala.StringContext.apply(&quot;Ignored message: &quot;, &quot;&quot;).s(unhandled))
+        </td>
+      </tr><tr>
+        <td>
+          43
+        </td>
+        <td>
+          323
+        </td>
+        <td>
+          1596
+          -
+          1626
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;Ignored message: &quot;, &quot;&quot;).s(unhandled)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

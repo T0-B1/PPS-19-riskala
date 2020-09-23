@@ -1,0 +1,5713 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          src\main\scala\org\riskala\model\logic\Commands.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier, monospace;'>1 <span style=''>package org.riskala.model.logic
+</span>2 <span style=''>
+</span>3 <span style=''>import org.riskala.model.Cards.Cards
+</span>4 <span style=''>import org.riskala.model.{Cards, Player}
+</span>5 <span style=''>import org.riskala.model.map.State.State
+</span>6 <span style=''>import org.riskala.model.logic.EventStore.Behavior
+</span>7 <span style=''>
+</span>8 <span style=''>import scala.util.Random
+</span>9 <span style=''>
+</span>10 <span style=''>sealed trait Command{
+</span>11 <span style=''>
+</span>12 <span style=''>  /**
+</span>13 <span style=''>   * Return the result of the execution of the command on a game instance in terms of events that will happen
+</span>14 <span style=''>   *
+</span>15 <span style=''>   * @param game A game instance on which the command is executed
+</span>16 <span style=''>   * @return A behavior
+</span>17 <span style=''>   */
+</span>18 <span style=''>  def execution(game: GameSnapshot): Behavior[Event]
+</span>19 <span style=''>
+</span>20 <span style=''>  /**
+</span>21 <span style=''>   * Investigates the feasibility of a command given a game instance and returns a feasibility report
+</span>22 <span style=''>   *
+</span>23 <span style=''>   * @param game A game instance on which the command has to be executed
+</span>24 <span style=''>   * @return A feasibility report
+</span>25 <span style=''>   */
+</span>26 <span style=''>  def feasibility(game: GameSnapshot): FeasibilityReport
+</span>27 <span style=''>
+</span>28 <span style=''>}
+</span>29 <span style=''>
+</span>30 <span style=''>case class FeasibilityReport(feasible: Boolean = true, error: Option[String] = None)
+</span>31 <span style=''>
+</span>32 <span style=''>/**
+</span>33 <span style=''> * A command that automatically checks for feasibility before being executed
+</span>34 <span style=''> */
+</span>35 <span style=''>trait SelfCheckingCommand extends Command {
+</span>36 <span style=''>
+</span>37 <span style=''>  /**
+</span>38 <span style=''>   * Only in case the command is feasible, it returns the result of the execution of the command on a game instance
+</span>39 <span style=''>   * in terms of events that will happen.
+</span>40 <span style=''>   *
+</span>41 <span style=''>   * @param game A game instance on which the command is executed
+</span>42 <span style=''>   * @return A behavior
+</span>43 <span style=''>   */
+</span>44 <span style=''>  override def execution(game: GameSnapshot): Behavior[Event] = {
+</span>45 <span style=''>    val feasibilityReport = </span><span style='background: #AEF1AE'>feasibility(game)</span><span style=''>
+</span>46 <span style=''>    if(</span><span style='background: #AEF1AE'>!feasibilityReport.feasible</span><span style=''>) </span><span style='background: #F0ADAD'>{
+</span>47 <span style=''></span><span style='background: #F0ADAD'>      println(feasibilityReport.error)
+</span>48 <span style=''></span><span style='background: #F0ADAD'>      return Seq.empty
+</span>49 <span style=''></span><span style='background: #F0ADAD'>    }</span><span style=''>
+</span>50 <span style=''>    </span><span style='background: #AEF1AE'>checkedExecution(game)</span><span style=''>
+</span>51 <span style=''>  }
+</span>52 <span style=''>
+</span>53 <span style=''>  /**
+</span>54 <span style=''>   * The execution of the command that will happen if feasible
+</span>55 <span style=''>   *
+</span>56 <span style=''>   * @param game A game instance on which the command is executed
+</span>57 <span style=''>   * @return A behavior
+</span>58 <span style=''>   */
+</span>59 <span style=''>  def checkedExecution(game: GameSnapshot): Behavior[Event]
+</span>60 <span style=''>}
+</span>61 <span style=''>
+</span>62 <span style=''>/**
+</span>63 <span style=''> * An attack
+</span>64 <span style=''> *
+</span>65 <span style=''> * @param from The attacking state
+</span>66 <span style=''> * @param to The target state
+</span>67 <span style=''> * @param troops The number of troops mobilized
+</span>68 <span style=''> */
+</span>69 <span style=''>final case class Attack(from: State,
+</span>70 <span style=''>                        to: State,
+</span>71 <span style=''>                        troops: Int)
+</span>72 <span style=''>                  extends SelfCheckingCommand {
+</span>73 <span style=''>
+</span>74 <span style=''>  private val rng = </span><span style='background: #AEF1AE'>new Random()</span><span style=''>
+</span>75 <span style=''>  private val rndUpperBound: Int = </span><span style='background: #AEF1AE'>10</span><span style=''>
+</span>76 <span style=''>  private val defenderThreshold: Int = </span><span style='background: #AEF1AE'>5</span><span style=''>
+</span>77 <span style=''>
+</span>78 <span style=''>  override def checkedExecution(game: GameSnapshot): Behavior[Event] = {
+</span>79 <span style=''>    val defenders = </span><span style='background: #AEF1AE'>game.geopolitics.getPlayerStateByName(to).get.troops</span><span style=''>
+</span>80 <span style=''>    var remainingDefenders = defenders
+</span>81 <span style=''>    var remainingAttackers = </span><span style='background: #AEF1AE'>troops</span><span style=''>
+</span>82 <span style=''>    while(</span><span style='background: #AEF1AE'>remainingAttackers &gt; 0 &amp;&amp; remainingDefenders &gt; 0</span><span style=''>) {
+</span>83 <span style=''>      </span><span style='background: #AEF1AE'>if(rng.nextInt(rndUpperBound) &gt; defenderThreshold)
+</span>84 <span style=''></span><span style='background: #AEF1AE'>        remainingDefenders = remainingDefenders - 1
+</span>85 <span style=''></span><span style='background: #AEF1AE'>      else
+</span>86 <span style=''></span><span style='background: #AEF1AE'>        remainingAttackers = remainingAttackers - 1</span><span style=''>
+</span>87 <span style=''>    }
+</span>88 <span style=''>    if(</span><span style='background: #AEF1AE'>remainingAttackers == 0</span><span style=''>)
+</span>89 <span style=''>      </span><span style='background: #AEF1AE'>Seq(Battle(from, to, troops, 0, defenders - remainingDefenders))</span><span style=''>
+</span>90 <span style=''>    else</span><span style='background: #AEF1AE'>{
+</span>91 <span style=''></span><span style='background: #AEF1AE'>      val attacker = game.geopolitics.getPlayerStateByName(from).get.owner
+</span>92 <span style=''></span><span style='background: #AEF1AE'>      val events: Seq[Event] = Seq.empty :+
+</span>93 <span style=''></span><span style='background: #AEF1AE'>        Battle(from, to, troops, remainingAttackers, defenders) :+
+</span>94 <span style=''></span><span style='background: #AEF1AE'>        CardDrawn(attacker, Cards.generateCard())
+</span>95 <span style=''></span><span style='background: #AEF1AE'>      val objective: Set[State] = game.objectives(attacker).states
+</span>96 <span style=''></span><span style='background: #AEF1AE'>      val conquered: Set[State] = game.geopolitics.getStatesOfPlayer(attacker)
+</span>97 <span style=''></span><span style='background: #AEF1AE'>      // The ownership of the only state left is yet to be updated, but if it is the one just conquered, it's a victory
+</span>98 <span style=''></span><span style='background: #AEF1AE'>      val diff: Set[State] = objective.diff(conquered)
+</span>99 <span style=''></span><span style='background: #AEF1AE'>      if(diff.size == 1 &amp;&amp; diff.head.equals(to))
+</span>100 <span style=''></span><span style='background: #AEF1AE'>        events :+ GameEnded(attacker)
+</span>101 <span style=''></span><span style='background: #AEF1AE'>      else
+</span>102 <span style=''></span><span style='background: #AEF1AE'>        events
+</span>103 <span style=''></span><span style='background: #AEF1AE'>    }</span><span style=''>
+</span>104 <span style=''>  }
+</span>105 <span style=''>
+</span>106 <span style=''>  override def feasibility(game: GameSnapshot): FeasibilityReport = {
+</span>107 <span style=''>    val fromPS = </span><span style='background: #AEF1AE'>game.geopolitics.getPlayerStateByName(from)</span><span style=''>
+</span>108 <span style=''>    if(</span><span style='background: #AEF1AE'>fromPS.isEmpty</span><span style=''>)
+</span>109 <span style=''>      </span><span style='background: #F0ADAD'>return FeasibilityReport(feasible = false, Some(s&quot;Attacking from an unknown state: $from&quot;))</span><span style=''>
+</span>110 <span style=''>    val toPS = </span><span style='background: #AEF1AE'>game.geopolitics.getPlayerStateByName(to)</span><span style=''>
+</span>111 <span style=''>    if(</span><span style='background: #AEF1AE'>toPS.isEmpty</span><span style=''>)
+</span>112 <span style=''>      </span><span style='background: #F0ADAD'>return FeasibilityReport(feasible = false, Some(s&quot;Attacking an unknown state: $to&quot;))</span><span style=''>
+</span>113 <span style=''>    val turnFeasibility = </span><span style='background: #AEF1AE'>Command.checkTurn(fromPS.get.owner, game)</span><span style=''>
+</span>114 <span style=''>    if(</span><span style='background: #AEF1AE'>!turnFeasibility.feasible</span><span style=''>)
+</span>115 <span style=''>      </span><span style='background: #AEF1AE'>return turnFeasibility</span><span style=''>
+</span>116 <span style=''>    val availableTroops = </span><span style='background: #AEF1AE'>fromPS.get.troops</span><span style=''>
+</span>117 <span style=''>    if(</span><span style='background: #AEF1AE'>availableTroops &lt;= troops</span><span style=''>)
+</span>118 <span style=''>      </span><span style='background: #AEF1AE'>return FeasibilityReport(feasible = false, Some(s&quot;Insufficient troops ($availableTroops) for attack with $troops from $from&quot;))</span><span style=''>
+</span>119 <span style=''>    </span><span style='background: #AEF1AE'>FeasibilityReport()</span><span style=''>
+</span>120 <span style=''>  }
+</span>121 <span style=''>}
+</span>122 <span style=''>
+</span>123 <span style=''>/**
+</span>124 <span style=''> * A command to move troops between states of the same player
+</span>125 <span style=''> * @param from The state of origin
+</span>126 <span style=''> * @param to The destination state
+</span>127 <span style=''> * @param troops The number of troops to move
+</span>128 <span style=''> */
+</span>129 <span style=''>final case class MoveTroops(from: State,
+</span>130 <span style=''>                            to: State,
+</span>131 <span style=''>                            troops: Int)
+</span>132 <span style=''>                  extends SelfCheckingCommand {
+</span>133 <span style=''>  override def checkedExecution(game: GameSnapshot): Behavior[Event] = {
+</span>134 <span style=''>    </span><span style='background: #AEF1AE'>Seq(TroopsMoved(from, to, troops))</span><span style=''>
+</span>135 <span style=''>  }
+</span>136 <span style=''>
+</span>137 <span style=''>  override def feasibility(game: GameSnapshot): FeasibilityReport = {
+</span>138 <span style=''>    val fromPS = </span><span style='background: #AEF1AE'>game.geopolitics.getPlayerStateByName(from)</span><span style=''>
+</span>139 <span style=''>    if(</span><span style='background: #AEF1AE'>fromPS.isEmpty</span><span style=''>)
+</span>140 <span style=''>      </span><span style='background: #F0ADAD'>return FeasibilityReport(feasible = false, Some(s&quot;Moving from an unknown state: $from&quot;))</span><span style=''>
+</span>141 <span style=''>    val toPS = </span><span style='background: #AEF1AE'>game.geopolitics.getPlayerStateByName(to)</span><span style=''>
+</span>142 <span style=''>    if(</span><span style='background: #AEF1AE'>toPS.isEmpty</span><span style=''>)
+</span>143 <span style=''>      </span><span style='background: #F0ADAD'>return FeasibilityReport(feasible = false, Some(s&quot;Moving to an unknown state: $to&quot;))</span><span style=''>
+</span>144 <span style=''>    val turnFeasibility = </span><span style='background: #AEF1AE'>Command.checkTurn(fromPS.get.owner, game)</span><span style=''>
+</span>145 <span style=''>    if(</span><span style='background: #AEF1AE'>!turnFeasibility.feasible</span><span style=''>)
+</span>146 <span style=''>      </span><span style='background: #AEF1AE'>return turnFeasibility</span><span style=''>
+</span>147 <span style=''>    val availableTroops = </span><span style='background: #AEF1AE'>fromPS.get.troops</span><span style=''>
+</span>148 <span style=''>    if(</span><span style='background: #AEF1AE'>availableTroops &lt;= troops</span><span style=''>)
+</span>149 <span style=''>      </span><span style='background: #AEF1AE'>return FeasibilityReport(feasible = false, Some(s&quot;Insufficient troops ($availableTroops) for attack with $troops from $from&quot;))</span><span style=''>
+</span>150 <span style=''>    </span><span style='background: #AEF1AE'>FeasibilityReport()</span><span style=''>
+</span>151 <span style=''>  }
+</span>152 <span style=''>}
+</span>153 <span style=''>
+</span>154 <span style=''>/**
+</span>155 <span style=''> * A command to deploy troops to a state
+</span>156 <span style=''> * @param to The target state
+</span>157 <span style=''> * @param troops The number of troops to deploy
+</span>158 <span style=''> */
+</span>159 <span style=''>final case class Deploy(to: State,
+</span>160 <span style=''>                        troops: Int)
+</span>161 <span style=''>                  extends SelfCheckingCommand {
+</span>162 <span style=''>  override def checkedExecution(game: GameSnapshot): Behavior[Event] = {
+</span>163 <span style=''>    </span><span style='background: #AEF1AE'>Seq(TroopsDeployed(to, troops))</span><span style=''>
+</span>164 <span style=''>  }
+</span>165 <span style=''>
+</span>166 <span style=''>  override def feasibility(game: GameSnapshot): FeasibilityReport = {
+</span>167 <span style=''>    val toPS = </span><span style='background: #AEF1AE'>game.geopolitics.getPlayerStateByName(to)</span><span style=''>
+</span>168 <span style=''>    if(</span><span style='background: #AEF1AE'>toPS.isEmpty</span><span style=''>)
+</span>169 <span style=''>      </span><span style='background: #F0ADAD'>return FeasibilityReport(feasible = false, Some(s&quot;Moving to an unknown state: $to&quot;))</span><span style=''>
+</span>170 <span style=''>    val turnFeasibility = </span><span style='background: #AEF1AE'>Command.checkTurn(toPS.get.owner, game)</span><span style=''>
+</span>171 <span style=''>    if(</span><span style='background: #AEF1AE'>!turnFeasibility.feasible</span><span style=''>)
+</span>172 <span style=''>      </span><span style='background: #AEF1AE'>return turnFeasibility</span><span style=''>
+</span>173 <span style=''>    if(</span><span style='background: #AEF1AE'>troops &gt; game.deployableTroops</span><span style=''>)
+</span>174 <span style=''>      </span><span style='background: #AEF1AE'>return FeasibilityReport(feasible = false, Some(s&quot;Not enough troops (${game.deployableTroops}) to deploy $troops to state $to&quot;))</span><span style=''>
+</span>175 <span style=''>    </span><span style='background: #AEF1AE'>FeasibilityReport()</span><span style=''>
+</span>176 <span style=''>  }
+</span>177 <span style=''>}
+</span>178 <span style=''>
+</span>179 <span style=''>/**
+</span>180 <span style=''> * A command to redeem a card bonus
+</span>181 <span style=''> * @param player The owner of the cards
+</span>182 <span style=''> * @param cardBonus The type of bonus to redeem
+</span>183 <span style=''> */
+</span>184 <span style=''>final case class RedeemBonus(player: Player,
+</span>185 <span style=''>                             cardBonus: Cards)
+</span>186 <span style=''>                  extends SelfCheckingCommand {
+</span>187 <span style=''>  override def checkedExecution(game: GameSnapshot): Behavior[Event] = {
+</span>188 <span style=''>    </span><span style='background: #AEF1AE'>Seq(BonusRedeemed(player, cardBonus))</span><span style=''>
+</span>189 <span style=''>  }
+</span>190 <span style=''>
+</span>191 <span style=''>  override def feasibility(game: GameSnapshot): FeasibilityReport = {
+</span>192 <span style=''>    val turnFeasibility = </span><span style='background: #AEF1AE'>Command.checkTurn(player, game)</span><span style=''>
+</span>193 <span style=''>    if(</span><span style='background: #AEF1AE'>!turnFeasibility.feasible</span><span style=''>)
+</span>194 <span style=''>      </span><span style='background: #AEF1AE'>return turnFeasibility</span><span style=''>
+</span>195 <span style=''>    val playerCards = </span><span style='background: #AEF1AE'>game.cards.get(player)</span><span style=''>
+</span>196 <span style=''>    if(</span><span style='background: #AEF1AE'>playerCards.isEmpty</span><span style=''>)
+</span>197 <span style=''>      </span><span style='background: #F0ADAD'>return FeasibilityReport(feasible = false, Some(s&quot;No deck found&quot;))</span><span style=''>
+</span>198 <span style=''>    if(</span><span style='background: #AEF1AE'>playerCards.get.count(c =&gt; c.equals(cardBonus)) &lt; 3</span><span style=''>)
+</span>199 <span style=''>      </span><span style='background: #AEF1AE'>return FeasibilityReport(feasible = false, Some(s&quot;Not enough cards of type $cardBonus&quot;))</span><span style=''>
+</span>200 <span style=''>    </span><span style='background: #AEF1AE'>FeasibilityReport()</span><span style=''>
+</span>201 <span style=''>  }
+</span>202 <span style=''>}
+</span>203 <span style=''>
+</span>204 <span style=''>/**
+</span>205 <span style=''> * A command to end the turn of a player
+</span>206 <span style=''> * @param player The player whose turn ends
+</span>207 <span style=''> */
+</span>208 <span style=''>final case class EndTurn(player: Player)
+</span>209 <span style=''>                  extends SelfCheckingCommand {
+</span>210 <span style=''>  override def checkedExecution(game: GameSnapshot): Behavior[Event] = {
+</span>211 <span style=''>    </span><span style='background: #AEF1AE'>Seq(TurnEnded(player))</span><span style=''>
+</span>212 <span style=''>  }
+</span>213 <span style=''>
+</span>214 <span style=''>  override def feasibility(game: GameSnapshot): FeasibilityReport = {
+</span>215 <span style=''>    </span><span style='background: #AEF1AE'>Command.checkTurn(player, game)</span><span style=''>
+</span>216 <span style=''>  }
+</span>217 <span style=''>}
+</span>218 <span style=''>
+</span>219 <span style=''>object Command {
+</span>220 <span style=''>
+</span>221 <span style=''>  /**
+</span>222 <span style=''>   * Check that a command is being executed by the user whose current turn is
+</span>223 <span style=''>   *
+</span>224 <span style=''>   * @param player The player executing the command
+</span>225 <span style=''>   * @param game The game
+</span>226 <span style=''>   * @return A feasibility report
+</span>227 <span style=''>   */
+</span>228 <span style=''>  def checkTurn(player: Player, game: GameSnapshot): FeasibilityReport = {
+</span>229 <span style=''>    </span><span style='background: #AEF1AE'>game.nowPlaying</span><span style=''> match {
+</span>230 <span style=''>      case p if </span><span style='background: #AEF1AE'>p.equals(player)</span><span style=''> =&gt; </span><span style='background: #AEF1AE'>FeasibilityReport(feasible = true, None)</span><span style=''>
+</span>231 <span style=''>      case _ =&gt; </span><span style='background: #AEF1AE'>FeasibilityReport(feasible = false, Some(&quot;Not your turn&quot;))</span><span style=''>
+</span>232 <span style=''>    }
+</span>233 <span style=''>  }
+</span>234 <span style=''>
+</span>235 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          45
+        </td>
+        <td>
+          1094
+        </td>
+        <td>
+          1430
+          -
+          1447
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.logic.Command.feasibility
+        </td>
+        <td style="background: #AEF1AE">
+          SelfCheckingCommand.this.feasibility(game)
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          288
+        </td>
+        <td>
+          1456
+          -
+          1483
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Boolean.unary_!
+        </td>
+        <td style="background: #AEF1AE">
+          feasibilityReport.feasible.unary_!
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          631
+        </td>
+        <td>
+          1453
+          -
+          1453
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          963
+        </td>
+        <td>
+          1453
+          -
+          1453
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          46
+        </td>
+        <td>
+          1866
+        </td>
+        <td>
+          1485
+          -
+          1557
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          {
+  scala.Predef.println(feasibilityReport.error);
+  return scala.collection.Seq.empty[Nothing]
+}
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          1332
+        </td>
+        <td>
+          1494
+          -
+          1526
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.println
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Predef.println(feasibilityReport.error)
+        </td>
+      </tr><tr>
+        <td>
+          47
+        </td>
+        <td>
+          2043
+        </td>
+        <td>
+          1502
+          -
+          1525
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.logic.FeasibilityReport.error
+        </td>
+        <td style="background: #F0ADAD">
+          feasibilityReport.error
+        </td>
+      </tr><tr>
+        <td>
+          48
+        </td>
+        <td>
+          530
+        </td>
+        <td>
+          1541
+          -
+          1550
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.empty
+        </td>
+        <td style="background: #F0ADAD">
+          scala.collection.Seq.empty[Nothing]
+        </td>
+      </tr><tr>
+        <td>
+          50
+        </td>
+        <td>
+          2005
+        </td>
+        <td>
+          1563
+          -
+          1585
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.logic.SelfCheckingCommand.checkedExecution
+        </td>
+        <td style="background: #AEF1AE">
+          SelfCheckingCommand.this.checkedExecution(game)
+        </td>
+      </tr><tr>
+        <td>
+          74
+        </td>
+        <td>
+          1213
+        </td>
+        <td>
+          2163
+          -
+          2175
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.Random.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new scala.util.Random()
+        </td>
+      </tr><tr>
+        <td>
+          75
+        </td>
+        <td>
+          379
+        </td>
+        <td>
+          2212
+          -
+          2214
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          10
+        </td>
+      </tr><tr>
+        <td>
+          76
+        </td>
+        <td>
+          1644
+        </td>
+        <td>
+          2255
+          -
+          2256
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          5
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          1296
+        </td>
+        <td>
+          2392
+          -
+          2394
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.logic.Attack.to
+        </td>
+        <td style="background: #AEF1AE">
+          Attack.this.to
+        </td>
+      </tr><tr>
+        <td>
+          79
+        </td>
+        <td>
+          533
+        </td>
+        <td>
+          2354
+          -
+          2406
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.map.PlayerState.troops
+        </td>
+        <td style="background: #AEF1AE">
+          game.geopolitics.getPlayerStateByName(Attack.this.to).get.troops
+        </td>
+      </tr><tr>
+        <td>
+          81
+        </td>
+        <td>
+          1834
+        </td>
+        <td>
+          2477
+          -
+          2483
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.logic.Attack.troops
+        </td>
+        <td style="background: #AEF1AE">
+          Attack.this.troops
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          361
+        </td>
+        <td>
+          2489
+          -
+          2489
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          1976
+        </td>
+        <td>
+          2554
+          -
+          2722
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  if (Attack.this.rng.nextInt(Attack.this.rndUpperBound).&gt;(Attack.this.defenderThreshold))
+    remainingDefenders = remainingDefenders.-(1)
+  else
+    remainingAttackers = remainingAttackers.-(1);
+  while$1()
+}
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          635
+        </td>
+        <td>
+          2521
+          -
+          2543
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          remainingDefenders.&gt;(0)
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          1039
+        </td>
+        <td>
+          2516
+          -
+          2517
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          0
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          1113
+        </td>
+        <td>
+          2489
+          -
+          2489
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          82
+        </td>
+        <td>
+          1968
+        </td>
+        <td>
+          2495
+          -
+          2543
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.&amp;&amp;
+        </td>
+        <td style="background: #AEF1AE">
+          remainingAttackers.&gt;(0).&amp;&amp;(remainingDefenders.&gt;(0))
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          1668
+        </td>
+        <td>
+          2557
+          -
+          2603
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          Attack.this.rng.nextInt(Attack.this.rndUpperBound).&gt;(Attack.this.defenderThreshold)
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          561
+        </td>
+        <td>
+          2554
+          -
+          2554
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.logic.Attack.while$1
+        </td>
+        <td style="background: #AEF1AE">
+          while$1()
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          1141
+        </td>
+        <td>
+          2569
+          -
+          2582
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.logic.Attack.rndUpperBound
+        </td>
+        <td style="background: #AEF1AE">
+          Attack.this.rndUpperBound
+        </td>
+      </tr><tr>
+        <td>
+          83
+        </td>
+        <td>
+          356
+        </td>
+        <td>
+          2586
+          -
+          2603
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.logic.Attack.defenderThreshold
+        </td>
+        <td style="background: #AEF1AE">
+          Attack.this.defenderThreshold
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          1300
+        </td>
+        <td>
+          2635
+          -
+          2657
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.-
+        </td>
+        <td style="background: #AEF1AE">
+          remainingDefenders.-(1)
+        </td>
+      </tr><tr>
+        <td>
+          84
+        </td>
+        <td>
+          503
+        </td>
+        <td>
+          2614
+          -
+          2657
+        </td>
+        <td>
+          Assign
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          remainingDefenders = remainingDefenders.-(1)
+        </td>
+      </tr><tr>
+        <td>
+          86
+        </td>
+        <td>
+          1040
+        </td>
+        <td>
+          2679
+          -
+          2722
+        </td>
+        <td>
+          Assign
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          remainingAttackers = remainingAttackers.-(1)
+        </td>
+      </tr><tr>
+        <td>
+          86
+        </td>
+        <td>
+          1836
+        </td>
+        <td>
+          2700
+          -
+          2722
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.-
+        </td>
+        <td style="background: #AEF1AE">
+          remainingAttackers.-(1)
+        </td>
+      </tr><tr>
+        <td>
+          88
+        </td>
+        <td>
+          1672
+        </td>
+        <td>
+          2738
+          -
+          2761
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.==
+        </td>
+        <td style="background: #AEF1AE">
+          remainingAttackers.==(0)
+        </td>
+      </tr><tr>
+        <td>
+          89
+        </td>
+        <td>
+          1115
+        </td>
+        <td>
+          2770
+          -
+          2834
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.Seq.apply[org.riskala.model.logic.Battle](Battle.apply(Attack.this.from, Attack.this.to, Attack.this.troops, 0, defenders.-(remainingDefenders)))
+        </td>
+      </tr><tr>
+        <td>
+          89
+        </td>
+        <td>
+          173
+        </td>
+        <td>
+          2802
+          -
+          2832
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.-
+        </td>
+        <td style="background: #AEF1AE">
+          defenders.-(remainingDefenders)
+        </td>
+      </tr><tr>
+        <td>
+          89
+        </td>
+        <td>
+          1028
+        </td>
+        <td>
+          2799
+          -
+          2800
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          0
+        </td>
+      </tr><tr>
+        <td>
+          89
+        </td>
+        <td>
+          430
+        </td>
+        <td>
+          2787
+          -
+          2789
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.logic.Attack.to
+        </td>
+        <td style="background: #AEF1AE">
+          Attack.this.to
+        </td>
+      </tr><tr>
+        <td>
+          89
+        </td>
+        <td>
+          1234
+        </td>
+        <td>
+          2781
+          -
+          2785
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.logic.Attack.from
+        </td>
+        <td style="background: #AEF1AE">
+          Attack.this.from
+        </td>
+      </tr><tr>
+        <td>
+          89
+        </td>
+        <td>
+          1906
+        </td>
+        <td>
+          2774
+          -
+          2833
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.logic.Battle.apply
+        </td>
+        <td style="background: #AEF1AE">
+          Battle.apply(Attack.this.from, Attack.this.to, Attack.this.troops, 0, defenders.-(remainingDefenders))
+        </td>
+      </tr><tr>
+        <td>
+          89
+        </td>
+        <td>
+          365
+        </td>
+        <td>
+          2770
+          -
+          2834
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.Seq.apply[org.riskala.model.logic.Battle](Battle.apply(Attack.this.from, Attack.this.to, Attack.this.troops, 0, defenders.-(remainingDefenders)))
+        </td>
+      </tr><tr>
+        <td>
+          89
+        </td>
+        <td>
+          1803
+        </td>
+        <td>
+          2791
+          -
+          2797
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.logic.Attack.troops
+        </td>
+        <td style="background: #AEF1AE">
+          Attack.this.troops
+        </td>
+      </tr><tr>
+        <td>
+          90
+        </td>
+        <td>
+          257
+        </td>
+        <td>
+          2844
+          -
+          3534
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  val attacker: org.riskala.model.Player = game.geopolitics.getPlayerStateByName(Attack.this.from).get.owner;
+  val events: Seq[org.riskala.model.logic.Event] = scala.collection.Seq.empty[Nothing].:+[org.riskala.model.logic.Battle, Seq[org.riskala.model.logic.Battle]](Battle.apply(Attack.this.from, Attack.this.to, Attack.this.troops, remainingAttackers, defenders))(collection.this.Seq.canBuildFrom[org.riskala.model.logic.Battle]).:+[Product with Serializable with org.riskala.model.logic.Event, Seq[org.riskala.model.logic.Event]](CardDrawn.apply(attacker, org.riskala.model.Cards.generateCard()))(collection.this.Seq.canBuildFrom[Product with Serializable with org.riskala.model.logic.Event]);
+  val objective: Set[org.riskala.model.map.State.State] = game.objectives.apply(attacker).states;
+  val conquered: Set[org.riskala.model.map.State.State] = game.geopolitics.getStatesOfPlayer(attacker);
+  val diff: Set[org.riskala.model.map.State.State] = objective.diff(conquered);
+  if (diff.size.==(1).&amp;&amp;(diff.head.equals(Attack.this.to)))
+    events.:+[org.riskala.model.logic.Event, org.riskala.model.logic.EventStore.Behavior[org.riskala.model.logic.Event]](GameEnded.apply(attacker))(collection.this.Seq.canBuildFrom[org.riskala.model.logic.Event])
+  else
+    events
+}
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          1240
+        </td>
+        <td>
+          2868
+          -
+          2921
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.map.PlayerState.owner
+        </td>
+        <td style="background: #AEF1AE">
+          game.geopolitics.getPlayerStateByName(Attack.this.from).get.owner
+        </td>
+      </tr><tr>
+        <td>
+          91
+        </td>
+        <td>
+          1642
+        </td>
+        <td>
+          2906
+          -
+          2910
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.logic.Attack.from
+        </td>
+        <td style="background: #AEF1AE">
+          Attack.this.from
+        </td>
+      </tr><tr>
+        <td>
+          92
+        </td>
+        <td>
+          1966
+        </td>
+        <td>
+          2964
+          -
+          2964
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[org.riskala.model.logic.Battle]
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          1808
+        </td>
+        <td>
+          2989
+          -
+          2991
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.logic.Attack.to
+        </td>
+        <td style="background: #AEF1AE">
+          Attack.this.to
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          821
+        </td>
+        <td>
+          2954
+          -
+          3085
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.SeqLike.:+
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.Seq.empty[Nothing].:+[org.riskala.model.logic.Battle, Seq[org.riskala.model.logic.Battle]](Battle.apply(Attack.this.from, Attack.this.to, Attack.this.troops, remainingAttackers, defenders))(collection.this.Seq.canBuildFrom[org.riskala.model.logic.Battle]).:+[Product with Serializable with org.riskala.model.logic.Event, Seq[org.riskala.model.logic.Event]](CardDrawn.apply(attacker, org.riskala.model.Cards.generateCard()))(collection.this.Seq.canBuildFrom[Product with Serializable with org.riskala.model.logic.Event])
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          151
+        </td>
+        <td>
+          2976
+          -
+          3031
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.logic.Battle.apply
+        </td>
+        <td style="background: #AEF1AE">
+          Battle.apply(Attack.this.from, Attack.this.to, Attack.this.troops, remainingAttackers, defenders)
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          1646
+        </td>
+        <td>
+          3032
+          -
+          3032
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[Product with Serializable with org.riskala.model.logic.Event]
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          967
+        </td>
+        <td>
+          2993
+          -
+          2999
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.logic.Attack.troops
+        </td>
+        <td style="background: #AEF1AE">
+          Attack.this.troops
+        </td>
+      </tr><tr>
+        <td>
+          93
+        </td>
+        <td>
+          493
+        </td>
+        <td>
+          2983
+          -
+          2987
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.logic.Attack.from
+        </td>
+        <td style="background: #AEF1AE">
+          Attack.this.from
+        </td>
+      </tr><tr>
+        <td>
+          94
+        </td>
+        <td>
+          1216
+        </td>
+        <td>
+          3064
+          -
+          3084
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.Cards.generateCard
+        </td>
+        <td style="background: #AEF1AE">
+          org.riskala.model.Cards.generateCard()
+        </td>
+      </tr><tr>
+        <td>
+          94
+        </td>
+        <td>
+          335
+        </td>
+        <td>
+          3044
+          -
+          3085
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.logic.CardDrawn.apply
+        </td>
+        <td style="background: #AEF1AE">
+          CardDrawn.apply(attacker, org.riskala.model.Cards.generateCard())
+        </td>
+      </tr><tr>
+        <td>
+          95
+        </td>
+        <td>
+          501
+        </td>
+        <td>
+          3121
+          -
+          3153
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.Objectives.Objective.states
+        </td>
+        <td style="background: #AEF1AE">
+          game.objectives.apply(attacker).states
+        </td>
+      </tr><tr>
+        <td>
+          96
+        </td>
+        <td>
+          1889
+        </td>
+        <td>
+          3189
+          -
+          3233
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.map.Geopolitics.getStatesOfPlayer
+        </td>
+        <td style="background: #AEF1AE">
+          game.geopolitics.getStatesOfPlayer(attacker)
+        </td>
+      </tr><tr>
+        <td>
+          98
+        </td>
+        <td>
+          1070
+        </td>
+        <td>
+          3385
+          -
+          3410
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.SetLike.diff
+        </td>
+        <td style="background: #AEF1AE">
+          objective.diff(conquered)
+        </td>
+      </tr><tr>
+        <td>
+          99
+        </td>
+        <td>
+          358
+        </td>
+        <td>
+          3421
+          -
+          3459
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Boolean.&amp;&amp;
+        </td>
+        <td style="background: #AEF1AE">
+          diff.size.==(1).&amp;&amp;(diff.head.equals(Attack.this.to))
+        </td>
+      </tr><tr>
+        <td>
+          99
+        </td>
+        <td>
+          1192
+        </td>
+        <td>
+          3439
+          -
+          3459
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.String.equals
+        </td>
+        <td style="background: #AEF1AE">
+          diff.head.equals(Attack.this.to)
+        </td>
+      </tr><tr>
+        <td>
+          99
+        </td>
+        <td>
+          1933
+        </td>
+        <td>
+          3456
+          -
+          3458
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.logic.Attack.to
+        </td>
+        <td style="background: #AEF1AE">
+          Attack.this.to
+        </td>
+      </tr><tr>
+        <td>
+          99
+        </td>
+        <td>
+          157
+        </td>
+        <td>
+          3434
+          -
+          3435
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          1
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          508
+        </td>
+        <td>
+          3470
+          -
+          3499
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.SeqLike.:+
+        </td>
+        <td style="background: #AEF1AE">
+          events.:+[org.riskala.model.logic.Event, org.riskala.model.logic.EventStore.Behavior[org.riskala.model.logic.Event]](GameEnded.apply(attacker))(collection.this.Seq.canBuildFrom[org.riskala.model.logic.Event])
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          887
+        </td>
+        <td>
+          3477
+          -
+          3477
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.Seq.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          collection.this.Seq.canBuildFrom[org.riskala.model.logic.Event]
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          1741
+        </td>
+        <td>
+          3480
+          -
+          3499
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.logic.GameEnded.apply
+        </td>
+        <td style="background: #AEF1AE">
+          GameEnded.apply(attacker)
+        </td>
+      </tr><tr>
+        <td>
+          100
+        </td>
+        <td>
+          1875
+        </td>
+        <td>
+          3470
+          -
+          3499
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          scala.collection.SeqLike.:+
+        </td>
+        <td style="background: #AEF1AE">
+          events.:+[org.riskala.model.logic.Event, org.riskala.model.logic.EventStore.Behavior[org.riskala.model.logic.Event]](GameEnded.apply(attacker))(collection.this.Seq.canBuildFrom[org.riskala.model.logic.Event])
+        </td>
+      </tr><tr>
+        <td>
+          102
+        </td>
+        <td>
+          1026
+        </td>
+        <td>
+          3521
+          -
+          3527
+        </td>
+        <td>
+          Ident
+        </td>
+        <td>
+          org.riskala.model.logic.Attack.events
+        </td>
+        <td style="background: #AEF1AE">
+          events
+        </td>
+      </tr><tr>
+        <td>
+          107
+        </td>
+        <td>
+          1198
+        </td>
+        <td>
+          3631
+          -
+          3674
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.map.Geopolitics.getPlayerStateByName
+        </td>
+        <td style="background: #AEF1AE">
+          game.geopolitics.getPlayerStateByName(Attack.this.from)
+        </td>
+      </tr><tr>
+        <td>
+          107
+        </td>
+        <td>
+          1938
+        </td>
+        <td>
+          3669
+          -
+          3673
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.logic.Attack.from
+        </td>
+        <td style="background: #AEF1AE">
+          Attack.this.from
+        </td>
+      </tr><tr>
+        <td>
+          108
+        </td>
+        <td>
+          1674
+        </td>
+        <td>
+          3680
+          -
+          3680
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          108
+        </td>
+        <td>
+          328
+        </td>
+        <td>
+          3683
+          -
+          3697
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Option.isEmpty
+        </td>
+        <td style="background: #AEF1AE">
+          fromPS.isEmpty
+        </td>
+      </tr><tr>
+        <td>
+          108
+        </td>
+        <td>
+          333
+        </td>
+        <td>
+          3680
+          -
+          3680
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          109
+        </td>
+        <td>
+          1806
+        </td>
+        <td>
+          3790
+          -
+          3794
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.logic.Attack.from
+        </td>
+        <td style="background: #F0ADAD">
+          Attack.this.from
+        </td>
+      </tr><tr>
+        <td>
+          109
+        </td>
+        <td>
+          149
+        </td>
+        <td>
+          3749
+          -
+          3796
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Some.apply[String](scala.StringContext.apply(&quot;Attacking from an unknown state: &quot;, &quot;&quot;).s(Attack.this.from))
+        </td>
+      </tr><tr>
+        <td>
+          109
+        </td>
+        <td>
+          1686
+        </td>
+        <td>
+          3742
+          -
+          3747
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          false
+        </td>
+      </tr><tr>
+        <td>
+          109
+        </td>
+        <td>
+          1159
+        </td>
+        <td>
+          3706
+          -
+          3797
+        </td>
+        <td>
+          Return
+        </td>
+        <td>
+          org.riskala.model.logic.Attack.feasibility
+        </td>
+        <td style="background: #F0ADAD">
+          return FeasibilityReport.apply(false, scala.Some.apply[String](scala.StringContext.apply(&quot;Attacking from an unknown state: &quot;, &quot;&quot;).s(Attack.this.from)))
+        </td>
+      </tr><tr>
+        <td>
+          109
+        </td>
+        <td>
+          1583
+        </td>
+        <td>
+          3713
+          -
+          3797
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.logic.FeasibilityReport.apply
+        </td>
+        <td style="background: #F0ADAD">
+          FeasibilityReport.apply(false, scala.Some.apply[String](scala.StringContext.apply(&quot;Attacking from an unknown state: &quot;, &quot;&quot;).s(Attack.this.from)))
+        </td>
+      </tr><tr>
+        <td>
+          109
+        </td>
+        <td>
+          856
+        </td>
+        <td>
+          3756
+          -
+          3790
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;Attacking from an unknown state: &quot;
+        </td>
+      </tr><tr>
+        <td>
+          109
+        </td>
+        <td>
+          1005
+        </td>
+        <td>
+          3754
+          -
+          3795
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;Attacking from an unknown state: &quot;, &quot;&quot;).s(Attack.this.from)
+        </td>
+      </tr><tr>
+        <td>
+          109
+        </td>
+        <td>
+          466
+        </td>
+        <td>
+          3794
+          -
+          3795
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          110
+        </td>
+        <td>
+          819
+        </td>
+        <td>
+          3852
+          -
+          3854
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.logic.Attack.to
+        </td>
+        <td style="background: #AEF1AE">
+          Attack.this.to
+        </td>
+      </tr><tr>
+        <td>
+          110
+        </td>
+        <td>
+          472
+        </td>
+        <td>
+          3814
+          -
+          3855
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.map.Geopolitics.getPlayerStateByName
+        </td>
+        <td style="background: #AEF1AE">
+          game.geopolitics.getPlayerStateByName(Attack.this.to)
+        </td>
+      </tr><tr>
+        <td>
+          111
+        </td>
+        <td>
+          974
+        </td>
+        <td>
+          3861
+          -
+          3861
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          111
+        </td>
+        <td>
+          1777
+        </td>
+        <td>
+          3864
+          -
+          3876
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Option.isEmpty
+        </td>
+        <td style="background: #AEF1AE">
+          toPS.isEmpty
+        </td>
+      </tr><tr>
+        <td>
+          111
+        </td>
+        <td>
+          1780
+        </td>
+        <td>
+          3861
+          -
+          3861
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          112
+        </td>
+        <td>
+          1492
+        </td>
+        <td>
+          3966
+          -
+          3967
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          112
+        </td>
+        <td>
+          822
+        </td>
+        <td>
+          3892
+          -
+          3969
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.logic.FeasibilityReport.apply
+        </td>
+        <td style="background: #F0ADAD">
+          FeasibilityReport.apply(false, scala.Some.apply[String](scala.StringContext.apply(&quot;Attacking an unknown state: &quot;, &quot;&quot;).s(Attack.this.to)))
+        </td>
+      </tr><tr>
+        <td>
+          112
+        </td>
+        <td>
+          295
+        </td>
+        <td>
+          3933
+          -
+          3967
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;Attacking an unknown state: &quot;, &quot;&quot;).s(Attack.this.to)
+        </td>
+      </tr><tr>
+        <td>
+          112
+        </td>
+        <td>
+          1739
+        </td>
+        <td>
+          3928
+          -
+          3968
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Some.apply[String](scala.StringContext.apply(&quot;Attacking an unknown state: &quot;, &quot;&quot;).s(Attack.this.to))
+        </td>
+      </tr><tr>
+        <td>
+          112
+        </td>
+        <td>
+          154
+        </td>
+        <td>
+          3935
+          -
+          3964
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;Attacking an unknown state: &quot;
+        </td>
+      </tr><tr>
+        <td>
+          112
+        </td>
+        <td>
+          1009
+        </td>
+        <td>
+          3921
+          -
+          3926
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          false
+        </td>
+      </tr><tr>
+        <td>
+          112
+        </td>
+        <td>
+          1098
+        </td>
+        <td>
+          3964
+          -
+          3966
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.logic.Attack.to
+        </td>
+        <td style="background: #F0ADAD">
+          Attack.this.to
+        </td>
+      </tr><tr>
+        <td>
+          112
+        </td>
+        <td>
+          536
+        </td>
+        <td>
+          3885
+          -
+          3969
+        </td>
+        <td>
+          Return
+        </td>
+        <td>
+          org.riskala.model.logic.Attack.feasibility
+        </td>
+        <td style="background: #F0ADAD">
+          return FeasibilityReport.apply(false, scala.Some.apply[String](scala.StringContext.apply(&quot;Attacking an unknown state: &quot;, &quot;&quot;).s(Attack.this.to)))
+        </td>
+      </tr><tr>
+        <td>
+          113
+        </td>
+        <td>
+          254
+        </td>
+        <td>
+          4015
+          -
+          4031
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.map.PlayerState.owner
+        </td>
+        <td style="background: #AEF1AE">
+          fromPS.get.owner
+        </td>
+      </tr><tr>
+        <td>
+          113
+        </td>
+        <td>
+          1493
+        </td>
+        <td>
+          3997
+          -
+          4038
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.logic.Command.checkTurn
+        </td>
+        <td style="background: #AEF1AE">
+          Command.checkTurn(fromPS.get.owner, game)
+        </td>
+      </tr><tr>
+        <td>
+          114
+        </td>
+        <td>
+          932
+        </td>
+        <td>
+          4044
+          -
+          4044
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          114
+        </td>
+        <td>
+          1745
+        </td>
+        <td>
+          4044
+          -
+          4044
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          114
+        </td>
+        <td>
+          1148
+        </td>
+        <td>
+          4047
+          -
+          4072
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Boolean.unary_!
+        </td>
+        <td style="background: #AEF1AE">
+          turnFeasibility.feasible.unary_!
+        </td>
+      </tr><tr>
+        <td>
+          115
+        </td>
+        <td>
+          301
+        </td>
+        <td>
+          4081
+          -
+          4103
+        </td>
+        <td>
+          Return
+        </td>
+        <td>
+          org.riskala.model.logic.Attack.feasibility
+        </td>
+        <td style="background: #AEF1AE">
+          return turnFeasibility
+        </td>
+      </tr><tr>
+        <td>
+          116
+        </td>
+        <td>
+          106
+        </td>
+        <td>
+          4131
+          -
+          4148
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.map.PlayerState.troops
+        </td>
+        <td style="background: #AEF1AE">
+          fromPS.get.troops
+        </td>
+      </tr><tr>
+        <td>
+          117
+        </td>
+        <td>
+          1842
+        </td>
+        <td>
+          4176
+          -
+          4182
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.logic.Attack.troops
+        </td>
+        <td style="background: #AEF1AE">
+          Attack.this.troops
+        </td>
+      </tr><tr>
+        <td>
+          117
+        </td>
+        <td>
+          982
+        </td>
+        <td>
+          4157
+          -
+          4182
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&lt;=
+        </td>
+        <td style="background: #AEF1AE">
+          availableTroops.&lt;=(Attack.this.troops)
+        </td>
+      </tr><tr>
+        <td>
+          117
+        </td>
+        <td>
+          763
+        </td>
+        <td>
+          4154
+          -
+          4154
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          117
+        </td>
+        <td>
+          371
+        </td>
+        <td>
+          4154
+          -
+          4154
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          118
+        </td>
+        <td>
+          1710
+        </td>
+        <td>
+          4314
+          -
+          4315
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          118
+        </td>
+        <td>
+          388
+        </td>
+        <td>
+          4303
+          -
+          4310
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot; from &quot;
+        </td>
+      </tr><tr>
+        <td>
+          118
+        </td>
+        <td>
+          1007
+        </td>
+        <td>
+          4234
+          -
+          4316
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[String](scala.StringContext.apply(&quot;Insufficient troops (&quot;, &quot;) for attack with &quot;, &quot; from &quot;, &quot;&quot;).s(availableTroops, Attack.this.troops, Attack.this.from))
+        </td>
+      </tr><tr>
+        <td>
+          118
+        </td>
+        <td>
+          259
+        </td>
+        <td>
+          4227
+          -
+          4232
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          false
+        </td>
+      </tr><tr>
+        <td>
+          118
+        </td>
+        <td>
+          1156
+        </td>
+        <td>
+          4278
+          -
+          4297
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;) for attack with &quot;
+        </td>
+      </tr><tr>
+        <td>
+          118
+        </td>
+        <td>
+          70
+        </td>
+        <td>
+          4310
+          -
+          4314
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.logic.Attack.from
+        </td>
+        <td style="background: #AEF1AE">
+          Attack.this.from
+        </td>
+      </tr><tr>
+        <td>
+          118
+        </td>
+        <td>
+          1849
+        </td>
+        <td>
+          4239
+          -
+          4315
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;Insufficient troops (&quot;, &quot;) for attack with &quot;, &quot; from &quot;, &quot;&quot;).s(availableTroops, Attack.this.troops, Attack.this.from)
+        </td>
+      </tr><tr>
+        <td>
+          118
+        </td>
+        <td>
+          1544
+        </td>
+        <td>
+          4191
+          -
+          4317
+        </td>
+        <td>
+          Return
+        </td>
+        <td>
+          org.riskala.model.logic.Attack.feasibility
+        </td>
+        <td style="background: #AEF1AE">
+          return FeasibilityReport.apply(false, scala.Some.apply[String](scala.StringContext.apply(&quot;Insufficient troops (&quot;, &quot;) for attack with &quot;, &quot; from &quot;, &quot;&quot;).s(availableTroops, Attack.this.troops, Attack.this.from)))
+        </td>
+      </tr><tr>
+        <td>
+          118
+        </td>
+        <td>
+          216
+        </td>
+        <td>
+          4198
+          -
+          4317
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.logic.FeasibilityReport.apply
+        </td>
+        <td style="background: #AEF1AE">
+          FeasibilityReport.apply(false, scala.Some.apply[String](scala.StringContext.apply(&quot;Insufficient troops (&quot;, &quot;) for attack with &quot;, &quot; from &quot;, &quot;&quot;).s(availableTroops, Attack.this.troops, Attack.this.from)))
+        </td>
+      </tr><tr>
+        <td>
+          118
+        </td>
+        <td>
+          1615
+        </td>
+        <td>
+          4241
+          -
+          4263
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;Insufficient troops (&quot;
+        </td>
+      </tr><tr>
+        <td>
+          118
+        </td>
+        <td>
+          936
+        </td>
+        <td>
+          4297
+          -
+          4303
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.logic.Attack.troops
+        </td>
+        <td style="background: #AEF1AE">
+          Attack.this.troops
+        </td>
+      </tr><tr>
+        <td>
+          119
+        </td>
+        <td>
+          74
+        </td>
+        <td>
+          4323
+          -
+          4342
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.logic.FeasibilityReport.apply
+        </td>
+        <td style="background: #AEF1AE">
+          FeasibilityReport.apply(FeasibilityReport.apply$default$1, FeasibilityReport.apply$default$2)
+        </td>
+      </tr><tr>
+        <td>
+          119
+        </td>
+        <td>
+          1676
+        </td>
+        <td>
+          4323
+          -
+          4323
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.logic.FeasibilityReport.apply$default$1
+        </td>
+        <td style="background: #AEF1AE">
+          FeasibilityReport.apply$default$1
+        </td>
+      </tr><tr>
+        <td>
+          119
+        </td>
+        <td>
+          898
+        </td>
+        <td>
+          4323
+          -
+          4323
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.logic.FeasibilityReport.apply$default$2
+        </td>
+        <td style="background: #AEF1AE">
+          FeasibilityReport.apply$default$2
+        </td>
+      </tr><tr>
+        <td>
+          134
+        </td>
+        <td>
+          178
+        </td>
+        <td>
+          4823
+          -
+          4829
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.logic.MoveTroops.troops
+        </td>
+        <td style="background: #AEF1AE">
+          MoveTroops.this.troops
+        </td>
+      </tr><tr>
+        <td>
+          134
+        </td>
+        <td>
+          973
+        </td>
+        <td>
+          4819
+          -
+          4821
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.logic.MoveTroops.to
+        </td>
+        <td style="background: #AEF1AE">
+          MoveTroops.this.to
+        </td>
+      </tr><tr>
+        <td>
+          134
+        </td>
+        <td>
+          1855
+        </td>
+        <td>
+          4813
+          -
+          4817
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.logic.MoveTroops.from
+        </td>
+        <td style="background: #AEF1AE">
+          MoveTroops.this.from
+        </td>
+      </tr><tr>
+        <td>
+          134
+        </td>
+        <td>
+          1517
+        </td>
+        <td>
+          4801
+          -
+          4830
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.logic.TroopsMoved.apply
+        </td>
+        <td style="background: #AEF1AE">
+          TroopsMoved.apply(MoveTroops.this.from, MoveTroops.this.to, MoveTroops.this.troops)
+        </td>
+      </tr><tr>
+        <td>
+          134
+        </td>
+        <td>
+          769
+        </td>
+        <td>
+          4797
+          -
+          4831
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.Seq.apply[org.riskala.model.logic.TroopsMoved](TroopsMoved.apply(MoveTroops.this.from, MoveTroops.this.to, MoveTroops.this.troops))
+        </td>
+      </tr><tr>
+        <td>
+          138
+        </td>
+        <td>
+          1650
+        </td>
+        <td>
+          4928
+          -
+          4971
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.map.Geopolitics.getPlayerStateByName
+        </td>
+        <td style="background: #AEF1AE">
+          game.geopolitics.getPlayerStateByName(MoveTroops.this.from)
+        </td>
+      </tr><tr>
+        <td>
+          138
+        </td>
+        <td>
+          299
+        </td>
+        <td>
+          4966
+          -
+          4970
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.logic.MoveTroops.from
+        </td>
+        <td style="background: #AEF1AE">
+          MoveTroops.this.from
+        </td>
+      </tr><tr>
+        <td>
+          139
+        </td>
+        <td>
+          131
+        </td>
+        <td>
+          4977
+          -
+          4977
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          139
+        </td>
+        <td>
+          893
+        </td>
+        <td>
+          4977
+          -
+          4977
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          139
+        </td>
+        <td>
+          929
+        </td>
+        <td>
+          4980
+          -
+          4994
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Option.isEmpty
+        </td>
+        <td style="background: #AEF1AE">
+          fromPS.isEmpty
+        </td>
+      </tr><tr>
+        <td>
+          140
+        </td>
+        <td>
+          774
+        </td>
+        <td>
+          5046
+          -
+          5090
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Some.apply[String](scala.StringContext.apply(&quot;Moving from an unknown state: &quot;, &quot;&quot;).s(MoveTroops.this.from))
+        </td>
+      </tr><tr>
+        <td>
+          140
+        </td>
+        <td>
+          35
+        </td>
+        <td>
+          5039
+          -
+          5044
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          false
+        </td>
+      </tr><tr>
+        <td>
+          140
+        </td>
+        <td>
+          1820
+        </td>
+        <td>
+          5053
+          -
+          5084
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;Moving from an unknown state: &quot;
+        </td>
+      </tr><tr>
+        <td>
+          140
+        </td>
+        <td>
+          405
+        </td>
+        <td>
+          5010
+          -
+          5091
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.logic.FeasibilityReport.apply
+        </td>
+        <td style="background: #F0ADAD">
+          FeasibilityReport.apply(false, scala.Some.apply[String](scala.StringContext.apply(&quot;Moving from an unknown state: &quot;, &quot;&quot;).s(MoveTroops.this.from)))
+        </td>
+      </tr><tr>
+        <td>
+          140
+        </td>
+        <td>
+          1657
+        </td>
+        <td>
+          5003
+          -
+          5091
+        </td>
+        <td>
+          Return
+        </td>
+        <td>
+          org.riskala.model.logic.MoveTroops.feasibility
+        </td>
+        <td style="background: #F0ADAD">
+          return FeasibilityReport.apply(false, scala.Some.apply[String](scala.StringContext.apply(&quot;Moving from an unknown state: &quot;, &quot;&quot;).s(MoveTroops.this.from)))
+        </td>
+      </tr><tr>
+        <td>
+          140
+        </td>
+        <td>
+          978
+        </td>
+        <td>
+          5088
+          -
+          5089
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          140
+        </td>
+        <td>
+          162
+        </td>
+        <td>
+          5084
+          -
+          5088
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.logic.MoveTroops.from
+        </td>
+        <td style="background: #F0ADAD">
+          MoveTroops.this.from
+        </td>
+      </tr><tr>
+        <td>
+          140
+        </td>
+        <td>
+          1612
+        </td>
+        <td>
+          5051
+          -
+          5089
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;Moving from an unknown state: &quot;, &quot;&quot;).s(MoveTroops.this.from)
+        </td>
+      </tr><tr>
+        <td>
+          141
+        </td>
+        <td>
+          1079
+        </td>
+        <td>
+          5108
+          -
+          5149
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.map.Geopolitics.getPlayerStateByName
+        </td>
+        <td style="background: #AEF1AE">
+          game.geopolitics.getPlayerStateByName(MoveTroops.this.to)
+        </td>
+      </tr><tr>
+        <td>
+          141
+        </td>
+        <td>
+          1382
+        </td>
+        <td>
+          5146
+          -
+          5148
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.logic.MoveTroops.to
+        </td>
+        <td style="background: #AEF1AE">
+          MoveTroops.this.to
+        </td>
+      </tr><tr>
+        <td>
+          142
+        </td>
+        <td>
+          192
+        </td>
+        <td>
+          5155
+          -
+          5155
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          142
+        </td>
+        <td>
+          213
+        </td>
+        <td>
+          5158
+          -
+          5170
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Option.isEmpty
+        </td>
+        <td style="background: #AEF1AE">
+          toPS.isEmpty
+        </td>
+      </tr><tr>
+        <td>
+          142
+        </td>
+        <td>
+          1588
+        </td>
+        <td>
+          5155
+          -
+          5155
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          143
+        </td>
+        <td>
+          1085
+        </td>
+        <td>
+          5179
+          -
+          5263
+        </td>
+        <td>
+          Return
+        </td>
+        <td>
+          org.riskala.model.logic.MoveTroops.feasibility
+        </td>
+        <td style="background: #F0ADAD">
+          return FeasibilityReport.apply(false, scala.Some.apply[String](scala.StringContext.apply(&quot;Moving to an unknown state: &quot;, &quot;&quot;).s(MoveTroops.this.to)))
+        </td>
+      </tr><tr>
+        <td>
+          143
+        </td>
+        <td>
+          896
+        </td>
+        <td>
+          5227
+          -
+          5261
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;Moving to an unknown state: &quot;, &quot;&quot;).s(MoveTroops.this.to)
+        </td>
+      </tr><tr>
+        <td>
+          143
+        </td>
+        <td>
+          133
+        </td>
+        <td>
+          5222
+          -
+          5262
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Some.apply[String](scala.StringContext.apply(&quot;Moving to an unknown state: &quot;, &quot;&quot;).s(MoveTroops.this.to))
+        </td>
+      </tr><tr>
+        <td>
+          143
+        </td>
+        <td>
+          1455
+        </td>
+        <td>
+          5186
+          -
+          5263
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.logic.FeasibilityReport.apply
+        </td>
+        <td style="background: #F0ADAD">
+          FeasibilityReport.apply(false, scala.Some.apply[String](scala.StringContext.apply(&quot;Moving to an unknown state: &quot;, &quot;&quot;).s(MoveTroops.this.to)))
+        </td>
+      </tr><tr>
+        <td>
+          143
+        </td>
+        <td>
+          408
+        </td>
+        <td>
+          5260
+          -
+          5261
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          143
+        </td>
+        <td>
+          1753
+        </td>
+        <td>
+          5258
+          -
+          5260
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.logic.MoveTroops.to
+        </td>
+        <td style="background: #F0ADAD">
+          MoveTroops.this.to
+        </td>
+      </tr><tr>
+        <td>
+          143
+        </td>
+        <td>
+          1618
+        </td>
+        <td>
+          5215
+          -
+          5220
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          false
+        </td>
+      </tr><tr>
+        <td>
+          143
+        </td>
+        <td>
+          807
+        </td>
+        <td>
+          5229
+          -
+          5258
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;Moving to an unknown state: &quot;
+        </td>
+      </tr><tr>
+        <td>
+          144
+        </td>
+        <td>
+          337
+        </td>
+        <td>
+          5291
+          -
+          5332
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.logic.Command.checkTurn
+        </td>
+        <td style="background: #AEF1AE">
+          Command.checkTurn(fromPS.get.owner, game)
+        </td>
+      </tr><tr>
+        <td>
+          144
+        </td>
+        <td>
+          767
+        </td>
+        <td>
+          5309
+          -
+          5325
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.map.PlayerState.owner
+        </td>
+        <td style="background: #AEF1AE">
+          fromPS.get.owner
+        </td>
+      </tr><tr>
+        <td>
+          145
+        </td>
+        <td>
+          1761
+        </td>
+        <td>
+          5341
+          -
+          5366
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Boolean.unary_!
+        </td>
+        <td style="background: #AEF1AE">
+          turnFeasibility.feasible.unary_!
+        </td>
+      </tr><tr>
+        <td>
+          145
+        </td>
+        <td>
+          115
+        </td>
+        <td>
+          5338
+          -
+          5338
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          145
+        </td>
+        <td>
+          1457
+        </td>
+        <td>
+          5338
+          -
+          5338
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          146
+        </td>
+        <td>
+          902
+        </td>
+        <td>
+          5375
+          -
+          5397
+        </td>
+        <td>
+          Return
+        </td>
+        <td>
+          org.riskala.model.logic.MoveTroops.feasibility
+        </td>
+        <td style="background: #AEF1AE">
+          return turnFeasibility
+        </td>
+      </tr><tr>
+        <td>
+          147
+        </td>
+        <td>
+          1013
+        </td>
+        <td>
+          5425
+          -
+          5442
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.map.PlayerState.troops
+        </td>
+        <td style="background: #AEF1AE">
+          fromPS.get.troops
+        </td>
+      </tr><tr>
+        <td>
+          148
+        </td>
+        <td>
+          828
+        </td>
+        <td>
+          5448
+          -
+          5448
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          148
+        </td>
+        <td>
+          193
+        </td>
+        <td>
+          5470
+          -
+          5476
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.logic.MoveTroops.troops
+        </td>
+        <td style="background: #AEF1AE">
+          MoveTroops.this.troops
+        </td>
+      </tr><tr>
+        <td>
+          148
+        </td>
+        <td>
+          1593
+        </td>
+        <td>
+          5451
+          -
+          5476
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&lt;=
+        </td>
+        <td style="background: #AEF1AE">
+          availableTroops.&lt;=(MoveTroops.this.troops)
+        </td>
+      </tr><tr>
+        <td>
+          148
+        </td>
+        <td>
+          1750
+        </td>
+        <td>
+          5448
+          -
+          5448
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          149
+        </td>
+        <td>
+          2096
+        </td>
+        <td>
+          5485
+          -
+          5611
+        </td>
+        <td>
+          Return
+        </td>
+        <td>
+          org.riskala.model.logic.MoveTroops.feasibility
+        </td>
+        <td style="background: #AEF1AE">
+          return FeasibilityReport.apply(false, scala.Some.apply[String](scala.StringContext.apply(&quot;Insufficient troops (&quot;, &quot;) for attack with &quot;, &quot; from &quot;, &quot;&quot;).s(availableTroops, MoveTroops.this.troops, MoveTroops.this.from)))
+        </td>
+      </tr><tr>
+        <td>
+          149
+        </td>
+        <td>
+          2116
+        </td>
+        <td>
+          5535
+          -
+          5557
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;Insufficient troops (&quot;
+        </td>
+      </tr><tr>
+        <td>
+          149
+        </td>
+        <td>
+          1425
+        </td>
+        <td>
+          5591
+          -
+          5597
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.logic.MoveTroops.troops
+        </td>
+        <td style="background: #AEF1AE">
+          MoveTroops.this.troops
+        </td>
+      </tr><tr>
+        <td>
+          149
+        </td>
+        <td>
+          1018
+        </td>
+        <td>
+          5604
+          -
+          5608
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.logic.MoveTroops.from
+        </td>
+        <td style="background: #AEF1AE">
+          MoveTroops.this.from
+        </td>
+      </tr><tr>
+        <td>
+          149
+        </td>
+        <td>
+          731
+        </td>
+        <td>
+          5521
+          -
+          5526
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          false
+        </td>
+      </tr><tr>
+        <td>
+          149
+        </td>
+        <td>
+          1556
+        </td>
+        <td>
+          5528
+          -
+          5610
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[String](scala.StringContext.apply(&quot;Insufficient troops (&quot;, &quot;) for attack with &quot;, &quot; from &quot;, &quot;&quot;).s(availableTroops, MoveTroops.this.troops, MoveTroops.this.from))
+        </td>
+      </tr><tr>
+        <td>
+          149
+        </td>
+        <td>
+          1744
+        </td>
+        <td>
+          5572
+          -
+          5591
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;) for attack with &quot;
+        </td>
+      </tr><tr>
+        <td>
+          149
+        </td>
+        <td>
+          165
+        </td>
+        <td>
+          5533
+          -
+          5609
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;Insufficient troops (&quot;, &quot;) for attack with &quot;, &quot; from &quot;, &quot;&quot;).s(availableTroops, MoveTroops.this.troops, MoveTroops.this.from)
+        </td>
+      </tr><tr>
+        <td>
+          149
+        </td>
+        <td>
+          865
+        </td>
+        <td>
+          5597
+          -
+          5604
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot; from &quot;
+        </td>
+      </tr><tr>
+        <td>
+          149
+        </td>
+        <td>
+          733
+        </td>
+        <td>
+          5492
+          -
+          5611
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.logic.FeasibilityReport.apply
+        </td>
+        <td style="background: #AEF1AE">
+          FeasibilityReport.apply(false, scala.Some.apply[String](scala.StringContext.apply(&quot;Insufficient troops (&quot;, &quot;) for attack with &quot;, &quot; from &quot;, &quot;&quot;).s(availableTroops, MoveTroops.this.troops, MoveTroops.this.from)))
+        </td>
+      </tr><tr>
+        <td>
+          149
+        </td>
+        <td>
+          39
+        </td>
+        <td>
+          5608
+          -
+          5609
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          150
+        </td>
+        <td>
+          579
+        </td>
+        <td>
+          5617
+          -
+          5636
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.logic.FeasibilityReport.apply
+        </td>
+        <td style="background: #AEF1AE">
+          FeasibilityReport.apply(FeasibilityReport.apply$default$1, FeasibilityReport.apply$default$2)
+        </td>
+      </tr><tr>
+        <td>
+          150
+        </td>
+        <td>
+          13
+        </td>
+        <td>
+          5617
+          -
+          5617
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.logic.FeasibilityReport.apply$default$1
+        </td>
+        <td style="background: #AEF1AE">
+          FeasibilityReport.apply$default$1
+        </td>
+      </tr><tr>
+        <td>
+          150
+        </td>
+        <td>
+          1430
+        </td>
+        <td>
+          5617
+          -
+          5617
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.logic.FeasibilityReport.apply$default$2
+        </td>
+        <td style="background: #AEF1AE">
+          FeasibilityReport.apply$default$2
+        </td>
+      </tr><tr>
+        <td>
+          163
+        </td>
+        <td>
+          698
+        </td>
+        <td>
+          5985
+          -
+          6011
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.logic.TroopsDeployed.apply
+        </td>
+        <td style="background: #AEF1AE">
+          TroopsDeployed.apply(Deploy.this.to, Deploy.this.troops)
+        </td>
+      </tr><tr>
+        <td>
+          163
+        </td>
+        <td>
+          267
+        </td>
+        <td>
+          6000
+          -
+          6002
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.logic.Deploy.to
+        </td>
+        <td style="background: #AEF1AE">
+          Deploy.this.to
+        </td>
+      </tr><tr>
+        <td>
+          163
+        </td>
+        <td>
+          1585
+        </td>
+        <td>
+          6004
+          -
+          6010
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.logic.Deploy.troops
+        </td>
+        <td style="background: #AEF1AE">
+          Deploy.this.troops
+        </td>
+      </tr><tr>
+        <td>
+          163
+        </td>
+        <td>
+          2099
+        </td>
+        <td>
+          5981
+          -
+          6012
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.Seq.apply[org.riskala.model.logic.TroopsDeployed](TroopsDeployed.apply(Deploy.this.to, Deploy.this.troops))
+        </td>
+      </tr><tr>
+        <td>
+          167
+        </td>
+        <td>
+          944
+        </td>
+        <td>
+          6107
+          -
+          6148
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.map.Geopolitics.getPlayerStateByName
+        </td>
+        <td style="background: #AEF1AE">
+          game.geopolitics.getPlayerStateByName(Deploy.this.to)
+        </td>
+      </tr><tr>
+        <td>
+          167
+        </td>
+        <td>
+          1759
+        </td>
+        <td>
+          6145
+          -
+          6147
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.logic.Deploy.to
+        </td>
+        <td style="background: #AEF1AE">
+          Deploy.this.to
+        </td>
+      </tr><tr>
+        <td>
+          168
+        </td>
+        <td>
+          1474
+        </td>
+        <td>
+          6154
+          -
+          6154
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          168
+        </td>
+        <td>
+          79
+        </td>
+        <td>
+          6154
+          -
+          6154
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          168
+        </td>
+        <td>
+          114
+        </td>
+        <td>
+          6157
+          -
+          6169
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Option.isEmpty
+        </td>
+        <td style="background: #AEF1AE">
+          toPS.isEmpty
+        </td>
+      </tr><tr>
+        <td>
+          169
+        </td>
+        <td>
+          864
+        </td>
+        <td>
+          6178
+          -
+          6262
+        </td>
+        <td>
+          Return
+        </td>
+        <td>
+          org.riskala.model.logic.Deploy.feasibility
+        </td>
+        <td style="background: #F0ADAD">
+          return FeasibilityReport.apply(false, scala.Some.apply[String](scala.StringContext.apply(&quot;Moving to an unknown state: &quot;, &quot;&quot;).s(Deploy.this.to)))
+        </td>
+      </tr><tr>
+        <td>
+          169
+        </td>
+        <td>
+          274
+        </td>
+        <td>
+          6259
+          -
+          6260
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          169
+        </td>
+        <td>
+          1548
+        </td>
+        <td>
+          6257
+          -
+          6259
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.logic.Deploy.to
+        </td>
+        <td style="background: #F0ADAD">
+          Deploy.this.to
+        </td>
+      </tr><tr>
+        <td>
+          169
+        </td>
+        <td>
+          2154
+        </td>
+        <td>
+          6221
+          -
+          6261
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Some.apply[String](scala.StringContext.apply(&quot;Moving to an unknown state: &quot;, &quot;&quot;).s(Deploy.this.to))
+        </td>
+      </tr><tr>
+        <td>
+          169
+        </td>
+        <td>
+          1717
+        </td>
+        <td>
+          6185
+          -
+          6262
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.logic.FeasibilityReport.apply
+        </td>
+        <td style="background: #F0ADAD">
+          FeasibilityReport.apply(false, scala.Some.apply[String](scala.StringContext.apply(&quot;Moving to an unknown state: &quot;, &quot;&quot;).s(Deploy.this.to)))
+        </td>
+      </tr><tr>
+        <td>
+          169
+        </td>
+        <td>
+          796
+        </td>
+        <td>
+          6226
+          -
+          6260
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;Moving to an unknown state: &quot;, &quot;&quot;).s(Deploy.this.to)
+        </td>
+      </tr><tr>
+        <td>
+          169
+        </td>
+        <td>
+          1388
+        </td>
+        <td>
+          6214
+          -
+          6219
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          false
+        </td>
+      </tr><tr>
+        <td>
+          169
+        </td>
+        <td>
+          673
+        </td>
+        <td>
+          6228
+          -
+          6257
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;Moving to an unknown state: &quot;
+        </td>
+      </tr><tr>
+        <td>
+          170
+        </td>
+        <td>
+          227
+        </td>
+        <td>
+          6290
+          -
+          6329
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.logic.Command.checkTurn
+        </td>
+        <td style="background: #AEF1AE">
+          Command.checkTurn(toPS.get.owner, game)
+        </td>
+      </tr><tr>
+        <td>
+          170
+        </td>
+        <td>
+          676
+        </td>
+        <td>
+          6308
+          -
+          6322
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.map.PlayerState.owner
+        </td>
+        <td style="background: #AEF1AE">
+          toPS.get.owner
+        </td>
+      </tr><tr>
+        <td>
+          171
+        </td>
+        <td>
+          2093
+        </td>
+        <td>
+          6335
+          -
+          6335
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          171
+        </td>
+        <td>
+          1553
+        </td>
+        <td>
+          6338
+          -
+          6363
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Boolean.unary_!
+        </td>
+        <td style="background: #AEF1AE">
+          turnFeasibility.feasible.unary_!
+        </td>
+      </tr><tr>
+        <td>
+          171
+        </td>
+        <td>
+          1355
+        </td>
+        <td>
+          6335
+          -
+          6335
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          172
+        </td>
+        <td>
+          799
+        </td>
+        <td>
+          6372
+          -
+          6394
+        </td>
+        <td>
+          Return
+        </td>
+        <td>
+          org.riskala.model.logic.Deploy.feasibility
+        </td>
+        <td style="background: #AEF1AE">
+          return turnFeasibility
+        </td>
+      </tr><tr>
+        <td>
+          173
+        </td>
+        <td>
+          699
+        </td>
+        <td>
+          6400
+          -
+          6400
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          173
+        </td>
+        <td>
+          1623
+        </td>
+        <td>
+          6400
+          -
+          6400
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          173
+        </td>
+        <td>
+          842
+        </td>
+        <td>
+          6412
+          -
+          6433
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.logic.GameSnapshot.deployableTroops
+        </td>
+        <td style="background: #AEF1AE">
+          game.deployableTroops
+        </td>
+      </tr><tr>
+        <td>
+          173
+        </td>
+        <td>
+          85
+        </td>
+        <td>
+          6403
+          -
+          6433
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          Deploy.this.troops.&gt;(game.deployableTroops)
+        </td>
+      </tr><tr>
+        <td>
+          174
+        </td>
+        <td>
+          220
+        </td>
+        <td>
+          6442
+          -
+          6570
+        </td>
+        <td>
+          Return
+        </td>
+        <td>
+          org.riskala.model.logic.Deploy.feasibility
+        </td>
+        <td style="background: #AEF1AE">
+          return FeasibilityReport.apply(false, scala.Some.apply[String](scala.StringContext.apply(&quot;Not enough troops (&quot;, &quot;) to deploy &quot;, &quot; to state &quot;, &quot;&quot;).s(game.deployableTroops, Deploy.this.troops, Deploy.this.to)))
+        </td>
+      </tr><tr>
+        <td>
+          174
+        </td>
+        <td>
+          2098
+        </td>
+        <td>
+          6513
+          -
+          6534
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.logic.GameSnapshot.deployableTroops
+        </td>
+        <td style="background: #AEF1AE">
+          game.deployableTroops
+        </td>
+      </tr><tr>
+        <td>
+          174
+        </td>
+        <td>
+          181
+        </td>
+        <td>
+          6535
+          -
+          6548
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;) to deploy &quot;
+        </td>
+      </tr><tr>
+        <td>
+          174
+        </td>
+        <td>
+          91
+        </td>
+        <td>
+          6490
+          -
+          6568
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;Not enough troops (&quot;, &quot;) to deploy &quot;, &quot; to state &quot;, &quot;&quot;).s(game.deployableTroops, Deploy.this.troops, Deploy.this.to)
+        </td>
+      </tr><tr>
+        <td>
+          174
+        </td>
+        <td>
+          1386
+        </td>
+        <td>
+          6485
+          -
+          6569
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[String](scala.StringContext.apply(&quot;Not enough troops (&quot;, &quot;) to deploy &quot;, &quot; to state &quot;, &quot;&quot;).s(game.deployableTroops, Deploy.this.troops, Deploy.this.to))
+        </td>
+      </tr><tr>
+        <td>
+          174
+        </td>
+        <td>
+          1520
+        </td>
+        <td>
+          6554
+          -
+          6565
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot; to state &quot;
+        </td>
+      </tr><tr>
+        <td>
+          174
+        </td>
+        <td>
+          1427
+        </td>
+        <td>
+          6478
+          -
+          6483
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          false
+        </td>
+      </tr><tr>
+        <td>
+          174
+        </td>
+        <td>
+          781
+        </td>
+        <td>
+          6567
+          -
+          6568
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          174
+        </td>
+        <td>
+          1262
+        </td>
+        <td>
+          6548
+          -
+          6554
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.logic.Deploy.troops
+        </td>
+        <td style="background: #AEF1AE">
+          Deploy.this.troops
+        </td>
+      </tr><tr>
+        <td>
+          174
+        </td>
+        <td>
+          607
+        </td>
+        <td>
+          6492
+          -
+          6512
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;Not enough troops (&quot;
+        </td>
+      </tr><tr>
+        <td>
+          174
+        </td>
+        <td>
+          610
+        </td>
+        <td>
+          6449
+          -
+          6570
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.logic.FeasibilityReport.apply
+        </td>
+        <td style="background: #AEF1AE">
+          FeasibilityReport.apply(false, scala.Some.apply[String](scala.StringContext.apply(&quot;Not enough troops (&quot;, &quot;) to deploy &quot;, &quot; to state &quot;, &quot;&quot;).s(game.deployableTroops, Deploy.this.troops, Deploy.this.to)))
+        </td>
+      </tr><tr>
+        <td>
+          174
+        </td>
+        <td>
+          843
+        </td>
+        <td>
+          6565
+          -
+          6567
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.logic.Deploy.to
+        </td>
+        <td style="background: #AEF1AE">
+          Deploy.this.to
+        </td>
+      </tr><tr>
+        <td>
+          175
+        </td>
+        <td>
+          2060
+        </td>
+        <td>
+          6576
+          -
+          6576
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.logic.FeasibilityReport.apply$default$1
+        </td>
+        <td style="background: #AEF1AE">
+          FeasibilityReport.apply$default$1
+        </td>
+      </tr><tr>
+        <td>
+          175
+        </td>
+        <td>
+          901
+        </td>
+        <td>
+          6576
+          -
+          6595
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.logic.FeasibilityReport.apply
+        </td>
+        <td style="background: #AEF1AE">
+          FeasibilityReport.apply(FeasibilityReport.apply$default$1, FeasibilityReport.apply$default$2)
+        </td>
+      </tr><tr>
+        <td>
+          175
+        </td>
+        <td>
+          1265
+        </td>
+        <td>
+          6576
+          -
+          6576
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.logic.FeasibilityReport.apply$default$2
+        </td>
+        <td style="background: #AEF1AE">
+          FeasibilityReport.apply$default$2
+        </td>
+      </tr><tr>
+        <td>
+          188
+        </td>
+        <td>
+          137
+        </td>
+        <td>
+          6983
+          -
+          6989
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.logic.RedeemBonus.player
+        </td>
+        <td style="background: #AEF1AE">
+          RedeemBonus.this.player
+        </td>
+      </tr><tr>
+        <td>
+          188
+        </td>
+        <td>
+          1389
+        </td>
+        <td>
+          6991
+          -
+          7000
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.logic.RedeemBonus.cardBonus
+        </td>
+        <td style="background: #AEF1AE">
+          RedeemBonus.this.cardBonus
+        </td>
+      </tr><tr>
+        <td>
+          188
+        </td>
+        <td>
+          2020
+        </td>
+        <td>
+          6965
+          -
+          7002
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.Seq.apply[org.riskala.model.logic.BonusRedeemed](BonusRedeemed.apply(RedeemBonus.this.player, RedeemBonus.this.cardBonus))
+        </td>
+      </tr><tr>
+        <td>
+          188
+        </td>
+        <td>
+          584
+        </td>
+        <td>
+          6969
+          -
+          7001
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.logic.BonusRedeemed.apply
+        </td>
+        <td style="background: #AEF1AE">
+          BonusRedeemed.apply(RedeemBonus.this.player, RedeemBonus.this.cardBonus)
+        </td>
+      </tr><tr>
+        <td>
+          192
+        </td>
+        <td>
+          772
+        </td>
+        <td>
+          7108
+          -
+          7139
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.logic.Command.checkTurn
+        </td>
+        <td style="background: #AEF1AE">
+          Command.checkTurn(RedeemBonus.this.player, game)
+        </td>
+      </tr><tr>
+        <td>
+          192
+        </td>
+        <td>
+          1627
+        </td>
+        <td>
+          7126
+          -
+          7132
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.logic.RedeemBonus.player
+        </td>
+        <td style="background: #AEF1AE">
+          RedeemBonus.this.player
+        </td>
+      </tr><tr>
+        <td>
+          193
+        </td>
+        <td>
+          83
+        </td>
+        <td>
+          7145
+          -
+          7145
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          193
+        </td>
+        <td>
+          2065
+        </td>
+        <td>
+          7148
+          -
+          7173
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Boolean.unary_!
+        </td>
+        <td style="background: #AEF1AE">
+          turnFeasibility.feasible.unary_!
+        </td>
+      </tr><tr>
+        <td>
+          193
+        </td>
+        <td>
+          910
+        </td>
+        <td>
+          7145
+          -
+          7145
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          194
+        </td>
+        <td>
+          1313
+        </td>
+        <td>
+          7182
+          -
+          7204
+        </td>
+        <td>
+          Return
+        </td>
+        <td>
+          org.riskala.model.logic.RedeemBonus.feasibility
+        </td>
+        <td style="background: #AEF1AE">
+          return turnFeasibility
+        </td>
+      </tr><tr>
+        <td>
+          195
+        </td>
+        <td>
+          589
+        </td>
+        <td>
+          7228
+          -
+          7250
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.MapLike.get
+        </td>
+        <td style="background: #AEF1AE">
+          game.cards.get(RedeemBonus.this.player)
+        </td>
+      </tr><tr>
+        <td>
+          195
+        </td>
+        <td>
+          1462
+        </td>
+        <td>
+          7243
+          -
+          7249
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.logic.RedeemBonus.player
+        </td>
+        <td style="background: #AEF1AE">
+          RedeemBonus.this.player
+        </td>
+      </tr><tr>
+        <td>
+          196
+        </td>
+        <td>
+          1465
+        </td>
+        <td>
+          7256
+          -
+          7256
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          196
+        </td>
+        <td>
+          44
+        </td>
+        <td>
+          7256
+          -
+          7256
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          196
+        </td>
+        <td>
+          2023
+        </td>
+        <td>
+          7259
+          -
+          7278
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.Option.isEmpty
+        </td>
+        <td style="background: #AEF1AE">
+          playerCards.isEmpty
+        </td>
+      </tr><tr>
+        <td>
+          197
+        </td>
+        <td>
+          1599
+        </td>
+        <td>
+          7323
+          -
+          7328
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          false
+        </td>
+      </tr><tr>
+        <td>
+          197
+        </td>
+        <td>
+          2119
+        </td>
+        <td>
+          7330
+          -
+          7352
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Some.apply[String](scala.StringContext.apply(&quot;No deck found&quot;).s())
+        </td>
+      </tr><tr>
+        <td>
+          197
+        </td>
+        <td>
+          545
+        </td>
+        <td>
+          7287
+          -
+          7353
+        </td>
+        <td>
+          Return
+        </td>
+        <td>
+          org.riskala.model.logic.RedeemBonus.feasibility
+        </td>
+        <td style="background: #F0ADAD">
+          return FeasibilityReport.apply(false, scala.Some.apply[String](scala.StringContext.apply(&quot;No deck found&quot;).s()))
+        </td>
+      </tr><tr>
+        <td>
+          197
+        </td>
+        <td>
+          778
+        </td>
+        <td>
+          7335
+          -
+          7351
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;No deck found&quot;).s()
+        </td>
+      </tr><tr>
+        <td>
+          197
+        </td>
+        <td>
+          1316
+        </td>
+        <td>
+          7294
+          -
+          7353
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.logic.FeasibilityReport.apply
+        </td>
+        <td style="background: #F0ADAD">
+          FeasibilityReport.apply(false, scala.Some.apply[String](scala.StringContext.apply(&quot;No deck found&quot;).s()))
+        </td>
+      </tr><tr>
+        <td>
+          198
+        </td>
+        <td>
+          582
+        </td>
+        <td>
+          7359
+          -
+          7359
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          198
+        </td>
+        <td>
+          578
+        </td>
+        <td>
+          7362
+          -
+          7413
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Int.&lt;
+        </td>
+        <td style="background: #AEF1AE">
+          playerCards.get.count(((c: org.riskala.model.Cards.Cards) =&gt; c.equals(RedeemBonus.this.cardBonus))).&lt;(3)
+        </td>
+      </tr><tr>
+        <td>
+          198
+        </td>
+        <td>
+          1920
+        </td>
+        <td>
+          7359
+          -
+          7359
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          199
+        </td>
+        <td>
+          2120
+        </td>
+        <td>
+          7498
+          -
+          7507
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.logic.RedeemBonus.cardBonus
+        </td>
+        <td style="background: #AEF1AE">
+          RedeemBonus.this.cardBonus
+        </td>
+      </tr><tr>
+        <td>
+          199
+        </td>
+        <td>
+          1264
+        </td>
+        <td>
+          7470
+          -
+          7508
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;Not enough cards of type &quot;, &quot;&quot;).s(RedeemBonus.this.cardBonus)
+        </td>
+      </tr><tr>
+        <td>
+          199
+        </td>
+        <td>
+          1524
+        </td>
+        <td>
+          7472
+          -
+          7498
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;Not enough cards of type &quot;
+        </td>
+      </tr><tr>
+        <td>
+          199
+        </td>
+        <td>
+          737
+        </td>
+        <td>
+          7507
+          -
+          7508
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          199
+        </td>
+        <td>
+          49
+        </td>
+        <td>
+          7429
+          -
+          7510
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.logic.FeasibilityReport.apply
+        </td>
+        <td style="background: #AEF1AE">
+          FeasibilityReport.apply(false, scala.Some.apply[String](scala.StringContext.apply(&quot;Not enough cards of type &quot;, &quot;&quot;).s(RedeemBonus.this.cardBonus)))
+        </td>
+      </tr><tr>
+        <td>
+          199
+        </td>
+        <td>
+          1990
+        </td>
+        <td>
+          7458
+          -
+          7463
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          false
+        </td>
+      </tr><tr>
+        <td>
+          199
+        </td>
+        <td>
+          521
+        </td>
+        <td>
+          7465
+          -
+          7509
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[String](scala.StringContext.apply(&quot;Not enough cards of type &quot;, &quot;&quot;).s(RedeemBonus.this.cardBonus))
+        </td>
+      </tr><tr>
+        <td>
+          199
+        </td>
+        <td>
+          1435
+        </td>
+        <td>
+          7422
+          -
+          7510
+        </td>
+        <td>
+          Return
+        </td>
+        <td>
+          org.riskala.model.logic.RedeemBonus.feasibility
+        </td>
+        <td style="background: #AEF1AE">
+          return FeasibilityReport.apply(false, scala.Some.apply[String](scala.StringContext.apply(&quot;Not enough cards of type &quot;, &quot;&quot;).s(RedeemBonus.this.cardBonus)))
+        </td>
+      </tr><tr>
+        <td>
+          200
+        </td>
+        <td>
+          746
+        </td>
+        <td>
+          7516
+          -
+          7516
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.logic.FeasibilityReport.apply$default$2
+        </td>
+        <td style="background: #AEF1AE">
+          FeasibilityReport.apply$default$2
+        </td>
+      </tr><tr>
+        <td>
+          200
+        </td>
+        <td>
+          1502
+        </td>
+        <td>
+          7516
+          -
+          7516
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.logic.FeasibilityReport.apply$default$1
+        </td>
+        <td style="background: #AEF1AE">
+          FeasibilityReport.apply$default$1
+        </td>
+      </tr><tr>
+        <td>
+          200
+        </td>
+        <td>
+          2063
+        </td>
+        <td>
+          7516
+          -
+          7535
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.logic.FeasibilityReport.apply
+        </td>
+        <td style="background: #AEF1AE">
+          FeasibilityReport.apply(FeasibilityReport.apply$default$1, FeasibilityReport.apply$default$2)
+        </td>
+      </tr><tr>
+        <td>
+          211
+        </td>
+        <td>
+          542
+        </td>
+        <td>
+          7817
+          -
+          7834
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.logic.TurnEnded.apply
+        </td>
+        <td style="background: #AEF1AE">
+          TurnEnded.apply(EndTurn.this.player)
+        </td>
+      </tr><tr>
+        <td>
+          211
+        </td>
+        <td>
+          15
+        </td>
+        <td>
+          7813
+          -
+          7835
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.generic.GenericCompanion.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.collection.Seq.apply[org.riskala.model.logic.TurnEnded](TurnEnded.apply(EndTurn.this.player))
+        </td>
+      </tr><tr>
+        <td>
+          211
+        </td>
+        <td>
+          1247
+        </td>
+        <td>
+          7827
+          -
+          7833
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.logic.EndTurn.player
+        </td>
+        <td style="background: #AEF1AE">
+          EndTurn.this.player
+        </td>
+      </tr><tr>
+        <td>
+          215
+        </td>
+        <td>
+          1441
+        </td>
+        <td>
+          7937
+          -
+          7943
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.logic.EndTurn.player
+        </td>
+        <td style="background: #AEF1AE">
+          EndTurn.this.player
+        </td>
+      </tr><tr>
+        <td>
+          215
+        </td>
+        <td>
+          586
+        </td>
+        <td>
+          7919
+          -
+          7950
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.logic.Command.checkTurn
+        </td>
+        <td style="background: #AEF1AE">
+          Command.checkTurn(EndTurn.this.player, game)
+        </td>
+      </tr><tr>
+        <td>
+          229
+        </td>
+        <td>
+          1910
+        </td>
+        <td>
+          8276
+          -
+          8291
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.logic.GameSnapshot.nowPlaying
+        </td>
+        <td style="background: #AEF1AE">
+          game.nowPlaying
+        </td>
+      </tr><tr>
+        <td>
+          230
+        </td>
+        <td>
+          705
+        </td>
+        <td>
+          8366
+          -
+          8370
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          true
+        </td>
+      </tr><tr>
+        <td>
+          230
+        </td>
+        <td>
+          1249
+        </td>
+        <td>
+          8337
+          -
+          8377
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.logic.FeasibilityReport.apply
+        </td>
+        <td style="background: #AEF1AE">
+          FeasibilityReport.apply(true, scala.None)
+        </td>
+      </tr><tr>
+        <td>
+          230
+        </td>
+        <td>
+          2026
+        </td>
+        <td>
+          8372
+          -
+          8376
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          230
+        </td>
+        <td>
+          1220
+        </td>
+        <td>
+          8317
+          -
+          8333
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.Player.equals
+        </td>
+        <td style="background: #AEF1AE">
+          p.equals(player)
+        </td>
+      </tr><tr>
+        <td>
+          231
+        </td>
+        <td>
+          519
+        </td>
+        <td>
+          8424
+          -
+          8429
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          false
+        </td>
+      </tr><tr>
+        <td>
+          231
+        </td>
+        <td>
+          1359
+        </td>
+        <td>
+          8395
+          -
+          8453
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.logic.FeasibilityReport.apply
+        </td>
+        <td style="background: #AEF1AE">
+          FeasibilityReport.apply(false, scala.Some.apply[String](&quot;Not your turn&quot;))
+        </td>
+      </tr><tr>
+        <td>
+          231
+        </td>
+        <td>
+          123
+        </td>
+        <td>
+          8431
+          -
+          8452
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[String](&quot;Not your turn&quot;)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

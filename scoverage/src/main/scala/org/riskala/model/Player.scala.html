@@ -1,0 +1,326 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          src\main\scala\org\riskala\model\Player.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier, monospace;'>1 <span style=''>package org.riskala.model
+</span>2 <span style=''>
+</span>3 <span style=''>import argonaut.Argonaut._
+</span>4 <span style=''>import argonaut.CodecJson
+</span>5 <span style=''>import scala.scalajs.js.annotation.{JSExportAll, JSExportTopLevel}
+</span>6 <span style=''>
+</span>7 <span style=''>/**
+</span>8 <span style=''> * Player structure #scala.js
+</span>9 <span style=''> *
+</span>10 <span style=''> * @param nickname       nickname of user
+</span>11 <span style=''> * @param color          color of user
+</span>12 <span style=''> */
+</span>13 <span style=''>@JSExportTopLevel(&quot;Player&quot;)
+</span>14 <span style=''>@JSExportAll
+</span>15 <span style=''>case class Player(nickname: String, color: String){
+</span>16 <span style=''>
+</span>17 <span style=''>  override def equals(obj: Any): JsonBoolean = obj match {
+</span>18 <span style=''>    case p: Player =&gt; </span><span style='background: #AEF1AE'>p.nickname==nickname</span><span style=''>
+</span>19 <span style=''>    case _ =&gt; </span><span style='background: #F0ADAD'>false</span><span style=''>
+</span>20 <span style=''>  }
+</span>21 <span style=''>
+</span>22 <span style=''>}
+</span>23 <span style=''>
+</span>24 <span style=''>object Player {
+</span>25 <span style=''>
+</span>26 <span style=''>  implicit def PlayerCodecJson: CodecJson[Player] =
+</span>27 <span style=''>    </span><span style='background: #AEF1AE'>casecodec2(Player.apply, Player.unapply)(&quot;nickname&quot;,&quot;color&quot;)</span><span style=''>
+</span>28 <span style=''>
+</span>29 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          599
+        </td>
+        <td>
+          462
+          -
+          482
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          p.nickname.==(Player.this.nickname)
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          999
+        </td>
+        <td>
+          474
+          -
+          482
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.Player.nickname
+        </td>
+        <td style="background: #AEF1AE">
+          Player.this.nickname
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          1900
+        </td>
+        <td>
+          498
+          -
+          503
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          false
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          1001
+        </td>
+        <td>
+          633
+          -
+          633
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.EncodeJsons.StringEncodeJson
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.StringEncodeJson
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          1144
+        </td>
+        <td>
+          604
+          -
+          616
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.Player.apply
+        </td>
+        <td style="background: #AEF1AE">
+          Player.apply(nickname, color)
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          1838
+        </td>
+        <td>
+          633
+          -
+          633
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.DecodeJsons.StringDecodeJson
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.StringDecodeJson
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          417
+        </td>
+        <td>
+          633
+          -
+          633
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.EncodeJsons.StringEncodeJson
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.StringEncodeJson
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          563
+        </td>
+        <td>
+          633
+          -
+          633
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.DecodeJsons.StringDecodeJson
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.StringDecodeJson
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          1999
+        </td>
+        <td>
+          593
+          -
+          653
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          argonaut.GeneratedCodecJsons.casecodec2
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.casecodec2[String, String, org.riskala.model.Player]({
+  ((nickname: String, color: String) =&gt; Player.apply(nickname, color))
+}, {
+  ((x$0: org.riskala.model.Player) =&gt; Player.unapply(x$0))
+})(&quot;nickname&quot;, &quot;color&quot;)(argonaut.Argonaut.StringEncodeJson, argonaut.Argonaut.StringDecodeJson, argonaut.Argonaut.StringEncodeJson, argonaut.Argonaut.StringDecodeJson)
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          324
+        </td>
+        <td>
+          618
+          -
+          632
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.Player.unapply
+        </td>
+        <td style="background: #AEF1AE">
+          Player.unapply(x$0)
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          2034
+        </td>
+        <td>
+          634
+          -
+          644
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;nickname&quot;
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          1325
+        </td>
+        <td>
+          645
+          -
+          652
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;color&quot;
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

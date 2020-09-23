@@ -1,0 +1,483 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          src\main\scala\org\riskala\model\Cards.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier, monospace;'>1 <span style=''>package org.riskala.model
+</span>2 <span style=''>
+</span>3 <span style=''>import argonaut.Argonaut._
+</span>4 <span style=''>import argonaut.{CodecJson, DecodeResult}
+</span>5 <span style=''>
+</span>6 <span style=''>/**
+</span>7 <span style=''> * Structure of Cards #scala.js
+</span>8 <span style=''> * */
+</span>9 <span style=''>object Cards extends Enumeration {
+</span>10 <span style=''>
+</span>11 <span style=''>  private val rng = </span><span style='background: #AEF1AE'>scala.util.Random</span><span style=''>
+</span>12 <span style=''>
+</span>13 <span style=''>  type Cards = Value
+</span>14 <span style=''>  val Infantry: Cards = </span><span style='background: #AEF1AE'>Value(3, &quot;Infantry&quot;)</span><span style=''>
+</span>15 <span style=''>  val Cavalry: Cards = </span><span style='background: #AEF1AE'>Value(5, &quot;Cavalry&quot;)</span><span style=''>
+</span>16 <span style=''>  val Artillery: Cards = </span><span style='background: #AEF1AE'>Value(7, &quot;Artillery&quot;)</span><span style=''>
+</span>17 <span style=''>
+</span>18 <span style=''>  /**
+</span>19 <span style=''>   * Implicit method to get CodecJson
+</span>20 <span style=''>   *
+</span>21 <span style=''>   * @return CodecJson
+</span>22 <span style=''>   */
+</span>23 <span style=''>  implicit def CardEnumCodecJson: CodecJson[Cards] = </span><span style='background: #F0ADAD'>CodecJson({
+</span>24 <span style=''></span><span style='background: #F0ADAD'>    e: Cards =&gt; e.toString.asJson
+</span>25 <span style=''></span><span style='background: #F0ADAD'>  }, c =&gt; c.focus.string match {
+</span>26 <span style=''></span><span style='background: #F0ADAD'>    case Some(n:String) if Cards.values.exists(_.toString==n) =&gt; DecodeResult.ok(Cards.withName(n))
+</span>27 <span style=''></span><span style='background: #F0ADAD'>    case _ =&gt; DecodeResult.fail(&quot;Could not decode CardEnum&quot;,c.history)
+</span>28 <span style=''></span><span style='background: #F0ADAD'>  })</span><span style=''>
+</span>29 <span style=''>
+</span>30 <span style=''>  /**
+</span>31 <span style=''>   * Method that generate a random Card
+</span>32 <span style=''>   *
+</span>33 <span style=''>   * @return A random generated Card
+</span>34 <span style=''>   */
+</span>35 <span style=''>  def generateCard(): Cards = {
+</span>36 <span style=''>    </span><span style='background: #AEF1AE'>Cards.values.toSeq(rng.nextInt(Cards.values.size))</span><span style=''>
+</span>37 <span style=''>  }
+</span>38 <span style=''>
+</span>39 <span style=''>}
+</span>40 <span style=''>
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          11
+        </td>
+        <td>
+          2107
+        </td>
+        <td>
+          205
+          -
+          222
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.util.Random
+        </td>
+        <td style="background: #AEF1AE">
+          scala.util.Random
+        </td>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          1291
+        </td>
+        <td>
+          272
+          -
+          292
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Enumeration.Value
+        </td>
+        <td style="background: #AEF1AE">
+          Cards.this.Value(3, &quot;Infantry&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          15
+        </td>
+        <td>
+          490
+        </td>
+        <td>
+          317
+          -
+          336
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Enumeration.Value
+        </td>
+        <td style="background: #AEF1AE">
+          Cards.this.Value(5, &quot;Cavalry&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          20
+        </td>
+        <td>
+          363
+          -
+          384
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Enumeration.Value
+        </td>
+        <td style="background: #AEF1AE">
+          Cards.this.Value(7, &quot;Artillery&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          1899
+        </td>
+        <td>
+          524
+          -
+          783
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          argonaut.CodecJson.apply
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.CodecJson.apply[org.riskala.model.Cards.Cards](((e: org.riskala.model.Cards.Cards) =&gt; argonaut.Argonaut.ToJsonIdentity[String](e.toString()).asJson(argonaut.Argonaut.StringEncodeJson)), ((c: argonaut.HCursor) =&gt; c.focus.string match {
+  case (value: argonaut.Json.JsonString)Some[argonaut.Json.JsonString]((n @ (_: String))) if Cards.values.exists(((x$1: org.riskala.model.Cards.Value) =&gt; x$1.toString().==(n))) =&gt; argonaut.DecodeResult.ok[org.riskala.model.Cards.Value](Cards.withName(n))
+  case _ =&gt; argonaut.DecodeResult.fail[org.riskala.model.Cards.Cards](&quot;Could not decode CardEnum&quot;, c.history)
+}))
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          550
+        </td>
+        <td>
+          564
+          -
+          564
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.EncodeJsons.StringEncodeJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.StringEncodeJson
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          1400
+        </td>
+        <td>
+          553
+          -
+          563
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.toString
+        </td>
+        <td style="background: #F0ADAD">
+          e.toString()
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          1962
+        </td>
+        <td>
+          553
+          -
+          570
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          argonaut.JsonIdentity.asJson
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.Argonaut.ToJsonIdentity[String](e.toString()).asJson(argonaut.Argonaut.StringEncodeJson)
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          1183
+        </td>
+        <td>
+          582
+          -
+          596
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.Json.string
+        </td>
+        <td style="background: #F0ADAD">
+          c.focus.string
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          2111
+        </td>
+        <td>
+          633
+          -
+          667
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.exists
+        </td>
+        <td style="background: #F0ADAD">
+          Cards.values.exists(((x$1: org.riskala.model.Cards.Value) =&gt; x$1.toString().==(n)))
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          1225
+        </td>
+        <td>
+          687
+          -
+          704
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Enumeration.withName
+        </td>
+        <td style="background: #F0ADAD">
+          Cards.withName(n)
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          710
+        </td>
+        <td>
+          653
+          -
+          666
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #F0ADAD">
+          x$1.toString().==(n)
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          425
+        </td>
+        <td>
+          671
+          -
+          705
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          argonaut.DecodeResult.ok
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.DecodeResult.ok[org.riskala.model.Cards.Value](Cards.withName(n))
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          1408
+        </td>
+        <td>
+          767
+          -
+          776
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.HCursor.history
+        </td>
+        <td style="background: #F0ADAD">
+          c.history
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          552
+        </td>
+        <td>
+          721
+          -
+          777
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          argonaut.DecodeResult.fail
+        </td>
+        <td style="background: #F0ADAD">
+          argonaut.DecodeResult.fail[org.riskala.model.Cards.Cards](&quot;Could not decode CardEnum&quot;, c.history)
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          1796
+        </td>
+        <td>
+          739
+          -
+          766
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;Could not decode CardEnum&quot;
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          1205
+        </td>
+        <td>
+          954
+          -
+          971
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.TraversableOnce.size
+        </td>
+        <td style="background: #AEF1AE">
+          Cards.values.size
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          719
+        </td>
+        <td>
+          942
+          -
+          972
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.util.Random.nextInt
+        </td>
+        <td style="background: #AEF1AE">
+          Cards.this.rng.nextInt(Cards.values.size)
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          2133
+        </td>
+        <td>
+          923
+          -
+          973
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.SeqLike.apply
+        </td>
+        <td style="background: #AEF1AE">
+          Cards.values.toSeq.apply(Cards.this.rng.nextInt(Cards.values.size))
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

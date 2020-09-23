@@ -1,0 +1,946 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          src\main\scala\org\riskala\controller\Server.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier, monospace;'>1 <span style=''>package org.riskala.controller
+</span>2 <span style=''>
+</span>3 <span style=''>import akka.actor.typed.ActorSystem
+</span>4 <span style=''>import akka.http.scaladsl.Http
+</span>5 <span style=''>import akka.http.scaladsl.server.Directives._
+</span>6 <span style=''>import akka.http.scaladsl.server.Route
+</span>7 <span style=''>import org.riskala.controller.routes.RestRoutes._
+</span>8 <span style=''>import org.riskala.controller.routes.WebsocketRoute._
+</span>9 <span style=''>import org.riskala.controller.actors.Messages.LobbyMessage
+</span>10 <span style=''>import org.riskala.controller.actors.lobby.LobbyManager
+</span>11 <span style=''>import scala.concurrent.{ExecutionContextExecutor, Future}
+</span>12 <span style=''>import scala.concurrent.duration._
+</span>13 <span style=''>import scala.util.Try
+</span>14 <span style=''>
+</span>15 <span style=''>object Server {
+</span>16 <span style=''>
+</span>17 <span style=''>  implicit val system: ActorSystem[LobbyMessage] = </span><span style='background: #AEF1AE'>ActorSystem(LobbyManager(), &quot;riskala&quot;)</span><span style=''>
+</span>18 <span style=''>  implicit val executionContext: ExecutionContextExecutor = </span><span style='background: #AEF1AE'>system.executionContext</span><span style=''>
+</span>19 <span style=''>  private var serverBindingFuture: Option[Future[Http.ServerBinding]] = </span><span style='background: #AEF1AE'>None</span><span style=''>
+</span>20 <span style=''>  val routing: Route = </span><span style='background: #AEF1AE'>concat(staticContent, loginPath, registrationPath, websocketRoute, redirectHome)</span><span style=''>
+</span>21 <span style=''>  private val PORT: Int = </span><span style='background: #AEF1AE'>System.getProperty(&quot;server.port&quot;)</span><span style=''> match {
+</span>22 <span style=''>    case port if </span><span style='background: #AEF1AE'>Try(port.toInt).isSuccess</span><span style=''> =&gt; </span><span style='background: #F0ADAD'>port.toInt</span><span style=''>
+</span>23 <span style=''>    case _ =&gt; </span><span style='background: #AEF1AE'>8080</span><span style=''>
+</span>24 <span style=''>  }
+</span>25 <span style=''>
+</span>26 <span style=''>  def start(): Unit = {
+</span>27 <span style=''>    </span><span style='background: #F0ADAD'>serverBindingFuture = Some(Http().newServerAt(&quot;0.0.0.0&quot;, PORT)
+</span>28 <span style=''></span><span style='background: #F0ADAD'>      .adaptSettings(_.mapWebsocketSettings(
+</span>29 <span style=''></span><span style='background: #F0ADAD'>        _.withPeriodicKeepAliveMode(&quot;pong&quot;)
+</span>30 <span style=''></span><span style='background: #F0ADAD'>          .withPeriodicKeepAliveMaxIdle(1.second)))
+</span>31 <span style=''></span><span style='background: #F0ADAD'>      .bindFlow(routing))</span><span style=''>
+</span>32 <span style=''>    </span><span style='background: #F0ADAD'>println(s&quot;Server online at port $PORT \n...&quot;)</span><span style=''>
+</span>33 <span style=''>  }
+</span>34 <span style=''>  
+</span>35 <span style=''>  def exit():Unit = {
+</span>36 <span style=''>    </span><span style='background: #F0ADAD'>serverBindingFuture</span><span style=''> match {
+</span>37 <span style=''>      case Some(sbf) =&gt; </span><span style='background: #F0ADAD'>sbf
+</span>38 <span style=''></span><span style='background: #F0ADAD'>        .flatMap(_.unbind())
+</span>39 <span style=''></span><span style='background: #F0ADAD'>        .onComplete(_ =&gt; system.terminate())</span><span style=''>
+</span>40 <span style=''>    }
+</span>41 <span style=''>  }
+</span>42 <span style=''>
+</span>43 <span style=''>}
+</span>44 <span style=''>
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          454
+        </td>
+        <td>
+          604
+          -
+          642
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.actor.typed.ActorSystem.apply
+        </td>
+        <td style="background: #AEF1AE">
+          akka.actor.typed.ActorSystem.apply[org.riskala.controller.actors.Messages.LobbyMessage](org.riskala.controller.actors.lobby.LobbyManager.apply(), &quot;riskala&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          2127
+        </td>
+        <td>
+          616
+          -
+          630
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.actors.lobby.LobbyManager.apply
+        </td>
+        <td style="background: #AEF1AE">
+          org.riskala.controller.actors.lobby.LobbyManager.apply()
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          1340
+        </td>
+        <td>
+          632
+          -
+          641
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;riskala&quot;
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          72
+        </td>
+        <td>
+          704
+          -
+          727
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          akka.actor.typed.ActorSystem.executionContext
+        </td>
+        <td style="background: #AEF1AE">
+          Server.this.system.executionContext
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          1383
+        </td>
+        <td>
+          801
+          -
+          805
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          764
+        </td>
+        <td>
+          881
+          -
+          895
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.controller.routes.WebsocketRoute.websocketRoute
+        </td>
+        <td style="background: #AEF1AE">
+          org.riskala.controller.routes.WebsocketRoute.websocketRoute
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          2128
+        </td>
+        <td>
+          897
+          -
+          909
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.controller.routes.RestRoutes.redirectHome
+        </td>
+        <td style="background: #AEF1AE">
+          org.riskala.controller.routes.RestRoutes.redirectHome
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          2014
+        </td>
+        <td>
+          852
+          -
+          861
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.controller.routes.RestRoutes.loginPath
+        </td>
+        <td style="background: #AEF1AE">
+          org.riskala.controller.routes.RestRoutes.loginPath
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          638
+        </td>
+        <td>
+          837
+          -
+          850
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.controller.routes.RestRoutes.staticContent
+        </td>
+        <td style="background: #AEF1AE">
+          org.riskala.controller.routes.RestRoutes.staticContent
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          1304
+        </td>
+        <td>
+          830
+          -
+          910
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.http.scaladsl.server.RouteConcatenation.concat
+        </td>
+        <td style="background: #AEF1AE">
+          akka.http.scaladsl.server.Directives.concat(org.riskala.controller.routes.RestRoutes.staticContent, org.riskala.controller.routes.RestRoutes.loginPath, org.riskala.controller.routes.RestRoutes.registrationPath, org.riskala.controller.routes.WebsocketRoute.websocketRoute, org.riskala.controller.routes.RestRoutes.redirectHome)
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          1193
+        </td>
+        <td>
+          863
+          -
+          879
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.controller.routes.RestRoutes.registrationPath
+        </td>
+        <td style="background: #AEF1AE">
+          org.riskala.controller.routes.RestRoutes.registrationPath
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          459
+        </td>
+        <td>
+          938
+          -
+          971
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.System.getProperty
+        </td>
+        <td style="background: #AEF1AE">
+          java.lang.System.getProperty(&quot;server.port&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          1876
+        </td>
+        <td>
+          1002
+          -
+          1012
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.StringLike.toInt
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Predef.augmentString(port).toInt
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          1370
+        </td>
+        <td>
+          998
+          -
+          1023
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.util.Try.isSuccess
+        </td>
+        <td style="background: #AEF1AE">
+          scala.util.Try.apply[Int](scala.Predef.augmentString(port).toInt).isSuccess
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          640
+        </td>
+        <td>
+          1027
+          -
+          1037
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.StringLike.toInt
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Predef.augmentString(port).toInt
+        </td>
+      </tr><tr>
+        <td>
+          23
+        </td>
+        <td>
+          1940
+        </td>
+        <td>
+          1053
+          -
+          1057
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          8080
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          2045
+        </td>
+        <td>
+          1152
+          -
+          1156
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.controller.Server.PORT
+        </td>
+        <td style="background: #F0ADAD">
+          Server.this.PORT
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          1339
+        </td>
+        <td>
+          1117
+          -
+          1328
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Some.apply[scala.concurrent.Future[akka.http.scaladsl.Http.ServerBinding]](akka.http.scaladsl.Http.apply()(Server.this.system).newServerAt(&quot;0.0.0.0&quot;, Server.this.PORT).adaptSettings(((x$1: akka.http.scaladsl.settings.ServerSettings) =&gt; x$1.mapWebsocketSettings(((x$2: akka.http.scaladsl.settings.WebSocketSettings) =&gt; x$2.withPeriodicKeepAliveMode(&quot;pong&quot;).withPeriodicKeepAliveMaxIdle(scala.concurrent.duration.`package`.DurationInt(1).second))))).bindFlow(server.this.RouteResult.routeToFlow(Server.this.routing)(Server.this.system)))
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          770
+        </td>
+        <td>
+          1141
+          -
+          1150
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;0.0.0.0&quot;
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          1152
+        </td>
+        <td>
+          1126
+          -
+          1126
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.controller.Server.system
+        </td>
+        <td style="background: #F0ADAD">
+          Server.this.system
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          434
+        </td>
+        <td>
+          1095
+          -
+          1328
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.controller.Server.serverBindingFuture_=
+        </td>
+        <td style="background: #F0ADAD">
+          Server.this.serverBindingFuture_=(scala.Some.apply[scala.concurrent.Future[akka.http.scaladsl.Http.ServerBinding]](akka.http.scaladsl.Http.apply()(Server.this.system).newServerAt(&quot;0.0.0.0&quot;, Server.this.PORT).adaptSettings(((x$1: akka.http.scaladsl.settings.ServerSettings) =&gt; x$1.mapWebsocketSettings(((x$2: akka.http.scaladsl.settings.WebSocketSettings) =&gt; x$2.withPeriodicKeepAliveMode(&quot;pong&quot;).withPeriodicKeepAliveMaxIdle(scala.concurrent.duration.`package`.DurationInt(1).second))))).bindFlow(server.this.RouteResult.routeToFlow(Server.this.routing)(Server.this.system))))
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          570
+        </td>
+        <td>
+          1180
+          -
+          1300
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.http.scaladsl.settings.ServerSettings.mapWebsocketSettings
+        </td>
+        <td style="background: #F0ADAD">
+          x$1.mapWebsocketSettings(((x$2: akka.http.scaladsl.settings.WebSocketSettings) =&gt; x$2.withPeriodicKeepAliveMode(&quot;pong&quot;).withPeriodicKeepAliveMaxIdle(scala.concurrent.duration.`package`.DurationInt(1).second)))
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          1310
+        </td>
+        <td>
+          1241
+          -
+          1247
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;pong&quot;
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          468
+        </td>
+        <td>
+          1290
+          -
+          1291
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          1
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          1376
+        </td>
+        <td>
+          1213
+          -
+          1299
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.http.scaladsl.settings.WebSocketSettings.withPeriodicKeepAliveMaxIdle
+        </td>
+        <td style="background: #F0ADAD">
+          x$2.withPeriodicKeepAliveMode(&quot;pong&quot;).withPeriodicKeepAliveMaxIdle(scala.concurrent.duration.`package`.DurationInt(1).second)
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          1848
+        </td>
+        <td>
+          1290
+          -
+          1298
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.concurrent.duration.DurationConversions.second
+        </td>
+        <td style="background: #F0ADAD">
+          scala.concurrent.duration.`package`.DurationInt(1).second
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          1162
+        </td>
+        <td>
+          1319
+          -
+          1319
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.controller.Server.system
+        </td>
+        <td style="background: #F0ADAD">
+          Server.this.system
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          1918
+        </td>
+        <td>
+          1319
+          -
+          1326
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.controller.Server.routing
+        </td>
+        <td style="background: #F0ADAD">
+          Server.this.routing
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          291
+        </td>
+        <td>
+          1319
+          -
+          1326
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          akka.http.scaladsl.server.RouteResult.routeToFlow
+        </td>
+        <td style="background: #F0ADAD">
+          server.this.RouteResult.routeToFlow(Server.this.routing)(Server.this.system)
+        </td>
+      </tr><tr>
+        <td>
+          31
+        </td>
+        <td>
+          2052
+        </td>
+        <td>
+          1122
+          -
+          1327
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.http.scaladsl.ServerBuilder.bindFlow
+        </td>
+        <td style="background: #F0ADAD">
+          akka.http.scaladsl.Http.apply()(Server.this.system).newServerAt(&quot;0.0.0.0&quot;, Server.this.PORT).adaptSettings(((x$1: akka.http.scaladsl.settings.ServerSettings) =&gt; x$1.mapWebsocketSettings(((x$2: akka.http.scaladsl.settings.WebSocketSettings) =&gt; x$2.withPeriodicKeepAliveMode(&quot;pong&quot;).withPeriodicKeepAliveMaxIdle(scala.concurrent.duration.`package`.DurationInt(1).second))))).bindFlow(server.this.RouteResult.routeToFlow(Server.this.routing)(Server.this.system))
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          576
+        </td>
+        <td>
+          1367
+          -
+          1371
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.controller.Server.PORT
+        </td>
+        <td style="background: #F0ADAD">
+          Server.this.PORT
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          1853
+        </td>
+        <td>
+          1344
+          -
+          1367
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;Server online at port &quot;
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          2011
+        </td>
+        <td>
+          1342
+          -
+          1378
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;Server online at port &quot;, &quot; \\n...&quot;).s(Server.this.PORT)
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          1484
+        </td>
+        <td>
+          1371
+          -
+          1378
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot; \\n...&quot;
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          1121
+        </td>
+        <td>
+          1334
+          -
+          1379
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.println
+        </td>
+        <td style="background: #F0ADAD">
+          scala.Predef.println(scala.StringContext.apply(&quot;Server online at port &quot;, &quot; \\n...&quot;).s(Server.this.PORT))
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          296
+        </td>
+        <td>
+          1417
+          -
+          1436
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.controller.Server.serverBindingFuture
+        </td>
+        <td style="background: #F0ADAD">
+          Server.this.serverBindingFuture
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          2056
+        </td>
+        <td>
+          1492
+          -
+          1502
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.http.scaladsl.Http.ServerBinding.unbind
+        </td>
+        <td style="background: #F0ADAD">
+          x$3.unbind()
+        </td>
+      </tr><tr>
+        <td>
+          38
+        </td>
+        <td>
+          1302
+        </td>
+        <td>
+          1491
+          -
+          1491
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.controller.Server.executionContext
+        </td>
+        <td style="background: #F0ADAD">
+          Server.this.executionContext
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          537
+        </td>
+        <td>
+          1530
+          -
+          1548
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.actor.typed.ActorSystem.terminate
+        </td>
+        <td style="background: #F0ADAD">
+          Server.this.system.terminate()
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          1891
+        </td>
+        <td>
+          1524
+          -
+          1524
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.controller.Server.executionContext
+        </td>
+        <td style="background: #F0ADAD">
+          Server.this.executionContext
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          1487
+        </td>
+        <td>
+          1470
+          -
+          1549
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.concurrent.Future.onComplete
+        </td>
+        <td style="background: #F0ADAD">
+          sbf.flatMap[akka.Done](((x$3: akka.http.scaladsl.Http.ServerBinding) =&gt; x$3.unbind()))(Server.this.executionContext).onComplete[Unit](((x$4: scala.util.Try[akka.Done]) =&gt; Server.this.system.terminate()))(Server.this.executionContext)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

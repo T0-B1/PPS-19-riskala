@@ -1,0 +1,717 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          src\main\scala\org\riskala\model\map\MapGeography.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier, monospace;'>1 <span style=''>package org.riskala.model.map
+</span>2 <span style=''>
+</span>3 <span style=''>import argonaut.Argonaut._
+</span>4 <span style=''>import argonaut.CodecJson
+</span>5 <span style=''>import org.riskala.model.map.State.State
+</span>6 <span style=''>import scala.scalajs.js.annotation.{JSExportAll, JSExportTopLevel}
+</span>7 <span style=''>
+</span>8 <span style=''>/** Map structure #scala.js
+</span>9 <span style=''> *
+</span>10 <span style=''> * @param name           name of the map used in game.
+</span>11 <span style=''> * @param regions        list of regions
+</span>12 <span style=''> * @param states         list of state
+</span>13 <span style=''> * @param bridges        list of bridges between states
+</span>14 <span style=''> */
+</span>15 <span style=''>@JSExportTopLevel(&quot;MapGeography&quot;)
+</span>16 <span style=''>@JSExportAll
+</span>17 <span style=''>case class MapGeography(name:String,
+</span>18 <span style=''>                        regions: Set[Region],
+</span>19 <span style=''>                        states: Set[State],
+</span>20 <span style=''>                        bridges: Set[Bridge]) {
+</span>21 <span style=''>
+</span>22 <span style=''>  /**
+</span>23 <span style=''>   * Defines all the neighbor of a state
+</span>24 <span style=''>   *
+</span>25 <span style=''>   * @param state the state of wich we need to know his neighbors
+</span>26 <span style=''>   * @return a list of state that are neighbor with our state
+</span>27 <span style=''>   */
+</span>28 <span style=''>  def getNeighbors(state: State): Set[State] = </span><span style='background: #AEF1AE'>bridges collect {
+</span>29 <span style=''></span><span style='background: #AEF1AE'>    case Bridge(s1,s2,_) if s1 == state =&gt; s2
+</span>30 <span style=''></span><span style='background: #AEF1AE'>    case Bridge(s1,s2,_) if s2 == state =&gt; s1
+</span>31 <span style=''></span><span style='background: #AEF1AE'>  }</span><span style=''>
+</span>32 <span style=''>
+</span>33 <span style=''>  /**
+</span>34 <span style=''>   * check if two state are neighbors
+</span>35 <span style=''>   *
+</span>36 <span style=''>   * @return true if state1 and state2 are neighbors
+</span>37 <span style=''>   */
+</span>38 <span style=''>  def areNeighbor(state1: State, state2: State): Boolean =
+</span>39 <span style=''>    </span><span style='background: #AEF1AE'>bridges.exists(_ == Bridge(state1, state2, false))</span><span style=''>
+</span>40 <span style=''>  //IMPORTANT! Set.contains is abstract and depends on concrete implementation, had to use exists
+</span>41 <span style=''>}
+</span>42 <span style=''>object MapGeography {
+</span>43 <span style=''>  implicit def MapGeographyCodecJson: CodecJson[MapGeography] =
+</span>44 <span style=''>    </span><span style='background: #AEF1AE'>casecodec4(MapGeography.apply,MapGeography.unapply)(&quot;name&quot;,&quot;regions&quot;,&quot;states&quot;,&quot;bridges&quot;)</span><span style=''>
+</span>45 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          1611
+        </td>
+        <td>
+          910
+          -
+          910
+        </td>
+        <td>
+          TypeApply
+        </td>
+        <td>
+          scala.collection.immutable.Set.canBuildFrom
+        </td>
+        <td style="background: #AEF1AE">
+          immutable.this.Set.canBuildFrom[org.riskala.model.map.State.State]
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          805
+        </td>
+        <td>
+          902
+          -
+          1018
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.collection.TraversableLike.collect
+        </td>
+        <td style="background: #AEF1AE">
+          MapGeography.this.bridges.collect[org.riskala.model.map.State.State, Set[org.riskala.model.map.State.State]](({
+  @SerialVersionUID(value = 0) final &lt;synthetic&gt; class $anonfun extends scala.runtime.AbstractPartialFunction[org.riskala.model.map.Bridge,org.riskala.model.map.State.State] with Serializable {
+    def &lt;init&gt;(): &lt;$anon: org.riskala.model.map.Bridge =&gt; org.riskala.model.map.State.State&gt; = {
+      $anonfun.super.&lt;init&gt;();
+      ()
+    };
+    final override def applyOrElse[A1 &lt;: org.riskala.model.map.Bridge, B1 &gt;: org.riskala.model.map.State.State](x1: A1, default: A1 =&gt; B1): B1 = ((x1.asInstanceOf[org.riskala.model.map.Bridge]: org.riskala.model.map.Bridge): org.riskala.model.map.Bridge @unchecked) match {
+      case (state1: org.riskala.model.map.State.State, state2: org.riskala.model.map.State.State, userCreated: Boolean)org.riskala.model.map.Bridge((s1 @ _), (s2 @ _), _) if s1.==(state) =&gt; s2
+      case (state1: org.riskala.model.map.State.State, state2: org.riskala.model.map.State.State, userCreated: Boolean)org.riskala.model.map.Bridge((s1 @ _), (s2 @ _), _) if s2.==(state) =&gt; s1
+      case (defaultCase$ @ _) =&gt; default.apply(x1)
+    };
+    final def isDefinedAt(x1: org.riskala.model.map.Bridge): Boolean = ((x1.asInstanceOf[org.riskala.model.map.Bridge]: org.riskala.model.map.Bridge): org.riskala.model.map.Bridge @unchecked) match {
+      case (state1: org.riskala.model.map.State.State, state2: org.riskala.model.map.State.State, userCreated: Boolean)org.riskala.model.map.Bridge((s1 @ _), (s2 @ _), _) if s1.==(state) =&gt; true
+      case (state1: org.riskala.model.map.State.State, state2: org.riskala.model.map.State.State, userCreated: Boolean)org.riskala.model.map.Bridge((s1 @ _), (s2 @ _), _) if s2.==(state) =&gt; true
+      case (defaultCase$ @ _) =&gt; false
+    }
+  };
+  new $anonfun()
+}: PartialFunction[org.riskala.model.map.Bridge,org.riskala.model.map.State.State]))(immutable.this.Set.canBuildFrom[org.riskala.model.map.State.State])
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          161
+        </td>
+        <td>
+          918
+          -
+          918
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.map.MapGeography.$anonfun.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anonfun()
+        </td>
+      </tr><tr>
+        <td>
+          29
+        </td>
+        <td>
+          1458
+        </td>
+        <td>
+          949
+          -
+          960
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          s1.==(state)
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          1072
+        </td>
+        <td>
+          996
+          -
+          1007
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          s2.==(state)
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          1655
+        </td>
+        <td>
+          1214
+          -
+          1248
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          java.lang.Object.==
+        </td>
+        <td style="background: #AEF1AE">
+          x$1.==(Bridge.apply(state1, state2, false))
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          2050
+        </td>
+        <td>
+          1219
+          -
+          1248
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.map.Bridge.apply
+        </td>
+        <td style="background: #AEF1AE">
+          Bridge.apply(state1, state2, false)
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          892
+        </td>
+        <td>
+          1199
+          -
+          1249
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.collection.IterableLike.exists
+        </td>
+        <td style="background: #AEF1AE">
+          MapGeography.this.bridges.exists(((x$1: org.riskala.model.map.Bridge) =&gt; x$1.==(Bridge.apply(state1, state2, false))))
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          1456
+        </td>
+        <td>
+          1496
+          -
+          1496
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          argonaut.DecodeJsons.SetDecodeJson
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.SetDecodeJson[org.riskala.model.map.Bridge](map.this.Bridge.BridgeCodecJson)
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          1689
+        </td>
+        <td>
+          1496
+          -
+          1496
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.map.Bridge.BridgeCodecJson
+        </td>
+        <td style="background: #AEF1AE">
+          map.this.Bridge.BridgeCodecJson
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          113
+        </td>
+        <td>
+          1496
+          -
+          1496
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.map.Bridge.BridgeCodecJson
+        </td>
+        <td style="background: #AEF1AE">
+          map.this.Bridge.BridgeCodecJson
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          1450
+        </td>
+        <td>
+          1475
+          -
+          1495
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.map.MapGeography.unapply
+        </td>
+        <td style="background: #AEF1AE">
+          MapGeography.unapply(x$0)
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          166
+        </td>
+        <td>
+          1504
+          -
+          1513
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;regions&quot;
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          806
+        </td>
+        <td>
+          1523
+          -
+          1532
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;bridges&quot;
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          1751
+        </td>
+        <td>
+          1496
+          -
+          1496
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.DecodeJsons.StringDecodeJson
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.StringDecodeJson
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          190
+        </td>
+        <td>
+          1496
+          -
+          1496
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.EncodeJsons.StringEncodeJson
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.StringEncodeJson
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          1033
+        </td>
+        <td>
+          1496
+          -
+          1496
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          argonaut.DecodeJsons.SetDecodeJson
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.SetDecodeJson[org.riskala.model.map.Region](map.this.Region.RegionCodecJson)
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          130
+        </td>
+        <td>
+          1456
+          -
+          1474
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          org.riskala.model.map.MapGeography.apply
+        </td>
+        <td style="background: #AEF1AE">
+          MapGeography.apply(name, regions, states, bridges)
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          794
+        </td>
+        <td>
+          1496
+          -
+          1496
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.DecodeJsons.StringDecodeJson
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.StringDecodeJson
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          1586
+        </td>
+        <td>
+          1496
+          -
+          1496
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          argonaut.EncodeJsons.SetEncodeJson
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.SetEncodeJson[org.riskala.model.map.State.State](argonaut.Argonaut.StringEncodeJson)
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          895
+        </td>
+        <td>
+          1496
+          -
+          1496
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.map.Region.RegionCodecJson
+        </td>
+        <td style="background: #AEF1AE">
+          map.this.Region.RegionCodecJson
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          620
+        </td>
+        <td>
+          1445
+          -
+          1533
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          argonaut.GeneratedCodecJsons.casecodec4
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.casecodec4[String, Set[org.riskala.model.map.Region], Set[org.riskala.model.map.State.State], Set[org.riskala.model.map.Bridge], org.riskala.model.map.MapGeography]({
+  ((name: String, regions: Set[org.riskala.model.map.Region], states: Set[org.riskala.model.map.State.State], bridges: Set[org.riskala.model.map.Bridge]) =&gt; MapGeography.apply(name, regions, states, bridges))
+}, {
+  ((x$0: org.riskala.model.map.MapGeography) =&gt; MapGeography.unapply(x$0))
+})(&quot;name&quot;, &quot;regions&quot;, &quot;states&quot;, &quot;bridges&quot;)(argonaut.Argonaut.StringEncodeJson, argonaut.Argonaut.StringDecodeJson, argonaut.Argonaut.SetEncodeJson[org.riskala.model.map.Region](map.this.Region.RegionCodecJson), argonaut.Argonaut.SetDecodeJson[org.riskala.model.map.Region](map.this.Region.RegionCodecJson), argonaut.Argonaut.SetEncodeJson[org.riskala.model.map.State.State](argonaut.Argonaut.StringEncodeJson), argonaut.Argonaut.SetDecodeJson[org.riskala.model.map.State.State](argonaut.Argonaut.StringDecodeJson), argonaut.Argonaut.SetEncodeJson[org.riskala.model.map.Bridge](map.this.Bridge.BridgeCodecJson), argonaut.Argonaut.SetDecodeJson[org.riskala.model.map.Bridge](map.this.Bridge.BridgeCodecJson))
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          2124
+        </td>
+        <td>
+          1496
+          -
+          1496
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          argonaut.EncodeJsons.StringEncodeJson
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.StringEncodeJson
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          1077
+        </td>
+        <td>
+          1497
+          -
+          1503
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;name&quot;
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          1582
+        </td>
+        <td>
+          1514
+          -
+          1522
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;states&quot;
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          111
+        </td>
+        <td>
+          1496
+          -
+          1496
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          argonaut.EncodeJsons.SetEncodeJson
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.SetEncodeJson[org.riskala.model.map.Region](map.this.Region.RegionCodecJson)
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          2114
+        </td>
+        <td>
+          1496
+          -
+          1496
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          argonaut.DecodeJsons.SetDecodeJson
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.SetDecodeJson[org.riskala.model.map.State.State](argonaut.Argonaut.StringDecodeJson)
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          861
+        </td>
+        <td>
+          1496
+          -
+          1496
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          argonaut.EncodeJsons.SetEncodeJson
+        </td>
+        <td style="background: #AEF1AE">
+          argonaut.Argonaut.SetEncodeJson[org.riskala.model.map.Bridge](map.this.Bridge.BridgeCodecJson)
+        </td>
+      </tr><tr>
+        <td>
+          44
+        </td>
+        <td>
+          1453
+        </td>
+        <td>
+          1496
+          -
+          1496
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          org.riskala.model.map.Region.RegionCodecJson
+        </td>
+        <td style="background: #AEF1AE">
+          map.this.Region.RegionCodecJson
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>
