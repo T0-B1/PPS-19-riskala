@@ -13,12 +13,17 @@ import scala.scalajs.js.annotation.{JSExportAll, JSExportTopLevel}
 @JSExportTopLevel("Player")
 @JSExportAll
 case class Player(nickname: String, color: String){
+
   override def equals(obj: Any): JsonBoolean = obj match {
     case p: Player => p.nickname==nickname
     case _ => false
   }
+
 }
+
 object Player {
+
   implicit def PlayerCodecJson: CodecJson[Player] =
     casecodec2(Player.apply, Player.unapply)("nickname","color")
+
 }

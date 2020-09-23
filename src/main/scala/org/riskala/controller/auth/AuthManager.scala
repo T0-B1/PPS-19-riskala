@@ -7,12 +7,14 @@ import pdi.jwt.{Jwt, JwtAlgorithm}
 import spray.json.{DefaultJsonProtocol, JsonParser, RootJsonFormat}
 import scala.collection.immutable.HashMap
 import scala.util.{Success, Try}
-case class Login(username: String, password: String)
-case class Register(username: String, password: String, email: String)
+
+case class LoginData(username: String, password: String)
+
+case class RegistrationData(username: String, password: String, email: String)
 
 object LoginJsonSupport extends DefaultJsonProtocol with SprayJsonSupport {
-  implicit val LoginFormats: RootJsonFormat[Login] = jsonFormat2(Login)
-  implicit val RegisterFormats: RootJsonFormat[Register] = jsonFormat3(Register)
+  implicit val LoginFormats: RootJsonFormat[LoginData] = jsonFormat2(LoginData)
+  implicit val RegisterFormats: RootJsonFormat[RegistrationData] = jsonFormat3(RegistrationData)
 }
 
 object AuthManager {
@@ -27,29 +29,36 @@ object AuthManager {
   accountList.foreach(acc=> credential = credential+(acc.username->acc))
 
   /**
-   * Method that check if user credentials are valid and generates a token
-   * */
-  def login(l: Login): Option[String] = {
+   * Logs a user returning the token if successful
+   *
+   * @param l Login data of a user
+   * @return An optional token
+   */
+  def login(l: LoginData): Option[String] = {
     credential get l.username flatMap(acc => if(acc.password == l.password) Some(genToken(l)) else None)
   }
 
   /**
-   * Method that register a new user and generate a token
-   * */
-  def register(r: Register): Option[String] = {
+   * Registers a user returning the token if successful
+   *
+   * @param r Registration data of a user
+   * @return An optional token
+   */
+  def register(r: RegistrationData): Option[String] = {
     if(!credential.isDefinedAt(r.username)) {
       credential = credential + (r.username -> Account(r.username,r.password,r.email))
-      Some(genToken(Login(r.username,r.password)))
+      Some(genToken(LoginData(r.username,r.password)))
     } else {
       None
     }
   }
 
   /**
-   * Method used for token generation
+   * Generates a token
+   *
    * @param l User credentials
    * */
-  private def genToken(l: Login): String = {
+  private def genToken(l: LoginData): String = {
     import LoginJsonSupport._
     import spray.json._
     val claim = l.toJson.prettyPrint
@@ -57,20 +66,25 @@ object AuthManager {
   }
 
   /**
-   * Method that checks the validity of a token
-   * */
+   * Checks the validity of a token
+   *
+   * @param token A token
+   * @return If token is valid
+   */
   def checkToken(token: String): Boolean = {
     Jwt.isValid(token, secretKey, Seq(jwtAlgorithm))
   }
 
   /**
-   * Method that gives username through token
-   * */
+   * Given a token, the associated username is returned if present
+   * @param token A token
+   * @return An optional username
+   */
   def getUserName(token: String): Option[String] = {
     Jwt.decodeRawAll(token, secretKey, Seq(jwtAlgorithm)) match {
       case Success(tuple) => tuple match {
         case (_, claim, _) =>
-            Try(JsonParser(claim).convertTo[Login](LoginJsonSupport.LoginFormats)) match {
+            Try(JsonParser(claim).convertTo[LoginData](LoginJsonSupport.LoginFormats)) match {
               case Success(login) => Some(login.username)
               case _ => None
             }
@@ -79,6 +93,12 @@ object AuthManager {
     }
   }
 
+  /**
+   * Given a username, the email address is returned
+   *
+   * @param userName A username
+   * @return An optional email address
+   */
   def getUserMail(userName: String): Option[String] = {
     credential.get(userName).map(user => user.email)
   }

@@ -17,7 +17,9 @@ object Cards extends Enumeration {
 
   /**
    * Implicit method to get CodecJson
-  * */
+   *
+   * @return CodecJson
+   */
   implicit def CardEnumCodecJson: CodecJson[Cards] = CodecJson({
     e: Cards => e.toString.asJson
   }, c => c.focus.string match {
@@ -27,8 +29,9 @@ object Cards extends Enumeration {
 
   /**
    * Method that generate a random Card
-   * @return a random generated Card
-   * */
+   *
+   * @return A random generated Card
+   */
   def generateCard(): Cards = {
     Cards.values.toSeq(rng.nextInt(Cards.values.size))
   }

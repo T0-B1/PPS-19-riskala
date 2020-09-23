@@ -40,9 +40,9 @@ export default {
           this.$store.commit('logout');
           if (error.response) {
             if (error.response.status === 404) {
-              console.log("User already exists");
+              console.error("User already exists");
             } else {
-              console.log("Internal server error!");
+              console.error("Internal server error!");
             }
           }
         });

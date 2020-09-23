@@ -9,11 +9,11 @@ import org.scalatestplus.junit.JUnitRunner
 class GeopoliticsTest extends AnyWordSpec {
 
   val state = "foo"
-  val p1 = Player("p1", "")
-  val p2 = Player("p2", "")
-  val troopsDelta = -5
+  val p1: Player = Player("p1", "")
+  val p2: Player = Player("p2", "")
+  val troopsDelta: Int = -5
   val troopsValue = 3
-  val playerState = PlayerState(state, p1, 7)
+  val playerState: PlayerState = PlayerState(state, p1, 7)
   val geopolitics: Geopolitics = Set(playerState)
 
 

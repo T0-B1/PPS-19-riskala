@@ -116,7 +116,6 @@ export default {
       var myMap = map.node().append(data.documentElement);
       this.bind()
       var newHandler = function(evt) {
-        console.log('GAME - Receive message');
         ClientGame.handleGameMessage(evt.data, vue)
       }
       this.$store.commit('changeHandler', newHandler)

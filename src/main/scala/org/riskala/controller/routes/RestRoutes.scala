@@ -4,7 +4,7 @@ import akka.http.scaladsl.model.{HttpHeader, StatusCodes}
 import akka.http.scaladsl.server
 import akka.http.scaladsl.server.Directives._
 import org.riskala.controller.auth.LoginJsonSupport._
-import org.riskala.controller.auth.{AuthManager, Login, Register}
+import org.riskala.controller.auth.{AuthManager, LoginData, RegistrationData}
 
 object RestRoutes {
 
@@ -24,7 +24,7 @@ object RestRoutes {
     path("login") {
       headerValue(extractTokenHeader) {
         token => complete(200,token)
-      } ~ entity(as[Login]) {
+      } ~ entity(as[LoginData]) {
         l => {
           AuthManager.login(l).fold(complete(404, "User not found"))(t=>complete(200, t))
         }
@@ -34,7 +34,7 @@ object RestRoutes {
 
   val registrationPath: server.Route = post {
     path("register") {
-      entity(as[Register]) {
+      entity(as[RegistrationData]) {
         r => {
           AuthManager.register(r).fold(complete(400, "User already exists"))(t=>complete(200, t))
         }

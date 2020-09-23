@@ -13,12 +13,12 @@ class MapGeographyTest extends AnyWordSpec {
   val ger: State = "Germany"
   val spa: State = "Spain"
   val states = Set(ita, fra, swi, ger, spa)
-  val bridges = Set(Bridge(ita,fra,false),
-    Bridge(ita,swi,false),
-    Bridge(swi,fra,false),
-    Bridge(fra,spa,false),
-    Bridge(fra,ger,false))
-  val map = MapGeography("Europe",Set.empty,states,bridges)
+  val bridges = Set(Bridge(ita,fra,userCreated = false),
+    Bridge(ita,swi,userCreated = false),
+    Bridge(swi,fra,userCreated = false),
+    Bridge(fra,spa,userCreated = false),
+    Bridge(fra,ger,userCreated = false))
+  val map: MapGeography = MapGeography("Europe",Set.empty,states,bridges)
 
   "Map neighbors" should {
     "give a list of neighbors" in {

@@ -21,8 +21,12 @@ case class Region(name: String, states: Set[State], bonus: Int) {
    * @param state     the state to check
    * @return true if it contains state*/
   def hasState(state: State): Boolean = states.contains(state)
+
 }
+
 object Region {
+
   implicit def RegionCodecJson: CodecJson[Region] =
     casecodec3(Region.apply,Region.unapply)("name","states","bonus")
+
 }

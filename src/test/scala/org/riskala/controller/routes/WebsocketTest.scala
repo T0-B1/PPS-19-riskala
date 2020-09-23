@@ -1,12 +1,13 @@
 package org.riskala.controller.routes
 
 import java.util.Properties
-
+import akka.actor.typed.ActorSystem
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.stream.scaladsl.Flow
 import org.junit.runner.RunWith
 import org.riskala.controller.Server
+import org.riskala.controller.actors.Messages
 import org.riskala.controller.actors.player.PlayerMessages.PlayerMessage
 import org.riskala.controller.auth.AuthTest
 import org.riskala.utils.Utils
@@ -40,7 +41,7 @@ class WebsocketTest extends AnyWordSpec with Matchers with ScalatestRouteTest {
       }
 
       "trigger the spawn of a playerActor upon opening the socket" in {
-        implicit val sys = Server.system
+        implicit val sys: ActorSystem[Messages.LobbyMessage] = Server.system
         val token = AuthTest.login(properties.get("testAccountUsername").toString, properties.get("testAccountPassword").toString)
         WS(socketUri(token), Flow.fromFunction(identity)) ~> WebsocketRoute.websocketRoute ~>
           check {

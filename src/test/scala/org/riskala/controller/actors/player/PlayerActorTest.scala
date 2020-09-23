@@ -30,7 +30,7 @@ class PlayerActorTest extends ScalaTestWithActorTestKit with AnyWordSpecLike wit
         behaviorTestKit.run(RoomReferent(roomProbe.ref))
         val RoomBehaviourClassName = RoomPlayerBehavior.getClass.getSimpleName
         assert(behaviorTestKit.currentBehavior.toString
-          .contains(RoomBehaviourClassName.substring(0, RoomBehaviourClassName.size - 1)))
+          .contains(RoomBehaviourClassName.substring(0, RoomBehaviourClassName.length - 1)))
       }
     }
 
@@ -40,7 +40,7 @@ class PlayerActorTest extends ScalaTestWithActorTestKit with AnyWordSpecLike wit
         behaviorTestKit.run(GameReferent(gameProbe.ref))
         val GameBehaviourClassName = GamePlayerBehavior.getClass.getSimpleName
         assert(behaviorTestKit.currentBehavior.toString
-          .contains(GameBehaviourClassName.substring(0, GameBehaviourClassName.size - 1)))
+          .contains(GameBehaviourClassName.substring(0, GameBehaviourClassName.length - 1)))
       }
     }
   }

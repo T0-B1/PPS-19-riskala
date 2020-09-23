@@ -1,7 +1,6 @@
 package org.riskala.model.logic
 
 import org.junit.runner.RunWith
-import org.riskala.model
 import org.riskala.model.map.{Geopolitics, MapGeography}
 import org.riskala.model.{Cards, Player}
 import org.riskala.utils.MapLoader

@@ -48,9 +48,8 @@
     },
     methods: {
       readSocketMessage() {
-        this.$store.state.websocket.onmessage = function(evt) { console.log("rec.msg"+evt.data); onMessage(evt) };
+        this.$store.state.websocket.onmessage = function(evt) { onMessage(evt) };
         function onMessage(evt) {
-          console.log('LOBBY - Receive message: ' + evt.data);
           ClientLobby.handleLobbyMessage(evt.data, this)
         }
       },
@@ -69,12 +68,10 @@
         this.itemsTerminated.push({Terminated_Game_Name: name})
       },
       createRoom() {
-        console.log('LOBBY - Call create_room')
         this.$router.push('/create_room')
       },
       joinRoom() {
         if(this.join !== ''){
-          console.log("join room " + this.join)
           this.$store.state.websocket.send(ClientLobby.getJoinMsgWrapped(this.join))
         }
       },
@@ -89,7 +86,7 @@
         this.$router.push('/game')
       },
       notifyError(error) {
-        console.log(error)
+        console.error(error)
       },
       myRowClickHandler(row) {
         this.join = row.Room_Name
