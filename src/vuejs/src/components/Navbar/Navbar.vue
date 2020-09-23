@@ -2,7 +2,7 @@
   <div>
     <div class="containerDiv">
       <div class="link">
-        <router-link class="home" to="">{{navhome}}</router-link>
+        <router-link class="home" to=""></router-link>
       </div>
       <b-button id="loginLogout" v-if="this.$store.state.isLogged === false" class="login" to="/login">Login</b-button> 
       <b-button id="loginLogout" v-else class="login" role="button" @click="change">Logout</b-button>

@@ -1,5 +1,6 @@
 <template>
   <div class="login">
+    <h1 id="gameTitle" class="titleInCommon" >RISKALA!</h1>
     <b-card
       img-alt="Image"
       img-top
@@ -41,17 +42,15 @@
           </b-form-group>
         </div>
         <div class="text-center buttonsDiv block">
-          <b-button role="button" variant="outline-primary" type="submit">Login</b-button>
+          <b-button id="loginButton" role="button" variant="outline-primary" type="submit">Login</b-button>
+          <router-link to='registration' aria-label="registration"
+            class="text-center buttonsDiv" style="text-decoration:none; margin-bottom:30px;">
+            <b-button role="button" variant="outline-primary">
+              Register
+            </b-button>
+          </router-link>
         </div>
       </b-form>
-      <hr />
-      <span class="disabled">Not registered?</span>
-      <router-link to='registration' aria-label="registration"
-        class="text-center buttonsDiv" style="text-decoration:none; margin-bottom:30px;">
-        <b-button role="button" variant="outline-primary">
-          Register
-        </b-button>
-      </router-link>
     </b-card>
   </div>
 </template>

@@ -2,7 +2,6 @@
   <div id="app">
     <div id="nav">
       <navbar class="nav-bar"></navbar>
-      <h1 class="titleInCommon" >RISKALA!</h1>
     </div>
     <router-view/>
   </div>
