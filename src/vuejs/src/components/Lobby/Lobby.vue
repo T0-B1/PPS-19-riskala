@@ -21,7 +21,6 @@
   <div class="buttons_div">
     <b-button variant="outline-primary" @click="createRoom">Create Room</b-button>
     <b-button id="joinBtn" variant="outline-primary" v-bind:disabled="disabled" @click="joinRoom">Join <b>{{this.join}}</b></b-button>
-    <!--<b-button variant="outline-primary">Carica partita</b-button>-->
   </div>
 </div>
 </template>
@@ -40,17 +39,17 @@
     mounted() {
       var vue = this
       var newHandler = function(evt) {
-        console.log('LOBBY - Receive message: ' + evt.data);
         ClientLobby.handleLobbyMessage(evt.data, vue)
       }
       this.$store.commit('changeHandler', newHandler)
+      if(this.$store.state.lobbyInfo !== ''){
+        ClientLobby.setupLobby(this.$store.state.lobbyInfo, this)
+      }
     },
     methods: {
       readSocketMessage() {
-        this.$store.state.websocket.onmessage = function(evt) { console.log("rec.msg"+evt.data); onMessage(evt) };
-        console.log("cerco di fare on message")
+        this.$store.state.websocket.onmessage = function(evt) { onMessage(evt) };
         function onMessage(evt) {
-          console.log('LOBBY - Receive message: ' + evt.data);
           ClientLobby.handleLobbyMessage(evt.data, this)
         }
       },
@@ -69,21 +68,25 @@
         this.itemsTerminated.push({Terminated_Game_Name: name})
       },
       createRoom() {
-        console.log('LOBBY - Call create_room')
         this.$router.push('/create_room')
       },
       joinRoom() {
         if(this.join !== ''){
-          console.log("join room " + this.join)
           this.$store.state.websocket.send(ClientLobby.getJoinMsgWrapped(this.join))
         }
       },
       goToRoom(newRoom){
+        this.$store.commit('changeLobbyInfo', '')
         this.$store.commit('changeRoomInfo', newRoom)
         this.$router.push('/room')
       },
+      goToGame(newGame){
+        this.$store.commit('changeLobbyInfo', '')
+        this.$store.commit('changeGameInfo', newGame)
+        this.$router.push('/game')
+      },
       notifyError(error) {
-        console.log(error)
+        console.error(error)
       },
       myRowClickHandler(row) {
         this.join = row.Room_Name

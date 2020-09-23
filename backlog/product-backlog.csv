@@ -1,0 +1,15 @@
+Priority,Item,Initial Size Estimated,1,2,3,4
+1,Design architetturale di massima del sistema,200,0,0,0,0
+2,Creazione interfaccia di base,350,300,200,70,0
+3,Login,20,5,0,0,0
+4,Registrazione,20,10,0,0,0
+5,Lobby con stanze,350,280,120,0,0
+6,Creazione e ripristino partita,20,20,0,0,0
+7,Scelta scenario,10,10,10,0,0
+8,Obiettivi per raggiungere la vittoria,20,20,20,20,0
+9,Eseguire attacchi e piazzare truppe ,110,110,110,110,0
+10,Carte bonus,20,20,20,20,0
+12,Mappa interattiva con le informazioni di gioco,20,20,20,20,0
+13,Aggiornamento in tempo reale dello stato del gioco,50,50,50,50,0
+15,Notifiche fuori dal gioco,10,10,10,10,0
+16,CI/CD,80,70,50,0,0

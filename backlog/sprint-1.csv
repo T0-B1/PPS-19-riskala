@@ -15,7 +15,7 @@ Creazione interfaccia di base,,,,
 ,Layer di comunicazione,Alessandro,20,0
 Gestione accounts,,,,
 ,Login lato server,Andrea,10,0
-,Registrazione lato,Andrea,5,0
+,Registrazione lato server,Andrea,5,0
 ,Login lato client,Alessia,5,0
 ,Registrazione lato client,Alessia,5,0
 Gestione Lobby,,,,
@@ -27,4 +27,3 @@ Gestione Room,,,,
 CI/CD,,,,
 ,Gestione build frontend tramite node,Alessandro,5,0
 ,Gestione cross-compilation in scala.js,Alessandro,5,5
-

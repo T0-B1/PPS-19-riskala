@@ -10,9 +10,10 @@ import akka.stream.scaladsl.{Flow, Sink, Source}
 import akka.stream.typed.scaladsl.ActorSource
 import akka.stream.{CompletionStrategy, OverflowStrategy}
 import akka.{Done, NotUsed, actor}
-import org.riskala.controller.actors.{PlayerActor, PlayerLobbyBehavior, PlayerMessages}
-import org.riskala.controller.actors.PlayerMessages.PlayerMessage
-import org.riskala.controller.{AuthManager, Server}
+import org.riskala.controller.actors.player.{PlayerActor, PlayerMessages}
+import org.riskala.controller.actors.player.PlayerMessages.PlayerMessage
+import org.riskala.controller.Server
+import org.riskala.controller.auth.AuthManager
 import org.riskala.utils.Utils
 
 import scala.concurrent.Future
@@ -23,34 +24,40 @@ object WebsocketRoute {
 
   val websocketRoute: Route =
     (get & path("websocket") & parameter("token")) { token =>
-      if( (!AuthManager.checkToken(token)) || AuthManager.getUser(token).isEmpty) complete(StatusCodes.Forbidden)
+      if( (!AuthManager.checkToken(token)) || AuthManager.getUserName(token).isEmpty) complete(StatusCodes.Forbidden)
       else{
-        val username = AuthManager.getUser(token).get
+        val username = AuthManager.getUserName(token).get
         handleWebSocketMessages(createSocketFlow(username))
       }
     }
 
   private def createSocketFlow(username: String): Flow[Message, Message, NotUsed] = {
     val (wsActor, wsSource) = untypedActorSource().preMaterialize()
-    // TODO use spawn protocol
-    // https://doc.akka.io/docs/akka/current/typed/actor-lifecycle.html#spawnprotocol
     val playerActorRef: ActorRef[PlayerMessage] = spawnOrGetPlayer(username, wsActor)
     Flow.fromSinkAndSource(sinkFromActor(playerActorRef), wsSource)
   }
 
-  private def spawnOrGetPlayer(username: String, newSocket: actor.ActorRef): ActorRef[PlayerMessage] = {
+  /**
+   * Retrieves the PlayerActor of a particular user and returns it.
+   * If absent, a new one is generated and returned.
+   *
+   * @param username The username
+   * @param newSocketActor The actor encapsulating the websocket
+   * @return
+   */
+  private def spawnOrGetPlayer(username: String, newSocketActor: actor.ActorRef): ActorRef[PlayerMessage] = {
     Utils.askReceptionistToFind[PlayerMessage](username).toSeq match {
       // No PlayerActor registered found
-      case Seq() => {
-        val ref: ActorRef[PlayerMessage] = system.systemActorOf(PlayerActor(username, newSocket), username)
+      case Seq() =>
+        val ref: ActorRef[PlayerMessage] = system.systemActorOf(PlayerActor(username, newSocketActor), username)
         system.receptionist ! Receptionist.Register(ServiceKey[PlayerMessage](username), ref)
         ref
-      }
+
       // The first PlayerActor found
-      case Seq(first, rest@_*) => {
-        first ! PlayerMessages.RegisterSocket(newSocket)
+      case Seq(first, rest@_*) =>
+        first ! PlayerMessages.RegisterSocket(newSocketActor)
         first
-      }
+
     }
   }
 

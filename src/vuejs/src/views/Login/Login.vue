@@ -1,5 +1,6 @@
 <template>
   <div class="login">
+    <h1 id="gameTitle" class="titleInCommon" >RISKALA!</h1>
     <b-card
       img-alt="Image"
       img-top
@@ -18,7 +19,7 @@
               v-model="form.username"
               type="text"
               required
-              placeholder="Inserisci username"
+              placeholder="Insert username"
               aria-describedby="email-help-block"
             ></b-form-input>
           </b-form-group>
@@ -32,26 +33,24 @@
               v-model="form.password"
               type="password"
               required
-              placeholder="Inserisci password"
+              placeholder="Insert password"
               aria-describedby="password-help-block"
             ></b-form-input>
             <button id="buttonHideShow"
-              role="button" title="Clicca per mostrare la tua password"
+              role="button" title="Click to show the password"
               @click="changeType" type = "button"></button>
           </b-form-group>
         </div>
         <div class="text-center buttonsDiv block">
-          <b-button role="button" variant="outline-primary" type="submit">Login</b-button>
+          <b-button id="loginButton" role="button" variant="outline-primary" type="submit">Login</b-button>
+          <router-link to='registration' aria-label="registration"
+            class="text-center buttonsDiv" style="text-decoration:none; margin-bottom:30px;">
+            <b-button role="button" variant="outline-primary">
+              Register
+            </b-button>
+          </router-link>
         </div>
       </b-form>
-      <hr />
-      <span class="disabled">Not registered?</span>
-      <router-link to='registration' aria-label="registration"
-        class="text-center buttonsDiv" style="text-decoration:none; margin-bottom:30px;">
-        <b-button role="button" variant="outline-primary">
-          Register
-        </b-button>
-      </router-link>
     </b-card>
   </div>
 </template>
@@ -69,10 +68,9 @@ export default {
     };
   },
   mounted(){
-    var token = localStorage.riskalaToken
+    var token = sessionStorage.riskalaToken
     if(token !== 'InvalidToken'){
-      this.$store.commit('login', { token: token, user: localStorage.riskalaUser });
-      this.openSocket(token)
+      this.$store.commit('login', { token: token, user: sessionStorage.riskalaUser });
       this.$router.push('/')
     }
   },
@@ -81,52 +79,22 @@ export default {
       evt.preventDefault();
       const username = this.form.username;
       const psw = this.form.password;
-
       if(username.length != 0 && psw.length != 0 ) {
         this.$store.state.http.post('login', { username: username, password: psw })
         .then((response) => {
           const t = response.data;
           this.$store.commit('login', { token: t, user: username });
-          this.openSocket(t)
+          this.$router.push('/')
         }).catch((error) => {
           this.$store.commit('logout');
           if (error.response) {
             if (error.response.status === 404) {
-              console.log("Invalid credentials");
+              console.error("Invalid credentials");
             } else {
-              console.log("Internal server error!");
+              console.error("Internal server error!");
             }
           }
         });
-      }
-    },
-    openSocket(token){
-      var vue = this
-      var HOST = location.origin.replace(/^http/, 'ws')
-      var mySocket = new WebSocket(HOST + "/websocket?token=" + token)
-      mySocket.onopen = function() { onOpen(vue) };
-      mySocket.onclose = function() { onClose() };
-      mySocket.onmessage = function(evt) { onMessage(evt) };
-      mySocket.onerror = function(evt) { onError(evt) };
-      this.$store.commit('openWebsocket', mySocket)
-      //Window.socket = mySocket
-
-      function onOpen(vue) {
-        console.log("CONNECTED");
-        vue.$router.push('/')
-      }
-
-      function onClose() {
-        console.log("DISCONNECTED");
-        token = "InvalidToken"
-      }
-
-      function onMessage(evt) {
-        console.log('LOGIN - MSG recv: ' + evt.data);
-      }
-
-      function onError(evt) {
-        console.log('WS ERROR' + evt.data);
       }
     },
     changeType() {

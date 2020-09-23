@@ -6,17 +6,28 @@ import Vuex from 'vuex';
 import './custom.sass'
 import BootstrapVue from 'bootstrap-vue'
 
-// Install BootstrapVue
 Vue.use(BootstrapVue)
 Vue.use(Vuex);
 
 Vue.config.productionTip = false
+
+function openSocket(oldSocket, token){
+  if(oldSocket != null && oldSocket.readyState === WebSocket.OPEN) {
+    return oldSocket
+  }
+  var vue = this
+  var HOST = location.origin.replace(/^http/, 'ws')
+  var mySocket = new WebSocket(HOST + "/websocket?token=" + token)
+  return mySocket
+}
 
 const store = new Vuex.Store({
   state: {
     websocket: null,
     isLogged: false,
     roomInfo: '',
+    gameInfo: '',
+    lobbyInfo: '',
     http: Axios.create({
       timeout: 10000,
       headers: { token: 'InvalidToken' },
@@ -25,8 +36,8 @@ const store = new Vuex.Store({
   mutations: {
     login(state, newState) {
       state.isLogged = true;
-      localStorage.riskalaToken = newState.token;
-      localStorage.riskalaUser = newState.user;
+      sessionStorage.riskalaToken = newState.token;
+      sessionStorage.riskalaUser = newState.user;
       state.http = Axios.create({
         timeout: 10000,
         headers: { token: newState.token },
@@ -34,34 +45,42 @@ const store = new Vuex.Store({
     },
     logout(state) {
       state.isLogged = false;
-      localStorage.riskalaToken = 'InvalidToken';
-      localStorage.riskalaUser = '';
+      sessionStorage.riskalaToken = 'InvalidToken';
+      sessionStorage.riskalaUser = '';
+      state.websocket = null;
       state.http = Axios.create({
         timeout: 10000,
         headers: { token: 'InvalidToken' },
       })
     },
-    openWebsocket(state, newWebsocket) {
-      state.websocket = newWebsocket;
+    openWebsocket(state, token) {
+      state.websocket = openSocket(state.websocket, token);
       // For debug purposes
-      Window.websocket = newWebsocket;
+      Window.websocket = state.websocket;
     },
     changeHandler(state, newHandler) {
+      state.websocket = openSocket(state.websocket, sessionStorage.riskalaToken);
       state.websocket.onmessage = newHandler;
     },
     changeRoomInfo(state, newRoom){
       state.roomInfo = newRoom;
+    },
+    changeGameInfo(state, newGame){
+      state.gameInfo = newGame
+    },
+    changeLobbyInfo(state, newLobby){
+      state.lobbyInfo = newLobby
     }
   }
 });
 
-if (localStorage.riskalaToken === undefined) {
-  localStorage.riskalaToken = 'InvalidToken';
+if (sessionStorage.riskalaToken === undefined) {
+  sessionStorage.riskalaToken = 'InvalidToken';
 }
 
-if (localStorage.riskalaToken !== 'InvalidToken') {
-  const t = localStorage.riskalaToken;
-  const u = localStorage.riskalaUser;
+if (sessionStorage.riskalaToken !== 'InvalidToken') {
+  const t = sessionStorage.riskalaToken;
+  const u = sessionStorage.riskalaUser;
   store.commit('login', { token: t, user: u });
   store.state.http.post('login', { username: u, password: '' })
   .then((response) => {

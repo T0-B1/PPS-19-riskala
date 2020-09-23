@@ -5,7 +5,7 @@ plugins {
     id 'org.scoverage' version '4.0.2'
 }
 
-version '0.3.0'
+version '1.0.0'
 mainClassName = 'org.riskala.controller.Main'
 sourceCompatibility = 1.8
 
@@ -30,6 +30,7 @@ dependencies {
         [group: "com.typesafe.akka", name: "akka-stream-typed_$scalaMajor", version: "$akkaVersion"],
         [group: "com.typesafe.akka", name: "akka-http_$scalaMajor", version: "$akkaHttpVersion"],
         [group: "com.typesafe.akka", name: "akka-http-spray-json_$scalaMajor", version: "$akkaHttpVersion"],
+        [group: "com.mashape.unirest", name: "unirest-java", version: "1.4.9"],
         [group: "io.spray", name: "spray-json_$scalaMajor", version: "1.3.5"],
         [group: "com.pauldijou", name: "jwt-core_$scalaMajor", version: "4.3.0"],
         [group: "io.argonaut", name: "argonaut_$scalaMajor", version: "6.3.0"],
@@ -52,24 +53,22 @@ dependencies {
     )
 }
 
-task provideSourcesToScalajs(type: Copy) {
-    
-    //def scalaJsClasses = "org/riskala/model/**/*"
-    //def scalaJsIgnore = [
-    //"org/riskala/model/ModelMessages.scala",
-    //"org/riskala/model/game/**/*",
-    //"org/riskala/model/lobby/**/*",
-    //"org/riskala/model/room/**/*"]
+task testSpec(dependsOn: ['testClasses'], type: JavaExec) {
+    main = 'org.scalatest.tools.Runner'
+    args = ['-R', 'build/classes/scala/test', '-o']
+    classpath = sourceSets.test.runtimeClasspath
+}
 
-    def scalaJsClasses = ["org/riskala/model/*.scala",
-                          "org/riskala/view/**/*.scala",
-                          "org/riskala/utils/Parser.scala"]
-    def scalaJsIgnore = ["org/riskala/model/ModelMessages.scala",
-                         "org/riskala/view/SocketActor.scala"]
+scaladoc {
+    classpath = project.sourceSets.main.compileClasspath
+}
+
+task provideSourcesToScalajs(type: Copy) {
     delete "$projectDir/src/scalajs/src"
     from "$projectDir/src/main/scala/"
-    include scalaJsClasses 
-    exclude scalaJsIgnore
+    exclude { FileTreeElement details ->
+        !details.isDirectory() && !details.file.text.contains('#scala.js')
+    }
     into "$projectDir/src/scalajs/src/main/scala/"
 }
 

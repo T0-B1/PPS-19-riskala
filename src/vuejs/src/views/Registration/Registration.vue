@@ -7,7 +7,7 @@
             <div class="card cardR">
               <div class="card-body">
                 <div class="card-title mb-4">
-                  <h3 class="titleReg">Registrazione</h3>
+                  <h3 class="titleReg">Registration</h3>
                 </div>
                 <div class="row">
                   <div class="col-12">
@@ -26,11 +26,11 @@
                                 required
                                 type="text"
                                 @focusout="onBlurUser"
-                                placeholder="Inserisci username"
+                                placeholder="Insert username"
                                 aria-describedby="user-help-block"
                               ></b-form-input>
                               <b-form-text id="user-help-block" v-show="!correctUser">
-                                Questo username è già in uso
+                                Username already in use
                               </b-form-text>
                             </div>
                           </div>
@@ -46,11 +46,11 @@
                                 type="email"
                                 required
                                 @focusout="onBlurEmail"
-                                placeholder="Inserisci email"
+                                placeholder="Insert email"
                                 aria-describedby="email-help-block"
                               ></b-form-input>
                               <b-form-text id="email-help-block" v-show="!correctEmail">
-                                Questa email è già in uso
+                                Email already in use
                               </b-form-text>
                             </div>
                           </div>
@@ -66,16 +66,16 @@
                                 type="password"
                                 required
                                 @focusout="onBlurPsw"
-                                placeholder="Inserisci password"
+                                placeholder="Insert password"
                                 aria-describedby="password-help-block"
                               ></b-form-input>
-                              <button id="buttonHideShowPsw" title="Hold down to show password"
+                              <button id="buttonHideShowPsw" title="Hold down to show the password"
                                 @click="changeTypePsw" type = "button"></button>
                             </div>
                           </div>
                           <div class="row pers">
                             <div class="col-sm-2 col-md-2 col-4">
-                              <label class="labelText">Ripeti password</label>
+                              <label class="labelText">Repeat password</label>
                             </div>
                             <div class="col-md-8 col-8">
                               <b-form-input
@@ -84,10 +84,10 @@
                                 type="password"
                                 required
                                 @focusout="onBlurRePsw"
-                                placeholder="Reinserisci password"
+                                placeholder="Insert password"
                                 aria-describedby="password-help-block"
                               ></b-form-input>
-                              <button id="buttonHideShowRePsw" title="Hold down to show password"
+                              <button id="buttonHideShowRePsw" title="Hold down to show the password"
                               @click="changeTypeRePsw" type = "button"></button>
                             </div>
                           </div>
@@ -95,7 +95,7 @@
                           <hr/>
                           <div class="text-center buttonsDiv">
                             <b-button role="button" variant="outline-primary" type="submit">
-                              Registrami</b-button> 
+                              Register</b-button> 
                           </div>
                       </div>
                     </div>

@@ -2,10 +2,10 @@
   <div>
     <div class="containerDiv">
       <div class="link">
-        <router-link class="home" to="">{{navhome}}</router-link>
+        <router-link class="home" to=""></router-link>
       </div>
-      <b-button v-if="this.$store.state.isLogged === false" class="login" to="/login">Login</b-button> 
-      <b-button v-else class="login" role="button" @click="change">Logout</b-button>
+      <b-button id="loginLogout" v-if="this.$store.state.isLogged === false" class="login" to="/login">Login</b-button> 
+      <b-button id="loginLogout" v-else class="login" role="button" @click="change">Logout</b-button>
     </div>
   </div>
 </template>
@@ -21,6 +21,7 @@ export default {
   },
   methods: {
     change() {
+      this.$store.state.websocket.send(ClientRoom.getMsgWrapped("LogoutMessage"))
       this.$store.commit('logout')
       this.$router.push('/login')
     }
