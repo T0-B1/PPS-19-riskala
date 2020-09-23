@@ -19,7 +19,7 @@
               v-model="form.username"
               type="text"
               required
-              placeholder="Inserisci username"
+              placeholder="Insert username"
               aria-describedby="email-help-block"
             ></b-form-input>
           </b-form-group>
@@ -33,11 +33,11 @@
               v-model="form.password"
               type="password"
               required
-              placeholder="Inserisci password"
+              placeholder="Insert password"
               aria-describedby="password-help-block"
             ></b-form-input>
             <button id="buttonHideShow"
-              role="button" title="Clicca per mostrare la tua password"
+              role="button" title="Click to show the password"
               @click="changeType" type = "button"></button>
           </b-form-group>
         </div>
