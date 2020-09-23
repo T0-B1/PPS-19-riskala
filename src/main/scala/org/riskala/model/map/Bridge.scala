@@ -6,7 +6,7 @@ import org.riskala.model.map.State.State
 import scala.scalajs.js.annotation.{JSExportAll, JSExportTopLevel}
 
 /**
- * Bridge implementation #scala.js
+ * A link between two states #scala.js
  *
  * @param state1         first state
  * @param state2         second state
@@ -29,6 +29,7 @@ case class Bridge(state1: State,
   }
 
 }
+
 object Bridge {
   implicit def BridgeCodecJson: CodecJson[Bridge] =
     casecodec3(Bridge.apply,Bridge.unapply)("state1","state2","userCreated")
