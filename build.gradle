@@ -5,7 +5,7 @@ plugins {
     id 'org.scoverage' version '4.0.2'
 }
 
-version '0.3.0'
+version '1.0.0'
 mainClassName = 'org.riskala.controller.Main'
 sourceCompatibility = 1.8
 

@@ -1,32 +1,28 @@
-Product Backlog Item,Sprint Task,Volunteer,Initial estimate of Effort,Remaining Effort
-Gestione lobby,,,,
-,Implementazione gestione messaggi ,Andrea,10,0
-,Integrazione scala.js,Andrea,5,0
-,Test comunicazione,Andrea,10,0
-Gestione Room,,,,
-,Implementazione gestione messaggi ,Alessia,15,0
-,Integrazione scala.js,Alessia,10,0
-,Test Integrazione,Alessia,15,0
-,Integrazione Monocle,Alessia,10,0
-Gestione stanze,,,,
-,Implementazione gestione messaggi,Alessia,20,0
-,Integrazione scala.js,Alessia,10,0
-,Test Integrazione,Alessia,10,0
-Creazione interfaccia,,,,
-,Correzzione errori protocollo di comunicazione,Andrea,15,0
-,Modifiche alla logica di serializzazione,Andrea,10,0
-,Risoluzione problemi di serializzazione,Andrea,15,0
-,Debug PlayerActor,Alessandro,25,0
-,Debug parsing messaggi json,Alessandro,20,0
-,Scomposizione dei behaviors di PlayerActor,Andrea,10,0
-,Rifattorizzazione messaggi,Andrea,5,0
-,Implementazione gestione messaggi ,Andrea,10,0
-,Test di integrazione,Andrea,10,0
-,Gestione websocket nel client,Alessia,10,0
-Gestione partita,,,,
-,Caricamento scenari,Alessandro,10,10
-CI/CD,,,,
-,Troubleshooting bug in plugin gradle,Alessandro,10,0
-,Automazione task di pulizia e unione sorgenti,Alessandro,10,0
-,Integrazione scala.js in frontend vue.js,Alessandro,15,0
-,Speedup della build,Alessandro,10,0
+Product Backlog Item;Sprint Task;Volunteer;Initial estimate of Effort;Remaining Effort
+Gestione lobby;;;;
+;Implementazione gestione messaggi ;Andrea;10;0
+;Integrazione scala.js;Andrea;5;0
+;Test comunicazione;Andrea;10;0
+Gestione room;;;;
+;Implementazione gestione messaggi ;Alessia;35;0
+;Integrazione scala.js;Alessia;20;0
+;Test Integrazione;Alessia;25;0
+;Integrazione Monocle;Alessia;10;0
+Creazione interfaccia;;;;
+;Correzzione errori protocollo di comunicazione;Andrea;15;0
+;Modifiche alla logica di serializzazione;Andrea;10;0
+;Risoluzione problemi di serializzazione;Andrea;15;0
+;Debug PlayerActor;Alessandro;25;0
+;Debug parsing messaggi json;Alessandro;20;0
+;Scomposizione dei behaviors di PlayerActor;Andrea;10;0
+;Rifattorizzazione messaggi;Andrea;5;0
+;Implementazione gestione messaggi ;Andrea;10;0
+;Test di integrazione;Andrea;10;0
+;Gestione websocket nel client;Alessia;10;0
+Scenario;;;;
+;Caricamento scenari;Alessandro;10;10
+CI/CD;;;;
+;Troubleshooting bug in plugin gradle;Alessandro;10;0
+;Automazione task di pulizia e unione sorgenti;Alessandro;10;0
+;Integrazione scala.js in frontend vue.js;Alessandro;15;0
+;Speedup della build;Alessandro;10;0

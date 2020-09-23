@@ -1,0 +1,37 @@
+Product Backlog Item,Sprint Task,Volunteer,Initial estimate of Effort,Remaining Effort
+Truppe e attacchi,,,,
+,Modellazione di un game,Alessandro,15,0
+,Modellazione eventi,Alessandro,10,0
+,Testing eventi,Alessandro,5,0
+,Implementazione logica di gioco,Alessandro,10,0
+,Implementazione comandi,Alessandro,15,0
+,Validazione comandi,Alessandro,10,0
+,Testing comandi,Alessandro,10,0
+,Definizione messaggi da mandare in partita ,Andrea,10,0
+,Invio informazioni generali sulla partita dal server,Andrea,10,0
+,Generazione messaggio di vittoria,Andrea,5,0
+,Implementazione finale del Game manager,Andrea,5,0
+,Implementazione gestione dei messaggi di gioco,Andrea,10,0
+Carte e obiettivi,,,,
+,Distinzione tra messaggi pubblici (stato del gioco) e personali (obiettivi e carte),Andrea,10,0
+,Carte di gioco,Andrea,10,0
+,Obiettivi,Andrea,15,0
+Mappa interattiva,,,,
+,Realizzazione asset mappa italia interattiva,Alessandro,10,0
+,Caricamento file mappe,Alessandro,5,0
+,Gestione click su mappa interattiva,Alessia,10,0
+Interfaccia,,,,
+,Mostrare i dati inerenti la partita,Alessia,10,0
+,Mostrare i dati dello stato selezionato,Alessia,10,0
+,Gestione delle possibili azioni lato client,Alessia,10,0
+,Invio azioni al server,Alessia,10,0
+,Mostrare vincitore,Alessia,5,0
+,Test di integrazione,Alessia,10,0
+,Gestione dei messaggi della partita dal client,Andrea,10,0
+Aggiornamenti real-time,,,,
+,Aggiornamento delle informazioni della partita in real-time,Alessia,20,0
+,Blocco input durante turno avversario,Alessia,10,0
+,Blocco input in caso di vittoria,Alessia,5,0
+,Gestione dei messaggi su iniziativa del server,Andrea,15,0
+Notifiche,,,,
+,Notifica via mail a inizio turno utente non loggato,Alessandro,10,0
