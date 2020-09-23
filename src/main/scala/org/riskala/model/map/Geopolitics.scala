@@ -72,7 +72,7 @@ case class Geopolitics(states: Set[PlayerState]) {
   def setStateTroops(state: State, troops: Int): Geopolitics = {
     alterStateTroops(state, troops, additive = false)
   }
-  
+
   private def alterStateTroops(state: State, troops: Int, additive: Boolean): Geopolitics = {
     getPlayerStateByName(state).fold(this)(ps=>{
       updatePlayerState(ps.copy(troops = if(additive) ps.troops + troops else troops))

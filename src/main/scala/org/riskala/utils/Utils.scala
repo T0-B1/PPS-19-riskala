@@ -17,6 +17,11 @@ object Utils{
 
   val PROPS_PATH = "/config.properties"
 
+  /**
+   * Loads properties from resouce file
+   *
+   * @return A Properties object
+   */
   def loadPropertiesFromResources(): Properties = {
     val properties: Properties = new Properties()
     val url = getClass.getResource(PROPS_PATH)
@@ -27,6 +32,15 @@ object Utils{
     properties
   }
 
+  /**
+   * Asks the akka system receptionist to find an actor
+   *
+   * @param key ServiceKey of the actor
+   * @param system Akka actor system
+   * @param timeout Timeout of the request
+   * @tparam T Type of the ActorRef
+   * @return An optional ActorRef
+   */
   def askReceptionistToFind[T:ClassTag](key: String)(implicit system: ActorSystem[Nothing], timeout: Timeout = 3.seconds) : Set[ActorRef[T]] = {
     implicit val executionContext: ExecutionContextExecutor = system.executionContext
     val serviceKey: ServiceKey[T] = ServiceKey[T](key)
@@ -36,11 +50,24 @@ object Utils{
     Await.result(response, 3.seconds).serviceInstances(serviceKey)
   }
 
+  /**
+   * Retrieves a random element from a set
+   *
+   * @param s A set
+   * @tparam T Type of elements in the set
+   * @return A random element
+   */
   def randomSetElement[T](s: Set[T]): T = {
     val n = util.Random.nextInt(s.size)
     s.iterator.drop(n).next
   }
 
+  /**
+   * Sends an email to a user
+   *
+   * @param userName The username
+   * @param gameName The game to which the notification refers
+   */
   def sendUserTurnNotification(userName: String, gameName: String): Unit = {
     val email = AuthManager.getUserMail(userName)
     if(email.isDefined) {
